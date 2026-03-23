@@ -1,0 +1,174 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "🚀 Dev Server",
+            "type": "shell",
+            "command": "bun run dev",
+            "group": "build",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "📦 Build",
+            "type": "shell",
+            "command": "bun run build 2>&1 | Tee-Object -FilePath logs/build.log",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "👁️ Preview",
+            "type": "shell",
+            "command": "bun run preview",
+            "group": "build",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "🔍 Lint",
+            "type": "shell",
+            "command": "bun run lint 2>&1 | Tee-Object -FilePath logs/lint.log",
+            "group": "test",
+            "problemMatcher": [
+                "$eslint-stylish"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "🔧 Lint Fix",
+            "type": "shell",
+            "command": "bun run lint:fix",
+            "group": "test",
+            "problemMatcher": [
+                "$eslint-stylish"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "🎨 Format",
+            "type": "shell",
+            "command": "bun run fmt",
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "🎨 Format Check",
+            "type": "shell",
+            "command": "bun run fmt:check 2>&1 | Tee-Object -FilePath logs/format.log",
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "🧪 Test",
+            "type": "shell",
+            "command": "bun run test 2>&1 | Tee-Object -FilePath logs/test.log",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "🧪 Test Watch",
+            "type": "shell",
+            "command": "bun run test:watch",
+            "group": "test",
+            "isBackground": true,
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "📊 Test Coverage",
+            "type": "shell",
+            "command": "bun run test:coverage 2>&1 | Tee-Object -FilePath logs/test-coverage.log",
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "✅ Typecheck",
+            "type": "shell",
+            "command": "bun run typecheck 2>&1 | Tee-Object -FilePath logs/typecheck.log",
+            "group": "test",
+            "problemMatcher": [
+                "$tsc"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "✅ Full Check",
+            "type": "shell",
+            "command": "bun run check 2>&1 | Tee-Object -FilePath logs/check.log",
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "🧹 Clean",
+            "type": "shell",
+            "command": "bun run clean",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "📥 Install",
+            "type": "shell",
+            "command": "bun install",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            }
+        }
+    ]
+}

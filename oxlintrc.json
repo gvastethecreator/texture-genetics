@@ -1,0 +1,18 @@
+{
+    "rules": {
+        "no-debugger": "error",
+        "no-console": "warn",
+        "eqeqeq": "error",
+        "no-var": "error",
+        "no-eval": "error",
+        "no-implicit-coercion": "warn"
+    },
+    "ignorePatterns": [
+        "dist/**",
+        "node_modules/**",
+        "coverage/**",
+        "resources/**",
+        "logs/**",
+        "*.config.*"
+    ]
+}

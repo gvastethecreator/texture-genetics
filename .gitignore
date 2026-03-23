@@ -1,0 +1,60 @@
+# ============================================================
+# EffectTextureGen — .gitignore
+# ============================================================
+
+# ── Dependencies ────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+resources/*
+
+# ── Build output ────────────────────────────────────────────
+dist/
+dist-ssr/
+*.local
+
+# ── Logs ────────────────────────────────────────────────────
+logs/*.log
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+
+# ── Test & Coverage ─────────────────────────────────────────
+coverage/
+*.lcov
+
+# ── Cache ───────────────────────────────────────────────────
+.vite/
+.cache/
+.turbo/
+*.tsbuildinfo
+
+# ── Editor / IDE ────────────────────────────────────────────
+.vscode/*
+!.vscode/tasks.json
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── OS files ────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Environment variables ───────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Package manager locks (Bun is canonical) ────────────────
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

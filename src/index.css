@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DESIGN SYSTEM — EffectTextureGen v4.0
+   Tokenized design system for the dark-mode professional UI.
+   ============================================================ */
+
+@theme {
+  /* ── Colors ─────────────────────────────────────────────── */
+  --color-bg: #050505;
+  --color-panel: #080808;
+  --color-surface: #101010;
+  --color-border: #1E1E1E;
+  --color-accent-primary: #E0E0E0;
+  --color-accent-secondary: #A0A0A0;
+  --color-accent-glow: rgba(255,255,255,0.1);
+
+  /* ── Typography ─────────────────────────────────────────── */
+  --font-sans: 'Archivo', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+
+  /* ── Shadows (Holo-Tactile) ─────────────────────────────── */
+  --shadow-tactile: 0 2px 5px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.02);
+  --shadow-tactile-hover: 0 4px 8px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 0 0 1px rgba(255,255,255,0.05);
+  --shadow-tactile-active: inset 0 3px 6px rgba(0,0,0,0.8), inset 0 1px 2px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.05);
+  --shadow-glass: 0 4px 30px rgba(0, 0, 0, 0.1);
+  --shadow-glow-sm: 0 0 10px rgba(139, 92, 246, 0.3);
+  --shadow-glow-md: 0 0 20px rgba(139, 92, 246, 0.4);
+
+  /* ── Easing ─────────────────────────────────────────────── */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* ── Animations ─────────────────────────────────────────── */
+  --animate-spin-slow: spin 3s linear infinite;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-pulse-glow: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ── Keyframes ──────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 10px rgba(139, 92, 246, 0.5); }
+  50%      { opacity: 0.5; box-shadow: 0 0 20px rgba(139, 92, 246, 0.2); }
+}
+
+/* ── Background-Image Utilities ─────────────────────────────── */
+@utility bg-metal-gradient {
+  background-image: linear-gradient(180deg, rgba(35,35,35,1) 0%, rgba(20,20,20,1) 100%);
+}
+
+@utility bg-metal-gradient-hover {
+  background-image: linear-gradient(180deg, rgba(45,45,45,1) 0%, rgba(30,30,30,1) 100%);
+}
+
+@utility bg-accent-gradient {
+  background-image: linear-gradient(135deg, #E0E0E0 0%, #A0A0A0 100%);
+}
+
+@utility bg-primary-gradient {
+  background-image: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+}
+
+@utility bg-glass-gradient {
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.0) 100%);
+}
+
+/* ── Text Gradient Utility ──────────────────────────────────── */
+@utility text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(135deg, #E0E0E0 0%, #909090 100%);
+}
+
+/* ── Grid Background Utility ────────────────────────────────── */
+@utility bg-grid-subtle {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* ============================================================
+   GLOBAL STYLES
+   ============================================================ */
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #050505;
+  color: #E0E0E0;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbars ─────────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #333333 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #333 0%, #222 100%);
+  border-radius: 10px;
+  border: 1px solid #0A0A0A;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* ── Range Slider Reset ─────────────────────────────────────── */
+input[type=range] {
+  -webkit-appearance: none;
+  background: transparent;
+  height: 20px;
+  cursor: pointer;
+}
+
+input[type=range]:focus {
+  outline: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 14px;
+  width: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff 0%, #A0A0A0 100%);
+  cursor: pointer;
+  margin-top: -5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 -2px 2px rgba(0,0,0,0.2);
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  background: #151515;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+}
+
+input[type=range]:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+  background: #fff;
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
