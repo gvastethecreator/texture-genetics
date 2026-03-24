@@ -1,5 +1,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
+import { get, set } from 'idb-keyval';
 import { AppState, UserPreset } from '../types/types';
 import { safeReplacer } from './useAppState';
 
@@ -15,14 +16,17 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
     const [userPresets, setUserPresets] = useState<UserPreset[]>([]);
 
     useEffect(() => {
-        try {
-            const savedPresets = localStorage.getItem(PRESETS_STORAGE_KEY);
-            if (savedPresets) {
-                setUserPresets(JSON.parse(savedPresets));
+        const load = async () => {
+            try {
+                const savedPresets = await get<UserPreset[]>(PRESETS_STORAGE_KEY);
+                if (savedPresets) {
+                    setUserPresets(savedPresets);
+                }
+            } catch (e) {
+                console.error("Failed to load presets", e);
             }
-        } catch (e) {
-            console.error("Failed to load presets", e);
-        }
+        };
+        load();
     }, []);
 
     const saveUserPreset = useCallback((name: string) => {
@@ -43,8 +47,9 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
             const updated = [...userPresets, newPreset];
             setUserPresets(updated);
             
-            // Use safeReplacer to prevent circular structure errors
-            localStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(updated, safeReplacer()));
+            set(PRESETS_STORAGE_KEY, JSON.parse(JSON.stringify(updated, safeReplacer()))).catch(e =>
+                console.warn("IDB preset save error", e)
+            );
             addToast('success', `Preset "${name}" saved!`);
         } catch (e) {
             console.error("Failed to save preset", e);
@@ -56,7 +61,9 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
         try {
             const updated = userPresets.filter(p => p.id !== id);
             setUserPresets(updated);
-            localStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(updated, safeReplacer()));
+            set(PRESETS_STORAGE_KEY, JSON.parse(JSON.stringify(updated, safeReplacer()))).catch(e =>
+                console.warn("IDB preset delete error", e)
+            );
             addToast('info', 'Preset deleted');
         } catch (e) {
             addToast('error', 'Failed to delete preset');
@@ -94,7 +101,9 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
                          const merged = [...userPresets, ...json];
                          const unique = Array.from(new Map(merged.map(item => [item.id, item])).values());
                          setUserPresets(unique);
-                         localStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(unique, safeReplacer()));
+                         set(PRESETS_STORAGE_KEY, JSON.parse(JSON.stringify(unique, safeReplacer()))).catch(e =>
+                             console.warn("IDB preset import error", e)
+                         );
                          addToast('success', `Imported ${json.length} presets`);
                     } else {
                         throw new Error("Invalid preset format");

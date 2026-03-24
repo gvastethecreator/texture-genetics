@@ -1,6 +1,10 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import * as Icons from 'lucide-react';
+
+gsap.registerPlugin(useGSAP);
 
 interface ShortcutsModalProps {
     isOpen: boolean;
@@ -8,6 +12,15 @@ interface ShortcutsModalProps {
 }
 
 export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose }) => {
+    const backdropRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(() => {
+        if (!isOpen) return;
+        gsap.from(backdropRef.current, { autoAlpha: 0, duration: 0.2 });
+        gsap.from(contentRef.current, { y: 20, autoAlpha: 0, scale: 0.95, duration: 0.3, ease: "back.out(1.7)", delay: 0.05 });
+    }, { dependencies: [isOpen] });
+
     if (!isOpen) return null;
 
     const shortcuts = [
@@ -22,8 +35,8 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
     ];
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={(e) => e.target === e.currentTarget && onClose()}>
-            <div className="bg-[#0D0D0D] border border-border w-full max-w-md rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+        <div ref={backdropRef} className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+            <div ref={contentRef} className="bg-[#0D0D0D] border border-border w-full max-w-md rounded-xl shadow-2xl flex flex-col overflow-hidden">
                 <div className="flex items-center justify-between p-5 border-b border-border bg-[#151515]">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-white/10 text-white flex items-center justify-center">

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { ChromePicker, ColorResult } from 'react-color';
+import { HexColorPicker } from 'react-colorful';
 
 interface ColorPickerProps {
     label: string;
@@ -14,10 +14,10 @@ export const ColorPicker: React.FC<ColorPickerProps> = memo(({ label, color, onC
     const [showPicker, setShowPicker] = useState(false);
     const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
     const containerRef = useRef<HTMLDivElement>(null);
-    
+
     // Internal state for smooth drag, decoupled from heavy parent updates
     const [internalColor, setInternalColor] = useState(color);
-    
+
     // Throttle Ref
     const lastUpdate = useRef(0);
 
@@ -43,10 +43,9 @@ export const ColorPicker: React.FC<ColorPickerProps> = memo(({ label, color, onC
         setShowPicker(!showPicker);
     };
 
-    const handleChange = useCallback((result: ColorResult) => {
-        const newColor = result.hex;
+    const handleChange = useCallback((newColor: string) => {
         setInternalColor(newColor);
-        
+
         const now = Date.now();
         // Throttle updates to parent to 30ms (~30fps) to avoid React tree thrashing
         if (now - lastUpdate.current > 32) {
@@ -54,12 +53,12 @@ export const ColorPicker: React.FC<ColorPickerProps> = memo(({ label, color, onC
             lastUpdate.current = now;
         }
     }, [onChange]);
-    
-    const handleCommit = useCallback((result: ColorResult) => {
+
+    const handleCommit = useCallback(() => {
         // Ensure final value is sent, bypassing throttle
-        onChange(result.hex);
+        onChange(internalColor);
         if (onCommit) onCommit();
-    }, [onChange, onCommit]);
+    }, [onChange, onCommit, internalColor]);
 
     return (
         <div className="flex flex-col gap-1.5 relative" ref={containerRef}>
@@ -72,31 +71,31 @@ export const ColorPicker: React.FC<ColorPickerProps> = memo(({ label, color, onC
                     className="w-full h-8 rounded border border-border shadow-sm flex items-center justify-between px-2 transition-all hover:border-gray-500 group"
                     style={{ backgroundColor: internalColor }}
                 >
-                   <span className="text-[10px] font-mono bg-black/50 text-white px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                       {internalColor.toUpperCase()}
-                   </span>
+                    <span className="text-[10px] font-mono bg-black/50 text-white px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                        {internalColor.toUpperCase()}
+                    </span>
                 </button>
             </div>
 
             {showPicker && createPortal(
                 <>
-                    <div 
-                        className="fixed inset-0 z-[9998]" 
+                    <div
+                        className="fixed inset-0 z-[9998]"
                         onClick={() => {
                             setShowPicker(false);
                             if (onCommit) onCommit();
-                        }} 
+                        }}
                     />
-                    <div 
+                    <div
                         className="fixed z-[9999] shadow-2xl animate-in fade-in zoom-in-95 origin-top-left"
                         style={{ top: pickerPos.top, left: pickerPos.left }}
                         onMouseDown={(e) => e.stopPropagation()}
+                        onMouseUp={handleCommit}
+                        onTouchEnd={handleCommit}
                     >
-                        <ChromePicker 
-                            color={internalColor} 
+                        <HexColorPicker
+                            color={internalColor}
                             onChange={handleChange}
-                            onChangeComplete={handleCommit}
-                            disableAlpha={true} 
                         />
                     </div>
                 </>,

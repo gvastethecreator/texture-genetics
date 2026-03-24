@@ -1,9 +1,13 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import * as Icons from 'lucide-react';
 import { AppState } from '../../core/types/types';
 import { getFragmentShader } from '../../lib/glsl/shaderBuilder';
 import { copyToClipboard } from '../../shared/utils/exportUtils';
+
+gsap.registerPlugin(useGSAP);
 
 interface CodeViewerModalProps {
     isOpen: boolean;
@@ -14,12 +18,20 @@ interface CodeViewerModalProps {
 export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClose, state }) => {
     const [code, setCode] = useState('');
     const [copied, setCopied] = useState(false);
+    const backdropRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (isOpen) {
             setCode(getFragmentShader(state));
         }
     }, [isOpen, state]);
+
+    useGSAP(() => {
+        if (!isOpen) return;
+        gsap.from(backdropRef.current, { autoAlpha: 0, duration: 0.2 });
+        gsap.from(contentRef.current, { y: 20, autoAlpha: 0, scale: 0.95, duration: 0.3, ease: "back.out(1.7)", delay: 0.05 });
+    }, { dependencies: [isOpen] });
 
     const handleCopy = async () => {
         await copyToClipboard(code);
@@ -34,15 +46,15 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
         const keywords = /\b(float|vec2|vec3|vec4|mat2|int|bool|void|return|if|else|for|uniform|varying|precision|highp|define|ifdef|endif)\b/g;
         const functions = /\b(sin|cos|tan|abs|max|min|pow|clamp|mix|smoothstep|length|distance|dot|cross|normalize|fract|floor|mod|sqrt|texture2D)\b/g;
         const numbers = /\b\d+(\.\d+)?\b/g;
-        
+
         const lines = src.split('\n');
-        
+
         return lines.map((line, i) => {
             let html = line
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
-            
+
             // Comment pass first to avoid coloring inside comments
             if (html.trim().startsWith('//')) {
                 return <div key={i} className="table-row"><span className="table-cell text-right pr-4 text-gray-700 select-none text-[10px] w-8">{i + 1}</span><span className="table-cell text-gray-500 italic">{html}</span></div>;
@@ -63,9 +75,9 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={(e) => e.target === e.currentTarget && onClose()}>
-            <div className="bg-[#0D0D0D] border border-border w-full max-w-4xl h-[80vh] rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                
+        <div ref={backdropRef} className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+            <div ref={contentRef} className="bg-[#0D0D0D] border border-border w-full max-w-4xl h-[80vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
+
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-border bg-[#151515]">
                     <div className="flex items-center gap-3">
@@ -78,7 +90,7 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button 
+                        <button
                             onClick={handleCopy}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-bold transition-all ${copied ? 'bg-green-900/50 text-green-400 border border-green-500/50' : 'bg-surface border border-white/10 text-gray-300 hover:bg-white/10'}`}
                         >

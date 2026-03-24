@@ -14,7 +14,7 @@ describe('StatusBar', () => {
     it('renders export format', () => {
         const state = mockAppState();
         render(<StatusBar state={state} />);
-        expect(screen.getByText('PNG')).toBeInTheDocument();
+        expect(screen.getByText('png')).toBeInTheDocument();
     });
 
     it('shows LIVE when animating', () => {

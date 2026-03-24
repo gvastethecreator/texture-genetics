@@ -1,7 +1,11 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { CheckCircle, XCircle, Info, X } from 'lucide-react';
 import { ToastMessage } from '../../core/types/types';
+
+gsap.registerPlugin(useGSAP);
 
 interface ToastProps {
     toasts: ToastMessage[];
@@ -19,8 +23,29 @@ export const ToastContainer: React.FC<ToastProps> = ({ toasts, onRemove }) => {
 };
 
 const ToastItem: React.FC<{ toast: ToastMessage; onRemove: (id: string) => void }> = ({ toast, onRemove }) => {
+    const itemRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(() => {
+        gsap.from(itemRef.current, {
+            y: 20,
+            autoAlpha: 0,
+            scale: 0.95,
+            duration: 0.3,
+            ease: "back.out(1.7)",
+        });
+    }, { scope: itemRef });
+
     useEffect(() => {
-        const timer = setTimeout(() => onRemove(toast.id), 4000);
+        const timer = setTimeout(() => {
+            gsap.to(itemRef.current, {
+                y: -10,
+                autoAlpha: 0,
+                scale: 0.95,
+                duration: 0.2,
+                ease: "power2.in",
+                onComplete: () => onRemove(toast.id),
+            });
+        }, 3700);
         return () => clearTimeout(timer);
     }, [toast.id, onRemove]);
 
@@ -37,7 +62,7 @@ const ToastItem: React.FC<{ toast: ToastMessage; onRemove: (id: string) => void 
     };
 
     return (
-        <div className={`pointer-events-auto flex items-center gap-3 p-3 rounded-lg border shadow-lg backdrop-blur-md animate-in slide-in-from-bottom-5 fade-in duration-300 ${bgColors[toast.type]}`}>
+        <div ref={itemRef} className={`pointer-events-auto flex items-center gap-3 p-3 rounded-lg border shadow-lg backdrop-blur-md ${bgColors[toast.type]}`} style={{ visibility: 'hidden' }}>
             {icons[toast.type]}
             <p className="flex-1 text-xs font-medium text-gray-200">{toast.message}</p>
             <button onClick={() => onRemove(toast.id)} className="text-gray-500 hover:text-white transition-colors">

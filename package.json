@@ -19,6 +19,8 @@
     "clean": "rm -rf dist logs coverage .vite node_modules/.vite"
   },
   "dependencies": {
+    "@fontsource-variable/archivo": "^5.2.8",
+    "@fontsource-variable/fira-code": "^5.2.7",
     "@gsap/react": "^2.1.2",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
@@ -30,7 +32,7 @@
     "modern-gif": "^2.0.4",
     "postprocessing": "^6.38.0",
     "react": "^19.1.0",
-    "react-color": "^2.19.3",
+    "react-colorful": "^5.6.1",
     "react-dom": "^19.1.0",
     "three": "^0.182.0"
   },
@@ -40,7 +42,6 @@
     "@testing-library/react": "^16.3.0",
     "@types/node": "^22.14.0",
     "@types/react": "^19.1.0",
-    "@types/react-color": "^3.0.13",
     "@types/react-dom": "^19.1.0",
     "@types/three": "^0.183.1",
     "@vitejs/plugin-react": "^5.0.0",

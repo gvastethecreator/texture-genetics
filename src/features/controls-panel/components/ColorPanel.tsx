@@ -1,7 +1,7 @@
 
 import React, { memo, useState, useRef, useEffect } from 'react';
 import * as Icons from 'lucide-react';
-import { ChromePicker } from 'react-color';
+import { HexColorPicker } from 'react-colorful';
 import { AppState, AnimationConfig, PaletteColor } from '../../../core/types/types';
 import { ControlSection, Label, Slider, ActionButton, Toggle } from '../../../shared/ui/Elements';
 import { ColorPicker } from '../../../shared/ui/ColorPicker';
@@ -10,7 +10,7 @@ interface ColorPanelProps {
     state: AppState;
     onChangeParams: (p: Partial<AppState['params']>) => void;
     updateStateGroup: <K extends keyof AppState>(key: K, values: Partial<AppState[K]>) => void;
-    updateBalance: (key: keyof AppState['colorBalance'], val: number | object, channel?: 'r'|'g'|'b') => void;
+    updateBalance: (key: keyof AppState['colorBalance'], val: number | object, channel?: 'r' | 'g' | 'b') => void;
     onUpdateAnim?: (key: string, config: AnimationConfig) => void;
     onCommit: () => void;
     onRandom: () => void;
@@ -35,7 +35,7 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
     const [activeTonePicker, setActiveTonePicker] = useState<keyof AppState['colorBalance'] | null>(null);
     const pickerRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const _update = onUpdateAnim || ((k: string, c: AnimationConfig) => {});
+    const _update = onUpdateAnim || ((k: string, c: AnimationConfig) => { });
 
     // Fallback if palette doesn't exist yet (Legacy state)
     const palette = state.params.palette || [
@@ -73,9 +73,9 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-          if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
-            setActiveTonePicker(null);
-          }
+            if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+                setActiveTonePicker(null);
+            }
         }
         if (activeTonePicker) document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -88,8 +88,8 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
             reader.onload = (event) => {
                 if (event.target?.result) {
                     updateStateGroup('imageAlpha', {
-                            maskTexture: event.target.result as string,
-                            maskEnabled: true
+                        maskTexture: event.target.result as string,
+                        maskEnabled: true
                     });
                 }
             };
@@ -101,14 +101,14 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
 
     return (
         <ControlSection title="Color Palette" icon={Icons.Palette} color="#F59E0B">
-            
+
             {/* --- PALETTE EDITOR --- */}
             <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                     <Label label="Active Colors" />
                     <div className="flex gap-2 items-center">
                         <span className="text-[9px] text-gray-500 font-mono">{palette.filter(p => p.enabled).length} Active</span>
-                        <button 
+                        <button
                             onClick={onRandom}
                             className="text-[9px] text-gray-500 hover:text-white px-2 py-0.5 bg-white/5 rounded border border-white/10 transition-colors flex items-center gap-1"
                             title="Random Palette"
@@ -117,19 +117,19 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
                         </button>
                     </div>
                 </div>
-                
+
                 <div className="grid grid-cols-4 gap-2 mb-2">
                     {palette.map((p, i) => (
                         <div key={i} className={`relative group p-1 rounded border transition-all duration-200 ${p.enabled ? 'bg-white/5 border-white/20' : 'bg-black/20 border-white/5 opacity-60'}`}>
                             <div className="mb-1">
-                                <ColorPicker 
+                                <ColorPicker
                                     label=""
-                                    color={p.color} 
-                                    onChange={(c) => updatePalette(i, { color: c })} 
+                                    color={p.color}
+                                    onChange={(c) => updatePalette(i, { color: c })}
                                     onCommit={handlePaletteCommit}
                                 />
                             </div>
-                            <button 
+                            <button
                                 onClick={() => {
                                     updatePalette(i, { enabled: !p.enabled });
                                     handlePaletteCommit();
@@ -138,10 +138,10 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
                             >
                                 {p.enabled ? 'ON' : 'OFF'}
                             </button>
-                            
+
                             {/* Index Badge */}
                             <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#111] border border-[#333] rounded-full flex items-center justify-center text-[7px] text-gray-500 pointer-events-none">
-                                {i+1}
+                                {i + 1}
                             </div>
                         </div>
                     ))}
@@ -149,20 +149,20 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
 
                 {/* Gradient Preview Bar */}
                 <div className="h-3 w-full rounded border border-white/10 mt-2 overflow-hidden relative">
-                    <div 
+                    <div
                         className="absolute inset-0"
                         style={{
                             background: `linear-gradient(to right, ${palette.filter(p => p.enabled).map(p => p.color).join(', ')})`
                         }}
                     />
-                    {palette.filter(p=>p.enabled).length < 2 && (
+                    {palette.filter(p => p.enabled).length < 2 && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-[8px] text-red-400 font-mono">
                             Need 2+ Colors
                         </div>
                     )}
                 </div>
             </div>
-            
+
             <div className="mb-4 pt-2 border-t border-white/5">
                 <Label label="Quick Presets" />
                 <div className="grid grid-cols-4 gap-1.5 mt-1">
@@ -173,9 +173,9 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
                             className="h-6 w-full rounded overflow-hidden relative group shadow-sm border border-white/5 hover:border-white/20 transition-all active:scale-95"
                             title={`Apply ${p.name}`}
                         >
-                            <div 
-                                className="absolute inset-0" 
-                                style={{ background: `linear-gradient(to right, ${p.colors.join(', ')})` }} 
+                            <div
+                                className="absolute inset-0"
+                                style={{ background: `linear-gradient(to right, ${p.colors.join(', ')})` }}
                             />
                         </button>
                     ))}
@@ -185,54 +185,54 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
             <div className="space-y-3 pt-3 border-t border-white/5 mb-4">
                 <div>
                     <Label label="Hue Shift" />
-                    <Slider 
-                        min={-0.5} max={0.5} step={0.01} 
-                        value={state.colorBalance.hue} 
-                        onChange={(v) => updateBalance('hue', v)} 
+                    <Slider
+                        min={-0.5} max={0.5} step={0.01}
+                        value={state.colorBalance.hue}
+                        onChange={(v) => updateBalance('hue', v)}
                         onCommit={onCommit}
                         animConfig={state.paramAnimations['colorBalance.hue']}
-                        onAnimChange={(c) => _update('colorBalance.hue', c)} 
+                        onAnimChange={(c) => _update('colorBalance.hue', c)}
                     />
                 </div>
                 <div>
                     <Label label="Saturation" />
-                    <Slider 
-                        min={-1} max={1} step={0.01} 
-                        value={state.colorBalance.saturation} 
-                        onChange={(v) => updateBalance('saturation', v)} 
+                    <Slider
+                        min={-1} max={1} step={0.01}
+                        value={state.colorBalance.saturation}
+                        onChange={(v) => updateBalance('saturation', v)}
                         onCommit={onCommit}
                         animConfig={state.paramAnimations['colorBalance.saturation']}
-                        onAnimChange={(c) => _update('colorBalance.saturation', c)} 
+                        onAnimChange={(c) => _update('colorBalance.saturation', c)}
                     />
                 </div>
                 <div>
                     <Label label="Brightness" />
-                    <Slider 
-                        min={-1} max={1} step={0.01} 
-                        value={state.colorBalance.brightness} 
-                        onChange={(v) => updateBalance('brightness', v)} 
+                    <Slider
+                        min={-1} max={1} step={0.01}
+                        value={state.colorBalance.brightness}
+                        onChange={(v) => updateBalance('brightness', v)}
                         onCommit={onCommit}
                         animConfig={state.paramAnimations['colorBalance.brightness']}
-                        onAnimChange={(c) => _update('colorBalance.brightness', c)} 
+                        onAnimChange={(c) => _update('colorBalance.brightness', c)}
                     />
                 </div>
                 <div>
                     <Label label="Contrast" />
-                    <Slider 
-                        min={-1} max={2} step={0.01} 
-                        value={state.colorBalance.contrast} 
-                        onChange={(v) => updateBalance('contrast', v)} 
+                    <Slider
+                        min={-1} max={2} step={0.01}
+                        value={state.colorBalance.contrast}
+                        onChange={(v) => updateBalance('contrast', v)}
                         onCommit={onCommit}
                         animConfig={state.paramAnimations['colorBalance.contrast']}
-                        onAnimChange={(c) => _update('colorBalance.contrast', c)} 
+                        onAnimChange={(c) => _update('colorBalance.contrast', c)}
                     />
                 </div>
                 <div>
                     <Label label="Cycle Speed" />
-                    <Slider 
-                        min={0} max={2.0} step={0.1} 
-                        value={state.colorBalance.cycleSpeed} 
-                        onChange={(v) => updateBalance('cycleSpeed', v)} 
+                    <Slider
+                        min={0} max={2.0} step={0.1}
+                        value={state.colorBalance.cycleSpeed}
+                        onChange={(v) => updateBalance('cycleSpeed', v)}
                         onCommit={onCommit}
                         animConfig={state.paramAnimations['colorBalance.cycleSpeed']}
                         onAnimChange={(c) => _update('colorBalance.cycleSpeed', c)}
@@ -247,14 +247,14 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
                     const g = Math.round((currentVal.g + 0.5) * 255);
                     const b = Math.round((currentVal.b + 0.5) * 255);
                     const isNeutral = currentVal.r === 0 && currentVal.g === 0 && currentVal.b === 0;
-                    
+
                     return (
                         <div key={tone}>
                             <div className="flex justify-between items-center mb-1">
                                 <div className="text-[9px] text-gray-500 uppercase font-bold tracking-wider">{tone} Tint</div>
                                 <div className="flex gap-2">
                                     {!isNeutral && (
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 updateBalance(tone, { r: 0, g: 0, b: 0 });
                                                 onCommit();
@@ -266,7 +266,7 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
                                         </button>
                                     )}
                                     <div className="relative">
-                                        <button 
+                                        <button
                                             onClick={() => setActiveTonePicker(activeTonePicker === tone ? null : tone)}
                                             className="w-20 h-6 rounded border border-border shadow-sm flex items-center justify-center gap-2 hover:border-gray-500 transition-colors"
                                             style={{ backgroundColor: `rgb(${r}, ${g}, ${b})` }}
@@ -278,13 +278,14 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(({ state, onChangePara
                                         </button>
                                         {activeTonePicker === tone && (
                                             <div className="absolute right-0 bottom-full mb-2 z-50" ref={pickerRef}>
-                                                <ChromePicker 
-                                                    color={{ r, g, b }}
-                                                    onChange={(color) => {
-                                                        updateBalance(tone, { r: color.rgb.r/255 - 0.5, g: color.rgb.g/255 - 0.5, b: color.rgb.b/255 - 0.5 });
+                                                <HexColorPicker
+                                                    color={`#${[r, g, b].map(c => c.toString(16).padStart(2, '0')).join('')}`}
+                                                    onChange={(hex) => {
+                                                        const pr = parseInt(hex.slice(1, 3), 16);
+                                                        const pg = parseInt(hex.slice(3, 5), 16);
+                                                        const pb = parseInt(hex.slice(5, 7), 16);
+                                                        updateBalance(tone, { r: pr / 255 - 0.5, g: pg / 255 - 0.5, b: pb / 255 - 0.5 });
                                                     }}
-                                                    onChangeComplete={onCommit}
-                                                    disableAlpha={true}
                                                 />
                                             </div>
                                         )}
