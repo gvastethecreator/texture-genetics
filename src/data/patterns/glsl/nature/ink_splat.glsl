@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { vec2 u=(uv-0.5)*2.0*u_scale; float d=length(u); float r=0.5+0.2*fbm(vec2(atan(u.y,u.x)*5.0,u_time)); r+=0.3*noise(u*(5.0+u_factor*10.0)+10.0)*u_factor; return clamp((1.0-smoothstep(r-0.1,r+0.1,d))*u_intensity,0.0,1.0); }

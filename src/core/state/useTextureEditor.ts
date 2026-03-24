@@ -1,5 +1,6 @@
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useRef } from 'react';
+import { AppState } from '../types/types';
 import { useAppState } from './useAppState';
 import { useHistoryStack } from './useHistoryStack';
 import { usePresetManager } from './usePresetManager';
@@ -12,12 +13,15 @@ import { useToastManager } from './useToastManager';
  */
 export const useTextureEditor = () => {
     const { toasts, addToast, removeToast } = useToastManager();
+
+    // Ref-based callback registration to avoid mutable action objects
+    const historyCallbackRef = useRef<(s: AppState) => void>(() => {});
     
     const { 
         state, 
         actions: stateActions,
         isBusy 
-    } = useAppState({ onStateChangeForHistory: () => {} });
+    } = useAppState({ onStateChangeForHistory: (s: AppState) => historyCallbackRef.current(s) });
 
     // History stack tracks the AppState
     const { 
@@ -26,12 +30,11 @@ export const useTextureEditor = () => {
         updateCurrentState,
         pushToHistory,
         resetHistory,
-        // We expose raw undo/redo to wrap them
         historyControl 
     } = useHistoryStack(state);
     
-    // Wire up the callback
-    stateActions.onStateChangeForHistory = pushToHistory;
+    // Wire up callback via ref (safe with StrictMode)
+    historyCallbackRef.current = pushToHistory;
 
     // --- HISTORY SYNCHRONIZATION ---
     // When Undo/Redo happens, the 'currentState' (from history) updates.

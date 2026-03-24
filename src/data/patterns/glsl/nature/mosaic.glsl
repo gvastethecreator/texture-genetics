@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { vec2 u = uv * u_scale * 10.0; vec2 i = floor(u); vec2 f = fract(u); vec2 c = i + vec2(random(i), random(i*1.2)); float id = random(c); float col = smoothstep(0.0, 0.5 + u_factor * 0.5, id); float border = step(0.1 * (1.0-u_detail), min(f.x, f.y)); return pow(clamp(col * border, 0.0, 1.0), u_intensity); }

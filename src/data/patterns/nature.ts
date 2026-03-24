@@ -1,26 +1,37 @@
+import cloudGlsl from './glsl/nature/cloud.glsl?raw';
+import smokeGlsl from './glsl/nature/smoke.glsl?raw';
+import waterGlsl from './glsl/nature/water.glsl?raw';
+import snowGlsl from './glsl/nature/snow.glsl?raw';
+import rainGlsl from './glsl/nature/rain.glsl?raw';
+import bubblesGlsl from './glsl/nature/bubbles.glsl?raw';
+import causticsGlsl from './glsl/nature/caustics.glsl?raw';
+import inkSplatGlsl from './glsl/nature/ink_splat.glsl?raw';
+import mosaicGlsl from './glsl/nature/mosaic.glsl?raw';
+import crystalsGlsl from './glsl/nature/crystals.glsl?raw';
+import seaWavesGlsl from './glsl/nature/sea_waves.glsl?raw';
 
 import { TextureType, PatternDefinition } from '../../core/types/types';
 
 export const NATURE: Partial<Record<TextureType, PatternDefinition>> = {
-    [TextureType.CLOUD]: { code: `float getPattern(vec2 uv) { vec2 u=uv*u_scale; float n=fbm(u+u_time*0.1); float n2=fbm(u*2.0-u_time*0.05); float coverage = 0.2 + (u_factor - 0.5) + (u_p1 * 0.5); float softness = 0.6 + (u_factor - 0.5) + (u_p2 * 0.5); float f=smoothstep(coverage, softness, mix(n,n2,0.5)); return pow(clamp(f, 0.0, 1.0),u_intensity); }`, deps: ['fbm'] },
+    [TextureType.CLOUD]: { code: cloudGlsl, deps: ['fbm']  },
     [TextureType.REALISTIC_CLOUDS]: { deps: ['fbm'], code: `float getPattern(vec2 uv) { vec2 u = uv * u_scale; float time = u_time * u_speed * 0.1; float q = fbm(u * 1.1 * 0.5); float r = 0.0; vec2 uv2 = u * 1.1; uv2 -= q - time; float weight = 0.8; mat2 m = mat2(1.6, 1.2, -1.2, 1.6); for(int i=0; i<5; i++) { r += abs(weight * noise(uv2)); uv2 = m * uv2 + time; weight *= 0.7; } float f = 0.0; uv2 = u * 1.1; uv2 -= q - time; weight = 0.7; for(int i=0; i<5; i++) { f += weight * noise(uv2); uv2 = m * uv2 + time; weight *= 0.6; } f *= r + f; float cloud = (0.2 + u_factor * 0.5) + 8.0 * f * r; return clamp(cloud * u_intensity * 0.1, 0.0, 1.0); }` },
-    [TextureType.SMOKE]: { code: `float getPattern(vec2 uv) { vec2 u=uv*u_scale; vec2 q=vec2(fbm(u),fbm(u+5.2)); float f=fbm(u+q*u_factor*2.0+u_time*0.2)*0.5+0.5; return pow(clamp(f, 0.0, 1.0),u_intensity); }`, deps: ['fbm'] },
+    [TextureType.SMOKE]: { code: smokeGlsl, deps: ['fbm']  },
     
-    [TextureType.WATER]: { code: `float getPattern(vec2 uv) { vec2 p=uv*u_scale*3.0; float d=0.3*u_factor; float spd = u_speed; for(int i=1;i<5;i++){ p.x+=d/float(i)*sin(float(i)*3.0*p.y+u_time*spd*u_p4); p.y+=d/float(i)*cos(float(i)*3.0*p.x+u_time*spd*u_p5); } float v = 0.5+0.5*sin(p.x+p.y); if(u_p7 > 0.0) v = mix(v, step(0.8 - u_p7 * 0.3, v), 0.5); if(u_p2 > 0.0) v = pow(max(0.0, v), 1.0 + u_p2); return pow(clamp(v, 0.0, 1.0),u_intensity); }` },
+    [TextureType.WATER]: { code: waterGlsl  },
     
-    [TextureType.SNOW]: { code: `float getPattern(vec2 uv) { vec2 u=uv*u_scale; float s=0.0; float windX = u_p1 * 2.0; float windY = 0.5 + u_p2; for(int i=1;i<5;i++){ float fi=float(i); vec2 q=u*fi; q.y+=u_time*(windY+0.5/fi); q.x+=u_time*windX + sin(u_time+q.y)*0.5; vec2 f=fract(q); if(random(floor(q))>0.98-u_factor*0.1) s+=smoothstep(0.5,0.0,length(f-0.5))/fi; } return clamp(s*u_intensity,0.0,1.0); }` },
+    [TextureType.SNOW]: { code: snowGlsl  },
     
-    [TextureType.RAIN]: { code: `float getPattern(vec2 uv) { vec2 u=uv*u_scale*vec2(20.0,1.0); float wind = u_p5 * 2.0; u.x += u.y * wind; u.y+=u_time*(5.0+u_speed*5.0); float r=0.0; if(random(floor(u))>0.95-u_factor*0.2) { vec2 f=fract(u); r=(1.0-f.y)*(smoothstep(0.0,0.2,f.x)-smoothstep(0.8,1.0,f.x)); if(u_p6 > 0.0) r *= 1.0 + u_p6 * sin(u_time * 10.0 + f.y * 10.0); } return clamp(r*u_intensity,0.0,1.0); }` },
+    [TextureType.RAIN]: { code: rainGlsl  },
     
-    [TextureType.BUBBLES]: { code: `float getPattern(vec2 uv) { vec2 u=uv*u_scale*5.0; u.y+=u_time*(1.0+u_p4); if(u_p5 > 0.0) u.x += sin(u.y * 2.0 + u_time) * u_p5 * 0.2; vec2 f=fract(u); float b=0.0; if(random(floor(u))>0.9-u_factor*0.3){ vec2 c=vec2(0.5)+vec2(sin(u_time*5.0+random(floor(u))*10.0)*0.2,0.0); float d=length(f-c); float sharp = 0.35 - u_p2 * 0.1; b=smoothstep(0.4,sharp,d)-smoothstep(0.3,0.25,d); if(u_p6 > 0.0) b += smoothstep(0.1,0.0,distance(f,c-0.1))*u_p6; } return clamp(b*u_intensity,0.0,1.0); }` },
+    [TextureType.BUBBLES]: { code: bubblesGlsl  },
     
-    [TextureType.CAUSTICS]: { code: `float getPattern(vec2 uv) { vec2 u=uv*u_scale*5.0; float t=u_time*0.5*u_speed; vec2 i=u; float c=1.0; float k=0.05 + u_p3 * 0.1; for(int n=0;n<4;n++){ float t2=t*(1.0-(3.0/float(n+1))); i=u+vec2(cos(t2-i.x)+sin(t2+i.y),sin(t2-i.y)+cos(t2+i.x)); c+=1.0/max(0.01, length(vec2(u.x/(sin(i.x+t2)/k),u.y/(cos(i.y+t2)/k)))); } c/=4.0; float val = 1.5-sqrt(c); if(u_p2 > 0.0) val = pow(max(0.0, val), 1.0 + u_p2 * 2.0); return pow(clamp(val,0.0,1.0),u_intensity*(1.0+u_factor)); }` },
+    [TextureType.CAUSTICS]: { code: causticsGlsl  },
     
-    [TextureType.INK_SPLAT]: { code: `float getPattern(vec2 uv) { vec2 u=(uv-0.5)*2.0*u_scale; float d=length(u); float r=0.5+0.2*fbm(vec2(atan(u.y,u.x)*5.0,u_time)); r+=0.3*noise(u*(5.0+u_factor*10.0)+10.0)*u_factor; return clamp((1.0-smoothstep(r-0.1,r+0.1,d))*u_intensity,0.0,1.0); }`, deps: ['fbm'] },
-    [TextureType.MOSAIC]: { code: `float getPattern(vec2 uv) { vec2 u = uv * u_scale * 10.0; vec2 i = floor(u); vec2 f = fract(u); vec2 c = i + vec2(random(i), random(i*1.2)); float id = random(c); float col = smoothstep(0.0, 0.5 + u_factor * 0.5, id); float border = step(0.1 * (1.0-u_detail), min(f.x, f.y)); return pow(clamp(col * border, 0.0, 1.0), u_intensity); }` },
-    [TextureType.CRYSTALS]: { code: `float getPattern(vec2 uv) { vec2 u = uv * u_scale * 4.0; vec2 n = floor(u); vec2 f = fract(u); float m_dist = 1.0; vec2 m_point = vec2(0.0); for(int j=-1; j<=1; j++) { for(int i=-1; i<=1; i++) { vec2 g = vec2(float(i),float(j)); vec2 o = vec2(random(n + g)); o = 0.5 + 0.5*sin(u_time*0.5 + 6.2831*o); vec2 r = g + o - f; float d = dot(r,r); if( d<m_dist ) { m_dist = d; m_point = n + g + o; } } } float val = random(m_point); float edge = smoothstep(0.0, 0.1 * (1.0-u_factor), m_dist); return pow(clamp(val * (1.0 - edge * u_detail), 0.0, 1.0), u_intensity); }` },
+    [TextureType.INK_SPLAT]: { code: inkSplatGlsl, deps: ['fbm']  },
+    [TextureType.MOSAIC]: { code: mosaicGlsl  },
+    [TextureType.CRYSTALS]: { code: crystalsGlsl  },
     
-    [TextureType.SEA_WAVES]: { code: `float sea_octave(vec2 uv, float choppy) { uv += noise(uv); vec2 wv = 1.0-abs(sin(uv)); vec2 swv = abs(cos(uv)); wv = mix(wv,swv,wv); return pow(max(0.0, 1.0-pow(max(0.0, wv.x * wv.y),0.65)),choppy); } float getPattern(vec2 uv) { float freq = 0.5 * u_scale; float amp = 0.6; float choppy = 4.0 * u_factor; vec2 p = uv * 5.0; float h = 0.0; float t = u_time * u_speed; mat2 m = mat2(1.6,1.2,-1.2,1.6); for(int i = 0; i < 4; i++) { float d = sea_octave((p+t)*freq, choppy); d += sea_octave((p-t)*freq, choppy); h += d * amp; p *= m; freq *= 1.9; amp *= 0.22; choppy = mix(choppy,1.0,0.2); } if(u_p2 > 0.0) h = h * (1.0 + u_p2 * 2.0); return pow(clamp(h * 0.5, 0.0, 1.0), u_intensity); }` },
+    [TextureType.SEA_WAVES]: { code: seaWavesGlsl  },
     
     [TextureType.FROST_PATTERN]: { deps: ['sdf'], code: `float cylinderDist(vec3 p, float spacing) { p.z = mod(p.z - spacing, spacing) - 0.5 * spacing; p.x = abs(p.x); return length(p.xz - vec2(2.0, 0.0)) - 0.75; } float getPattern(vec2 uv) { vec2 u = (uv * 2.0 - 1.0) + vec2(-1.68, 0.9); float v = 50.0 * length(max(abs(u) - 0.05, 0.0)); float f = min(v, 1.0 - v) * 2.0 * fract(atan(u.y, u.x)/3.14159 - u_time * 0.3); vec3 ro = vec3(0.0); vec3 rd = normalize(vec3((uv - 0.5) * 2.0, 1.0)); float s = 1.0; float d = 0.0; float accum = 0.0; for(int i=0; i<40; i++) { if (s < 0.001 || d > 20.0) break; vec3 p = ro + rd * d; p.x -= 0.75; p.xy *= rot2D(length(p.xy - p.zy) * 0.3 * u_p1); p.z += sin(p.y + u_time); p.x = mix(abs(p.x), p.x, 0.01); p.z += u_time * 5.0 * u_speed; float scene = cylinderDist(p, 0.9 + u_factor); s = abs(scene) * 0.3; d += s; if(s > 0.001) accum += 0.002 / s; } return mix(clamp(f,0.0,1.0), clamp(accum * u_intensity, 0.0, 1.0), 0.8); }` },
 };

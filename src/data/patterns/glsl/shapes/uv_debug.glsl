@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { return 0.0; }

@@ -205,7 +205,7 @@ export const useAppState = (props: { onStateChangeForHistory: (s: AppState) => v
         isBusy: false,
         actions: {
             updateState,
-            replaceState, // Exposed
+            replaceState,
             updateParams,
             updateParamAnimation,
             selectTexture,
@@ -215,7 +215,6 @@ export const useAppState = (props: { onStateChangeForHistory: (s: AppState) => v
             randomizePatternSelection,
             loadPreset,
             resetState,
-            onStateChangeForHistory: props.onStateChangeForHistory 
         }
     };
 };

@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { vec2 u=(uv-0.5)*u_scale; float g=0.2/max(0.001, length(u)); for(int i=1;i<5;i++) g+=0.05/max(0.001, distance(u,-u*0.5*float(i)))*u_factor; return pow(clamp(g,0.0,1.0),u_intensity); }

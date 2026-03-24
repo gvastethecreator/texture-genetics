@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { vec2 u = (uv - 0.5) * 2.0; float t = u_time * u_speed; float n = noise(u * u_scale * 2.0 + t); for(float i=0.0; i<10.0; i++) { vec2 p = vec2(sin(t * 2.0 + i) * 0.5, cos(t * 1.5 - i) * 0.5); float dist = distance(u, p); float r = 0.1 + sin(i) * 0.05 * u_factor; if (dist < r) n = noise(u * 10.0 + i); } return clamp(n, 0.0, 1.0) * u_intensity; }

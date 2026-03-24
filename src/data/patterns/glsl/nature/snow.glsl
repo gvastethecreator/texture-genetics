@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { vec2 u=uv*u_scale; float s=0.0; float windX = u_p1 * 2.0; float windY = 0.5 + u_p2; for(int i=1;i<5;i++){ float fi=float(i); vec2 q=u*fi; q.y+=u_time*(windY+0.5/fi); q.x+=u_time*windX + sin(u_time+q.y)*0.5; vec2 f=fract(q); if(random(floor(q))>0.98-u_factor*0.1) s+=smoothstep(0.5,0.0,length(f-0.5))/fi; } return clamp(s*u_intensity,0.0,1.0); }

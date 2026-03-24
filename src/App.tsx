@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, lazy, Suspense } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -10,18 +10,20 @@ import { useHotkeys } from './shared/hooks/useHotkeys';
 
 gsap.registerPlugin(useGSAP);
 
-// Components
+// Eager components (always visible)
 import { Header } from './features/ui/Header';
 import { Controls } from './features/controls-panel/Controls';
 import { RightControls } from './features/controls-panel/RightControls';
 import { TextureCanvas } from './features/texture-canvas/TextureCanvas';
 import { StatusBar } from './features/status-bar/StatusBar';
-import { SettingsModal } from './features/settings-modal/SettingsModal';
-import { CodeViewerModal } from './features/ui/CodeViewerModal';
-import { ShortcutsModal } from './features/ui/ShortcutsModal';
 import { DragDropOverlay } from './shared/ui/DragDropOverlay';
 import { ToastContainer } from './shared/ui/Toast';
 import { ErrorBoundary } from './shared/components/ErrorBoundary';
+
+// Lazy-loaded modals (loaded on demand)
+const SettingsModal = lazy(() => import('./features/settings-modal/SettingsModal').then(m => ({ default: m.SettingsModal })));
+const CodeViewerModal = lazy(() => import('./features/ui/CodeViewerModal').then(m => ({ default: m.CodeViewerModal })));
+const ShortcutsModal = lazy(() => import('./features/ui/ShortcutsModal').then(m => ({ default: m.ShortcutsModal })));
 
 export default function App() {
     const { state, history, actions, userPresets, isBusy, toasts } = useTextureEditor();
@@ -202,25 +204,33 @@ export default function App() {
 
                 </div>
 
-                {/* MODALS & OVERLAYS */}
-                <SettingsModal
-                    isOpen={state.isSettingsOpen}
-                    onClose={() => actions.updateState({ isSettingsOpen: false })}
-                    state={state}
-                    updateState={actions.updateState}
-                    updateSettings={(s) => actions.updateState({ settings: { ...state.settings, ...s } })}
-                />
+                {/* MODALS & OVERLAYS (lazy-loaded) */}
+                <Suspense fallback={null}>
+                    {state.isSettingsOpen && (
+                        <SettingsModal
+                            isOpen={state.isSettingsOpen}
+                            onClose={() => actions.updateState({ isSettingsOpen: false })}
+                            state={state}
+                            updateState={actions.updateState}
+                            updateSettings={(s) => actions.updateState({ settings: { ...state.settings, ...s } })}
+                        />
+                    )}
 
-                <CodeViewerModal
-                    isOpen={state.isCodeOpen}
-                    onClose={() => actions.updateState({ isCodeOpen: false })}
-                    state={state}
-                />
+                    {state.isCodeOpen && (
+                        <CodeViewerModal
+                            isOpen={state.isCodeOpen}
+                            onClose={() => actions.updateState({ isCodeOpen: false })}
+                            state={state}
+                        />
+                    )}
 
-                <ShortcutsModal
-                    isOpen={state.isShortcutsOpen}
-                    onClose={() => actions.updateState({ isShortcutsOpen: false })}
-                />
+                    {state.isShortcutsOpen && (
+                        <ShortcutsModal
+                            isOpen={state.isShortcutsOpen}
+                            onClose={() => actions.updateState({ isShortcutsOpen: false })}
+                        />
+                    )}
+                </Suspense>
 
                 <DragDropOverlay
                     onDropJson={handleDropJson}

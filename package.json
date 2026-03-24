@@ -27,6 +27,7 @@
     "idb-keyval": "^6.2.2",
     "jszip": "^3.10.1",
     "lucide-react": "^0.560.0",
+    "modern-gif": "^2.0.4",
     "postprocessing": "^6.38.0",
     "react": "^19.1.0",
     "react-color": "^2.19.3",

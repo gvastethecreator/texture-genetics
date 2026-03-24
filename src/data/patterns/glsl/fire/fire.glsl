@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { vec2 u=uv*u_scale; float t=u_time*2.0*(1.0+u_p2); vec2 q=vec2(fbm(u+vec2(0.0,t*0.2)),fbm(u+vec2(5.2,1.3+t*0.15))); float f=fbm(u+4.0*q*(1.0+u_p1)); return pow(clamp(f, 0.0, 1.0),u_intensity)*(1.0+pow(clamp(f, 0.0, 1.0),4.0)*u_factor); }

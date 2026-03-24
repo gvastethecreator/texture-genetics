@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { vec2 u=uv*u_scale*20.0; vec2 i=floor(u); float s=random(i.x)*5.0+2.0; float y=mod(u.y+u_time*s*(1.0+u_p2),20.0); float v=step(10.0,y)*random(i+floor(u_time*5.0)); v*=smoothstep(20.0,10.0,y); if(random(u.y+u_time)>1.0-(u_factor*0.2 + u_p1 * 0.5)) v=1.0; return clamp(v*u_intensity*(1.0+u_p3),0.0,1.0); }

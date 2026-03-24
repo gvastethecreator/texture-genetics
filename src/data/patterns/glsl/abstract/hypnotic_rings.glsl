@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { vec2 u = (uv - 0.5) * 2.0; float dist = length(u); float angle = atan(u.y, u.x); float s = 10.0 * u_scale; float t = u_time * (u_speed * 2.0 + 0.5); float val = sin((dist * s) + angle + cos(dist * s * u_factor) - t); val -= dist * (1.0 + 0.5 * sin(t * 1.3)); return clamp(val * 0.5 + 0.5, 0.0, 1.0) * u_intensity; }

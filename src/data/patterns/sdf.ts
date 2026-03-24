@@ -1,4 +1,5 @@
 
+
 import { TextureType, PatternDefinition } from '../../core/types/types';
 
 export const SDF_PATTERNS: Partial<Record<TextureType, PatternDefinition>> = {

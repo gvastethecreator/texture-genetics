@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { vec2 u=uv-0.5; float d=length(u); float a=atan(u.y,u.x); float flares = u_p1 > 0.0 ? sin(a * (10.0 + u_p1 * 20.0)) * 0.02 : 0.0; float c=fbm(vec2(d*5.0-u_time,a*5.0)); float spots = u_p2 > 0.0 ? smoothstep(0.5, 0.5-u_p2*0.2, c) : 1.0; return pow(clamp((0.1*u_scale + flares)/(max(0.01, d-0.1*c*u_factor)), 0.0, 1.0),u_intensity) * spots; }

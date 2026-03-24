@@ -1,15 +1,24 @@
+import flameGlsl from './glsl/fire/flame.glsl?raw';
+import fireGlsl from './glsl/fire/fire.glsl?raw';
+import solarGlsl from './glsl/fire/solar.glsl?raw';
+import sparkGlsl from './glsl/fire/spark.glsl?raw';
+import flashGlsl from './glsl/fire/flash.glsl?raw';
+import lightningGlsl from './glsl/fire/lightning.glsl?raw';
+import laserGlsl from './glsl/fire/laser.glsl?raw';
+import flareGlsl from './glsl/fire/flare.glsl?raw';
+import plasmaGlsl from './glsl/fire/plasma.glsl?raw';
 
 import { TextureType, PatternDefinition } from '../../core/types/types';
 
 export const FIRE_LIGHT: Partial<Record<TextureType, PatternDefinition>> = {
     [TextureType.COMPLEX_FIRE]: { deps: ['simplex'], code: `float noiseStack(vec3 pos, int octaves, float falloff) { float n=snoise(pos); float off=1.0; float amp=1.0; for(int i=0;i<3;i++){ if(i>=octaves)break; pos*=2.0; off*=falloff; amp*=0.5; n=(1.0-off)*n+off*snoise(pos); } return(1.0+n)*0.5; } float getPattern(vec2 uv) { vec2 u=(uv-0.5)*2.0; u.y+=0.5; u.x+=u.y*(u_p1-0.5)*2.0; u.x+=sin(u.y*10.0+u_time*5.0)*u_p9*0.05; float scale=u_scale*3.0; float rise=u_speed*(1.0+u_p5*2.0); vec3 p=vec3(u*scale,u_time*rise); float xfuel=max(0.0, 1.0-abs(u.x*2.0)); float ypart=smoothstep(1.2,0.0,u.y); xfuel*=(1.0+u_p10*0.5); float fuel=pow(max(0.0, xfuel*ypart), 1.0+u_factor*2.0); int octaves=1+int(u_p6*3.0); float n=noiseStack(p+vec3(0.0,-u_time*2.0,0.0),octaves,0.5); float turbulence=u_p3*2.0; float fire=fuel*n*(1.0+u_intensity); float core=smoothstep(0.1,0.8-u_p7*0.4,fire); fire+=core*u_p2; if(u_p8>0.0){fire*=smoothstep(0.0,0.2+u_p8*0.5,fire);} if(u_p4>0.0){float smoke=noiseStack(p*0.5+vec3(0.0,u_time,0.0),2,0.6);fire=mix(fire,smoke*0.5,u_p4*u.y);} return clamp(fire,0.0,1.0); }` },
-    [TextureType.FLAME]: { code: `float getPattern(vec2 uv) { vec2 u = uv; float wind = sin(u.y * 10.0 + u_time * 5.0) * 0.05 * u_p2; u.x += wind; float n = fbm(u * 5.0 * u_scale - vec2(0, u_time * 2.0)); float h = 1.0 - (u_p1 * 0.5); float baseW = 0.5 + u_p5 * 0.5; float shape = 1.0 - distance(vec2(u.x, u.y * h + 0.5), vec2(0.5, 1.0)); shape = smoothstep(0.0, baseW, shape); float f = shape + n * (0.2 + u_factor * 0.5); return pow(clamp(f, 0.0, 1.0), 4.0 / max(0.01, u_intensity)); }`, deps: ['fbm'] },
-    [TextureType.FIRE]: { code: `float getPattern(vec2 uv) { vec2 u=uv*u_scale; float t=u_time*2.0*(1.0+u_p2); vec2 q=vec2(fbm(u+vec2(0.0,t*0.2)),fbm(u+vec2(5.2,1.3+t*0.15))); float f=fbm(u+4.0*q*(1.0+u_p1)); return pow(clamp(f, 0.0, 1.0),u_intensity)*(1.0+pow(clamp(f, 0.0, 1.0),4.0)*u_factor); }`, deps: ['fbm'] },
-    [TextureType.SOLAR]: { code: `float getPattern(vec2 uv) { vec2 u=uv-0.5; float d=length(u); float a=atan(u.y,u.x); float flares = u_p1 > 0.0 ? sin(a * (10.0 + u_p1 * 20.0)) * 0.02 : 0.0; float c=fbm(vec2(d*5.0-u_time,a*5.0)); float spots = u_p2 > 0.0 ? smoothstep(0.5, 0.5-u_p2*0.2, c) : 1.0; return pow(clamp((0.1*u_scale + flares)/(max(0.01, d-0.1*c*u_factor)), 0.0, 1.0),u_intensity) * spots; }`, deps: ['fbm'] },
-    [TextureType.SPARK]: { code: `float getPattern(vec2 uv) { vec2 u=(uv-0.5)*u_scale; if(u_p2 > 0.0) u = rotate2d(u_time * u_p2) * u; float d=length(u); float rays = u_p1 > 0.0 ? abs(sin(atan(u.y,u.x) * (4.0 + floor(u_p1 * 10.0)))) : 1.0; float s=0.02/max(0.001, d); s *= mix(1.0, rays, u_p1); s=mix(s,s+0.005/max(0.001, abs(u.x*u.y)),u_factor); return pow(clamp(s*(0.8+0.2*noise(u*10.0+u_time*5.0)),0.0,1.0),u_intensity); }` },
-    [TextureType.FLASH]: { code: `float getPattern(vec2 uv) { vec2 u=(uv-0.5)*2.0*u_scale; float d=length(u); float v=exp(-d*d*5.0); float a=atan(u.y,u.x); v+=sin(a*20.0*u_factor+u_time*10.0)*0.1*v*u_factor; return pow(clamp(v,0.0,1.0),1.0/max(0.01, u_intensity)); }` },
-    [TextureType.LIGHTNING]: { code: `float getPattern(vec2 uv) { vec2 u=uv*u_scale; float l=0.0; float t=u_time*3.0; for(int i=0;i<3;i++){ vec2 p=u; p.x+=sin(p.y*10.0+t)*0.1; l+=0.01/max(0.001, abs(p.x-0.5)); t+=100.0; } return clamp(l*u_intensity,0.0,1.0); }` },
-    [TextureType.LASER]: { code: `float getPattern(vec2 uv) { vec2 u=uv*u_scale; if(u_p2 > 0.0) u.x += sin(u.y * 20.0 + u_time * 10.0) * 0.01 * u_p2; float b=0.05/max(0.001, abs(u.y-0.5)); float c=0.02*u_factor; float cw = 0.5 - (u_p1 * 0.2); float core=smoothstep(cw-c,cw,u.y)-smoothstep(cw,cw+c,u.y); return clamp((b*u_intensity+core*2.0)*(1.0+0.2*sin(u.x*20.0-u_time*10.0)),0.0,1.0); }` },
-    [TextureType.FLARE]: { code: `float getPattern(vec2 uv) { vec2 u=(uv-0.5)*u_scale; float g=0.2/max(0.001, length(u)); for(int i=1;i<5;i++) g+=0.05/max(0.001, distance(u,-u*0.5*float(i)))*u_factor; return pow(clamp(g,0.0,1.0),u_intensity); }` },
-    [TextureType.PLASMA]: { code: `float getPattern(vec2 uv) { vec2 p = uv * u_scale * 5.0; float v = sin(p.x + u_time); v += sin(p.y + u_time) * 0.5; v += sin(p.x + p.y + u_time) * 0.5; vec2 c = vec2(sin(u_time * 0.5), cos(u_time * 0.3)) * 2.0; float d = length(p - c); v += sin(d * u_factor * 5.0 - u_time * 2.0); return pow(clamp(v * 0.25 + 0.5, 0.0, 1.0), u_intensity); }` },
+    [TextureType.FLAME]: { code: flameGlsl, deps: ['fbm']  },
+    [TextureType.FIRE]: { code: fireGlsl, deps: ['fbm']  },
+    [TextureType.SOLAR]: { code: solarGlsl, deps: ['fbm']  },
+    [TextureType.SPARK]: { code: sparkGlsl  },
+    [TextureType.FLASH]: { code: flashGlsl  },
+    [TextureType.LIGHTNING]: { code: lightningGlsl  },
+    [TextureType.LASER]: { code: laserGlsl  },
+    [TextureType.FLARE]: { code: flareGlsl  },
+    [TextureType.PLASMA]: { code: plasmaGlsl  },
 };

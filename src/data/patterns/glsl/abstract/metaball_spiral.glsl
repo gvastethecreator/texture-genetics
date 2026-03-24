@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { vec2 u = (uv - 0.5) * 2.0; float t = u_time * u_speed; float phase = 1.1; float tho = length(u) * phase + sin(t); u += vec2(tho * cos(tho - 1.25 * t * 2.0), tho * sin(tho - 1.15 * t * 2.0)); float mbr = 0.5 + u_factor * 2.0; float mb = mbr / dot(u, u); float d = smoothstep(mb - 2.0, mb + 1.2, 1.0); return clamp(1.0 - d, 0.0, 1.0) * u_intensity; }

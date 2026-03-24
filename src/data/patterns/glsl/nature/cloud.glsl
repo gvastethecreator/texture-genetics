@@ -1,0 +1,1 @@
+float getPattern(vec2 uv) { vec2 u=uv*u_scale; float n=fbm(u+u_time*0.1); float n2=fbm(u*2.0-u_time*0.05); float coverage = 0.2 + (u_factor - 0.5) + (u_p1 * 0.5); float softness = 0.6 + (u_factor - 0.5) + (u_p2 * 0.5); float f=smoothstep(coverage, softness, mix(n,n2,0.5)); return pow(clamp(f, 0.0, 1.0),u_intensity); }
