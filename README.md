@@ -24,7 +24,7 @@
 ## 🛠️ Stack Tecnológico
 
 | Categoría | Herramienta | Versión |
-|-----------|-------------|---------|
+| --------- | ----------- | ------- |
 | Runtime | Bun | >= 1.2 |
 | Framework | React | 19.x |
 | Lenguaje | TypeScript | 5.8.x |
@@ -71,7 +71,7 @@ src/
 ## 🎮 Controles Rápidos
 
 | Acción | Atajo |
-|--------|-------|
+| ------ | ----- |
 | Rotar cámara | Click Izquierdo |
 | Zoom | Rueda del ratón |
 | Pausar/Reanudar animación | `Espacio` |
@@ -83,14 +83,25 @@ src/
 
 ```bash
 bun run dev           # Servidor de desarrollo
-bun run build         # Build de producción
-bun run test          # Tests unitarios
-bun run test:coverage # Tests con cobertura
-bun run lint          # Linting con oxlint
-bun run fmt           # Formatear código con oxfmt
-bun run typecheck     # Verificar tipos
-bun run check         # Todos los checks (lint + fmt + types)
+bun run build         # Build de producción + logs/build.log
+bun run test          # Tests unitarios + logs/test.log
+bun run test:coverage # Cobertura + logs/test-coverage.log
+bun run lint          # Linting + logs/lint.log
+bun run fmt           # Formatear código + logs/format-write.log
+bun run typecheck     # Verificar tipos + logs/typecheck.log
+bun run check         # Checks combinados + logs/check.log
 ```
+
+## 🪵 Logs y debugging
+
+Los scripts de validación escriben logs legibles en `logs/` tanto si se ejecutan desde terminal como desde las tareas de VS Code.
+
+- `build` → `logs/build.log`
+- `lint` / `lint:fix` → `logs/lint.log` / `logs/lint-fix.log`
+- `fmt` / `fmt:check` → `logs/format-write.log` / `logs/format.log`
+- `typecheck` → `logs/typecheck.log`
+- `test` / `test:coverage` → `logs/test.log` / `logs/test-coverage.log`
+- `check` → `logs/check.log`
 
 ## 📚 Documentación
 

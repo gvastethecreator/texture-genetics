@@ -16,7 +16,7 @@
         {
             "label": "📦 Build",
             "type": "shell",
-            "command": "bun run build 2>&1 | Tee-Object -FilePath logs/build.log",
+            "command": "bun run build",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -44,7 +44,7 @@
         {
             "label": "🔍 Lint",
             "type": "shell",
-            "command": "bun run lint 2>&1 | Tee-Object -FilePath logs/lint.log",
+            "command": "bun run lint",
             "group": "test",
             "problemMatcher": [
                 "$eslint-stylish"
@@ -81,7 +81,7 @@
         {
             "label": "🎨 Format Check",
             "type": "shell",
-            "command": "bun run fmt:check 2>&1 | Tee-Object -FilePath logs/format.log",
+            "command": "bun run fmt:check",
             "group": "test",
             "problemMatcher": [],
             "presentation": {
@@ -92,7 +92,7 @@
         {
             "label": "🧪 Test",
             "type": "shell",
-            "command": "bun run test 2>&1 | Tee-Object -FilePath logs/test.log",
+            "command": "bun run test",
             "group": {
                 "kind": "test",
                 "isDefault": true
@@ -118,7 +118,7 @@
         {
             "label": "📊 Test Coverage",
             "type": "shell",
-            "command": "bun run test:coverage 2>&1 | Tee-Object -FilePath logs/test-coverage.log",
+            "command": "bun run test:coverage",
             "group": "test",
             "problemMatcher": [],
             "presentation": {
@@ -129,7 +129,7 @@
         {
             "label": "✅ Typecheck",
             "type": "shell",
-            "command": "bun run typecheck 2>&1 | Tee-Object -FilePath logs/typecheck.log",
+            "command": "bun run typecheck",
             "group": "test",
             "problemMatcher": [
                 "$tsc"
@@ -142,7 +142,7 @@
         {
             "label": "✅ Full Check",
             "type": "shell",
-            "command": "bun run check 2>&1 | Tee-Object -FilePath logs/check.log",
+            "command": "bun run check",
             "group": "test",
             "problemMatcher": [],
             "presentation": {

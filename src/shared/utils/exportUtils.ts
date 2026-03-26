@@ -2,6 +2,8 @@
 import { AppState, ShaderParams } from '../../core/types/types';
 import { getFragmentShader, VERTEX_SHADER } from '../../lib/glsl/shaderBuilder';
 
+type DynamicShaderParamKey = Extract<keyof ShaderParams, `p${number}`>;
+
 /**
  * Generates a standalone HTML file containing the WebGL renderer and current shader state.
  */
@@ -26,13 +28,12 @@ export const generateStandaloneHtml = (state: AppState): string => {
     // Construct Params JS String (p1 to p15)
     let paramsJS = '';
     for (let i = 1; i <= 15; i++) {
-        const key = `p${i}` as keyof ShaderParams;
-        // @ts-ignore
+        const key = `p${i}` as DynamicShaderParamKey;
         paramsJS += `u_p${i}:{value:${state.params[key] ?? 0}},\n        `;
     }
     
     // Minified HTML/JS Template with Three.js r182
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>EffectTextureGen Export</title><style>body{margin:0;overflow:hidden;background:#000;}</style></head><body><script type="importmap">{"imports": {"three": "https://unpkg.com/three@0.182.0/build/three.module.js"}}</script><script type="module">
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>EffectTextureGen Export</title><style>body{margin:0;overflow:hidden;background:#000;}</style></head><body><script type="importmap">{"imports": {"three": "https://unpkg.com/three@0.183.2/build/three.module.js"}}</script><script type="module">
     import * as THREE from 'three';
 
     const scene=new THREE.Scene();

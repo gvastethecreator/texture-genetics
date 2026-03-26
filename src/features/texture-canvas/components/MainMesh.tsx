@@ -177,7 +177,7 @@ export const MainMesh: React.FC<MainMeshProps> = memo(({ appState, stateRef, onL
             const loadText = async () => {
                 try {
                     const loader = new FontLoader();
-                    const fontUrl = `https://unpkg.com/three@0.160.0/examples/fonts/${appState.text.font}_regular.typeface.json`;
+                    const fontUrl = `https://unpkg.com/three@0.183.2/examples/fonts/${appState.text.font}_regular.typeface.json`;
                     const font = await loader.loadAsync(fontUrl);
 
                     const geom = new TextGeometry(appState.text.text || ' ', {
@@ -205,7 +205,7 @@ export const MainMesh: React.FC<MainMeshProps> = memo(({ appState, stateRef, onL
             loadText();
         } else {
             // Only clear custom geometry if we switch AWAY from CUSTOM/SVG/TEXT mode
-            if (appState.geometry !== GeometryType.CUSTOM as any && appState.geometry !== GeometryType.SVG as any && appState.geometry !== GeometryType.TEXT as any) {
+            if (![GeometryType.CUSTOM, GeometryType.SVG, GeometryType.TEXT].includes(appState.geometry)) {
                 clearCustomGeom();
                 lastLoadedModelUrl.current = null;
                 lastSvgParams.current = null;

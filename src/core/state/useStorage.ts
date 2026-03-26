@@ -7,12 +7,49 @@ const STORAGE_KEY = 'effect_gen_v3_release';
 const STATE_VERSION = 2;
 
 // Keys of properties that contain heavy base64 strings
-const HEAVY_ASSETS = [
+type HeavyAssetDescriptor = {
+    key: string;
+    path: ['baseTexture', 'texture'] | ['sticker', 'texture'] | ['imageAlpha', 'maskTexture'] | ['customModel'];
+};
+
+const HEAVY_ASSETS: readonly HeavyAssetDescriptor[] = [
     { path: ['baseTexture', 'texture'], key: 'asset_base_texture' },
     { path: ['sticker', 'texture'], key: 'asset_sticker_texture' },
     { path: ['imageAlpha', 'maskTexture'], key: 'asset_mask_texture' },
     { path: ['customModel'], key: 'asset_custom_model' }
-];
+] as const;
+
+const applyHeavyAsset = (state: AppState, asset: HeavyAssetDescriptor, value: string) => {
+    switch (asset.key) {
+        case 'asset_base_texture':
+            state.baseTexture = { ...state.baseTexture, texture: value };
+            return;
+        case 'asset_sticker_texture':
+            state.sticker = { ...state.sticker, texture: value };
+            return;
+        case 'asset_mask_texture':
+            state.imageAlpha = { ...state.imageAlpha, maskTexture: value };
+            return;
+        case 'asset_custom_model':
+            state.customModel = value;
+            return;
+    }
+};
+
+const getHeavyAssetValue = (state: AppState, asset: HeavyAssetDescriptor): string | null => {
+    switch (asset.key) {
+        case 'asset_base_texture':
+            return state.baseTexture.texture;
+        case 'asset_sticker_texture':
+            return state.sticker.texture;
+        case 'asset_mask_texture':
+            return state.imageAlpha.maskTexture;
+        case 'asset_custom_model':
+            return state.customModel;
+    }
+
+    return null;
+};
 
 // --- SAFETY UTILS ---
 
@@ -23,7 +60,7 @@ const isUnsafeObject = (value: any): boolean => {
         if ('_reactInternals' in value) return true;
         if ('_reactFiber' in value) return true;
         return false;
-    } catch (e) {
+    } catch {
         return true;
     }
 };
@@ -81,17 +118,8 @@ export const useStorage = (initialState: AppState, onLoaded: (s: AppState) => vo
                 // 2. Load Heavy Assets from IndexedDB
                 const assetPromises = HEAVY_ASSETS.map(async (asset) => {
                     const val = await get(asset.key);
-                    if (val) {
-                        // Re-inject into state
-                        if (asset.path.length === 2) {
-                            // @ts-ignore
-                            if (!mergedState[asset.path[0]]) mergedState[asset.path[0]] = {};
-                            // @ts-ignore
-                            mergedState[asset.path[0]][asset.path[1]] = val;
-                        } else {
-                            // @ts-ignore
-                            mergedState[asset.path[0]] = val;
-                        }
+                    if (typeof val === 'string' && val.length > 0) {
+                        applyHeavyAsset(mergedState, asset, val);
                     }
                 });
 
@@ -116,17 +144,9 @@ export const useStorage = (initialState: AppState, onLoaded: (s: AppState) => vo
         try {
             // 1. Extract and Save Heavy Assets to IDB
             const assetsToSave = [];
-            
-            // Helper to get value
-            const getValue = (path: string[]) => {
-                // @ts-ignore
-                if (path.length === 1) return state[path[0]];
-                // @ts-ignore
-                return state[path[0]]?.[path[1]];
-            };
 
             for (const asset of HEAVY_ASSETS) {
-                const val = getValue(asset.path);
+                const val = getHeavyAssetValue(state, asset);
                 if (val && typeof val === 'string' && val.length > 100) {
                     assetsToSave.push(set(asset.key, val));
                 } else {
