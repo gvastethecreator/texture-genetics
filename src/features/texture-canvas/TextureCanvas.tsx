@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState, useCallback, Suspense } from 'react
 import { Canvas, useThree } from '@react-three/fiber';
 import { Hud, OrthographicCamera } from '@react-three/drei';
 import * as THREE from 'three';
+import { WebGPURenderer } from 'three/webgpu';
 import { AppState, GeometryType, ViewMode } from '../../core/types/types';
 import { 
     ZoomIn, ZoomOut, Maximize, 
@@ -136,7 +137,7 @@ const LoadingScreen = () => (
 // --- MAIN COMPONENT ---
 export const TextureCanvas: React.FC<{ 
     appState: AppState; 
-    setGlRef: (gl: THREE.WebGLRenderer) => void;
+    setGlRef: (gl: THREE.Renderer) => void;
     updateState: (s: Partial<AppState>) => void;
 }> = ({ appState, setGlRef, updateState }) => {
     const controlsHandle = useRef<CameraHandler | null>(null);
@@ -164,18 +165,25 @@ export const TextureCanvas: React.FC<{
     };
 
     const onCreated = useCallback((state: any) => {
-        const gl = state.gl as THREE.WebGLRenderer;
-        setGlRef(gl);
+        const renderer = state.gl;
+        setGlRef(renderer);
         
-        gl.domElement.addEventListener('webglcontextlost', (e) => {
-            e.preventDefault();
-            console.warn('WebGL Context Lost');
-        }, false);
+        // Context loss handling (WebGL backend)
+        if (renderer.domElement) {
+            renderer.domElement.addEventListener('webglcontextlost', (e: Event) => {
+                e.preventDefault();
+                console.warn('WebGL Context Lost');
+            }, false);
+        }
 
-        gl.shadowMap.enabled = true;
-        gl.shadowMap.type = THREE.PCFSoftShadowMap;
-        gl.toneMapping = THREE.ACESFilmicToneMapping; 
-        gl.toneMappingExposure = 1.0;
+        if ('shadowMap' in renderer) {
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        }
+        if ('toneMapping' in renderer) {
+            renderer.toneMapping = THREE.ACESFilmicToneMapping; 
+            renderer.toneMappingExposure = 1.0;
+        }
         
     }, [setGlRef]);
 
@@ -194,13 +202,16 @@ export const TextureCanvas: React.FC<{
                 <Canvas
                     onCreated={onCreated}
                     className="w-full h-full block" 
-                    gl={{ 
-                        preserveDrawingBuffer: true, 
-                        antialias: appState.settings.antialias, 
-                        alpha: false,
-                        powerPreference: "high-performance",
-                        stencil: false,
-                        depth: true,
+                    gl={async (canvas) => {
+                        const renderer = new WebGPURenderer({
+                            canvas: canvas as HTMLCanvasElement,
+                            antialias: appState.settings.antialias,
+                            alpha: false,
+                            powerPreference: "high-performance",
+                            forceWebGL: false,
+                        });
+                        await renderer.init();
+                        return renderer as any;
                     }}
                     dpr={appState.settings.renderDpr || [1, 2]}
                     camera={{ position: [0, 0, 4], fov: 45, near: 0.1, far: 1000 }}

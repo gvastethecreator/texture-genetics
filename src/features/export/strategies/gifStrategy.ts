@@ -12,7 +12,7 @@ export const generateGif = async (
     const { resolution, spriteSheet } = state;
     const gifResolution = Math.min(resolution, 512);
 
-    const { renderer, scene, camera, material, cleanup } = await setupOffscreenScene(
+    const { renderer, scene, camera, setTime, cleanup } = await setupOffscreenScene(
         state, gifResolution, gifResolution, state.viewMode
     );
 
@@ -27,7 +27,7 @@ export const generateGif = async (
                 throw new Error("GIF generation timed out");
             }
 
-            material.uniforms.u_time.value = (i / spriteSheet.totalFrames) * spriteSheet.duration;
+            setTime((i / spriteSheet.totalFrames) * spriteSheet.duration);
             renderer.render(scene, camera);
 
             // Read pixels from WebGL canvas

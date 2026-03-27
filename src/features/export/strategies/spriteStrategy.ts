@@ -10,7 +10,7 @@ export const generateSpriteSheet = async (
     // Safety Clamp: max sheet size approx 8k x 8k equivalent total or texture limit
     const safeRes = Math.min(resolution, 1024);
     
-    const { renderer, scene, camera, material, cleanup } = await setupOffscreenScene(
+    const { renderer, scene, camera, setTime, cleanup } = await setupOffscreenScene(
         state, safeRes, safeRes, state.viewMode
     );
 
@@ -35,7 +35,7 @@ export const generateSpriteSheet = async (
             throw new Error("Sprite generation timed out");
         }
 
-        material.uniforms.u_time.value = (i / spriteSheet.totalFrames) * spriteSheet.duration;
+        setTime((i / spriteSheet.totalFrames) * spriteSheet.duration);
         renderer.render(scene, camera);
         
         const col = i % spriteSheet.columns;

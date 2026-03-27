@@ -11,7 +11,7 @@ export const generateTexturePack = async (
     // Clamp resolution for ZIP pack to prevent crash/timeout on heavy ops
     const safeRes = Math.min(state.resolution, 2048);
     
-    const { renderer, scene, camera, material, cleanup } = await setupOffscreenScene(
+    const { renderer, scene, camera, setTime, setViewMode, cleanup } = await setupOffscreenScene(
         state, safeRes, safeRes, ViewMode.ALBEDO
     );
     
@@ -32,9 +32,8 @@ export const generateTexturePack = async (
             const map = maps[i];
             
             // Switch Mode
-            material.uniforms.u_viewMode.value = map.mode;
-            // Ensure we use the static time setting unless overridden
-            material.uniforms.u_time.value = state.time;
+            setViewMode(map.mode);
+            setTime(state.time);
             
             renderer.render(scene, camera);
 

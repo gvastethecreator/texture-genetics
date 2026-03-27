@@ -8,9 +8,9 @@ export const generateGlb = async (state: AppState, onProgress: (p: number) => vo
     
     // 1. Generate Texture
     const res = Math.min(state.resolution, 2048);
-    const { renderer, scene, camera, material, cleanup } = await setupOffscreenScene(state, res, res, ViewMode.RENDER);
-    
-    material.uniforms.u_time.value = state.time;
+    const { renderer, scene, camera, setTime, cleanup } = await setupOffscreenScene(state, res, res, ViewMode.RENDER);
+
+    setTime(state.time);
     renderer.render(scene, camera);
     
     onProgress(40);

@@ -10,7 +10,7 @@ export const generateVideo = async (
     // Video encoders prefer standard dimensions (multiples of 2), limit to 1080p equivalent
     const safeRes = Math.min(resolution, 1024);
     
-    const { renderer, scene, camera, material, cleanup } = await setupOffscreenScene(
+    const { renderer, scene, camera, setTime, cleanup } = await setupOffscreenScene(
         state, safeRes, safeRes, state.viewMode
     );
     
@@ -52,7 +52,7 @@ export const generateVideo = async (
     
     try {
         for (let i = 0; i < totalFrames; i++) {
-            material.uniforms.u_time.value = (i / totalFrames) * spriteSheet.duration;
+            setTime((i / totalFrames) * spriteSheet.duration);
             renderer.render(scene, camera);
             // Real-time wait to match frame timing for recorder
             await new Promise(r => setTimeout(r, 1000/fps));

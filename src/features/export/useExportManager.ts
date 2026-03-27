@@ -43,11 +43,11 @@ export function useExportManager(state: AppState, { onSuccess, onError }: UseExp
             // Allow up to 4096, but warn user in UI (Settings)
             const safeRes = Math.min(state.resolution, 4096);
             
-            const { renderer, scene, camera, material, cleanup } = await setupOffscreenScene(
+            const { renderer, scene, camera, setTime, cleanup } = await setupOffscreenScene(
                 state, safeRes, safeRes, mode
             );
-            
-            material.uniforms.u_time.value = state.animate ? 0 : state.time;
+
+            setTime(state.animate ? 0 : state.time);
             renderer.render(scene, camera);
             
             const format = state.settings.exportFormat;

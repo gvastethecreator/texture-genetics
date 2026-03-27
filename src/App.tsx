@@ -3,6 +3,9 @@ import React, { useState, useRef, lazy, Suspense } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+
+// Register all TSL patterns at startup (side-effect)
+import './lib/tsl/registerPatterns';
 import { GeometryType } from './core/types/types';
 import { useTextureEditor } from './core/state/useTextureEditor';
 import { useExportManager } from './features/export/useExportManager';
@@ -34,7 +37,7 @@ export default function App() {
         onError: (msg) => actions.addToast('error', msg)
     });
 
-    const [gl, setGl] = useState<THREE.WebGLRenderer | null>(null);
+    const [gl, setGl] = useState<THREE.Renderer | null>(null);
 
     // Layout State
     const [showLeft, setShowLeft] = useState(true);

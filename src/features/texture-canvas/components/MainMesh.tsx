@@ -8,10 +8,10 @@ import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { AppState, GeometryType, PreviewAnimation, AnimationConfig } from '../../../core/types/types';
-import { getFragmentShaderForParams, VERTEX_SHADER } from '../../../lib/glsl/shaderBuilder';
-import { createUniformsFromState, updateUniformsFromState } from '../../../lib/three/uniforms';
 import { getGeometryForType } from '../../../lib/three/geometryFactory';
 import { calculateAnimatedValue } from '../../../shared/utils/animationUtils';
+import { createTslMaterial } from '../../../lib/tsl/tslBuilder';
+import { updateTslUniforms, TslUniforms } from '../../../lib/tsl/uniforms';
 import { useTextureResource } from '../../../shared/hooks/useTextureResource';
 
 interface MainMeshProps {
@@ -25,8 +25,7 @@ export const MainMesh: React.FC<MainMeshProps> = memo(({ appState, stateRef, onL
     const meshRef = useRef<THREE.Mesh>(null);
     const instanceRef = useRef<THREE.InstancedMesh>(null);
     const tempObject = useMemo(() => new THREE.Object3D(), []);
-
-    // Resources
+    const tslUniformsRef = useRef<TslUniforms | null>(null);
     const maskTex = useTextureResource(appState.imageAlpha.maskEnabled ? appState.imageAlpha.maskTexture : null);
     const baseTex = useTextureResource(appState.baseTexture?.enabled ? appState.baseTexture.texture : null);
     const stickerTex = useTextureResource(appState.sticker?.enabled ? appState.sticker.texture : null);
@@ -216,28 +215,18 @@ export const MainMesh: React.FC<MainMeshProps> = memo(({ appState, stateRef, onL
         return () => { active = false; if (onLoadingChange) onLoadingChange(false); };
     }, [appState.geometry, appState.customModel, appState.svg, appState.text, onLoadingChange]);
 
-    // Material Logic
+    // Material Logic (TSL)
     const material = useMemo(() => {
         try {
-            const uniforms = createUniformsFromState(appState, maskTex, baseTex, stickerTex);
-            const frag = getFragmentShaderForParams(appState);
-
-            const needsTransparency = appState.imageAlpha.enabled;
-
-            const mat = new THREE.ShaderMaterial({
-                vertexShader: VERTEX_SHADER,
-                fragmentShader: frag,
-                uniforms: uniforms,
-                transparent: needsTransparency,
-                side: THREE.DoubleSide,
-                depthWrite: !needsTransparency,
-                depthTest: true,
-                glslVersion: THREE.GLSL3, // WEBGL 2 STRICT
+            const { material: mat, uniforms: u } = createTslMaterial(appState, {
+                maskTexture: maskTex,
+                baseTexture: baseTex,
+                stickerTexture: stickerTex,
             });
-
+            tslUniformsRef.current = u;
             return mat;
         } catch (e) {
-            console.error("Shader Error", e);
+            console.error("TSL Material Error", e);
             return new THREE.MeshBasicMaterial({ color: 0xff00ff });
         }
     }, [
@@ -247,11 +236,29 @@ export const MainMesh: React.FC<MainMeshProps> = memo(({ appState, stateRef, onL
         appState.normalMap.enabled,
         appState.ao.enabled,
         appState.environment.holographic,
+        appState.baseTexture.enabled,
+        appState.baseTexture.texture,
+        appState.baseTexture.opacity,
+        appState.baseTexture.blendMode,
+        appState.baseTexture.effectType,
+        appState.baseTexture.effectStrength,
         appState.sticker.enabled,
         appState.sticker.texture,
+        appState.sticker.opacity,
+        appState.sticker.blendMode,
+        appState.sticker.posX,
+        appState.sticker.posY,
+        appState.sticker.scale,
+        appState.sticker.rotation,
+        appState.sticker.color,
+        appState.sticker.useColor,
         appState.viewMode,
         appState.imageAlpha.enabled,
-        maskTex, baseTex, stickerTex
+        appState.imageAlpha.maskEnabled,
+        appState.imageAlpha.maskTexture,
+        maskTex,
+        baseTex,
+        stickerTex,
     ]);
 
     // Cleanup Material on Unmount/Change
@@ -261,44 +268,40 @@ export const MainMesh: React.FC<MainMeshProps> = memo(({ appState, stateRef, onL
         };
     }, [material]);
 
-    // --- EVENT DRIVEN UPDATES ---
+    // --- EVENT DRIVEN UPDATES (TSL) ---
     // Only update expensive uniforms when React State changes (User Input)
-    // This avoids parsing state and colors 60 times a second.
     useEffect(() => {
-        if (material instanceof THREE.ShaderMaterial) {
-            updateUniformsFromState(material.uniforms, appState, maskTex, baseTex, stickerTex);
+        const u = tslUniformsRef.current;
+        if (u) {
+            updateTslUniforms(u, appState);
         }
-    }, [appState, maskTex, baseTex, stickerTex, material]);
+    }, [appState, material]);
 
-    // --- RENDER LOOP ---
+    // --- RENDER LOOP (TSL) ---
     // Only update smooth animations and time
     useFrame((state) => {
         try {
             const loopState = stateRef.current;
-            if (!(material instanceof THREE.ShaderMaterial)) return;
-            if (!material.uniforms) return;
+            const u = tslUniformsRef.current;
+            if (!u) return;
 
             // Time & Resolution (Always Dynamic)
             if (loopState.animate) {
-                material.uniforms.u_time.value = state.clock.elapsedTime * loopState.params.speed;
+                u.u_time.value = state.clock.elapsedTime * loopState.params.speed;
             } else {
-                material.uniforms.u_time.value = loopState.time;
+                u.u_time.value = loopState.time;
             }
 
             // Resolution (Canvas Resize)
             const dpr = state.gl.getPixelRatio();
-            if (material.uniforms.u_resolution) {
-                material.uniforms.u_resolution.value.set(size.width * dpr, size.height * dpr);
-            }
+            (u.u_resolution.value as THREE.Vector2).set(size.width * dpr, size.height * dpr);
 
             // Mouse (Smooth Interaction)
-            if (material.uniforms.u_mouse) {
-                material.uniforms.u_mouse.value.set(state.pointer.x * 0.5 + 0.5, state.pointer.y * 0.5 + 0.5);
-            }
+            (u.u_mouse.value as THREE.Vector2).set(state.pointer.x * 0.5 + 0.5, state.pointer.y * 0.5 + 0.5);
 
             // Parameter Animations (Waveforms)
             if (loopState.animate && loopState.paramAnimations) {
-                const keyMap: Record<string, { u: string, scale?: number }> = {
+                const keyMap: Record<string, { u: keyof TslUniforms, scale?: number }> = {
                     'scale': { u: 'u_scale' }, 'intensity': { u: 'u_intensity' },
                     'factor': { u: 'u_factor' }, 'speed': { u: 'u_speed' },
                     'distortion': { u: 'u_distortion' }, 'detail': { u: 'u_detail' },
@@ -310,10 +313,10 @@ export const MainMesh: React.FC<MainMeshProps> = memo(({ appState, stateRef, onL
                     const config = value as AnimationConfig;
                     if (config && config.enabled) {
                         const map = keyMap[key];
-                        if (map && material.uniforms[map.u]) {
+                        if (map) {
                             let val = calculateAnimatedValue(state.clock.elapsedTime, config);
                             if (map.scale) val *= map.scale;
-                            material.uniforms[map.u].value = val;
+                            (u[map.u] as { value: number }).value = val;
                         }
                     }
                 });
