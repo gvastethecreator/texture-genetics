@@ -200,7 +200,7 @@ export const Header: React.FC<HeaderProps> = memo(({
                     <Icons.Keyboard size={16} />
                 </button>
 
-                <button onClick={() => actions.updateState({ isCodeOpen: true })} className={btnClass} title="Standalone HTML Export Preview">
+                <button onClick={() => actions.updateState({ isCodeOpen: true })} className={btnClass} title="Legacy HTML Export Preview">
                     <Icons.FileCode2 size={16} />
                 </button>
 

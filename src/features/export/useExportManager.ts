@@ -122,8 +122,8 @@ export function useExportManager(state: AppState, { onSuccess, onError }: UseExp
     );
 
     const runHtml = () => runExportTask(
-        "HTML", 
-        `shader_${state.textureType.replace(/\s/g, '_')}.html`, 
+        "Legacy HTML", 
+        `legacy_shader_${state.textureType.replace(/\s/g, '_')}.html`, 
         generateHtml
     );
 

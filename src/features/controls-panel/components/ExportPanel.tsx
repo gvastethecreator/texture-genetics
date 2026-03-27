@@ -3,7 +3,8 @@ import React, { memo, useRef } from 'react';
 import * as Icons from 'lucide-react';
 import { AppState, ViewMode } from '../../../core/types/types';
 import { ControlSection, Label, Slider, ActionButton } from '../../../shared/ui/Elements';
-import { generateStandaloneHtml, copyToClipboard } from '../../../shared/utils/exportUtils';
+import { copyToClipboard } from '../../../shared/utils/clipboard';
+import { generateLegacyStandaloneHtml } from '../../export/legacy/standaloneHtml';
 
 interface ExportPanelProps {
     state: AppState;
@@ -28,7 +29,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = memo(({ state, updateStat
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleCopyHtml = async () => {
-        const html = generateStandaloneHtml(state);
+        const html = generateLegacyStandaloneHtml(state);
         const success = await copyToClipboard(html);
         if (success) {
             setCopySuccess(true);
@@ -121,7 +122,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = memo(({ state, updateStat
                     <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-white/5">
                         <ActionButton onClick={onHtmlExport} disabled={isGenerating}>
                             {isGenerating ? <Icons.Loader2 className="animate-spin" size={14} /> : <Icons.Code size={14} />}
-                            {isGenerating ? 'HTML...' : 'Export HTML'}
+                            {isGenerating ? 'HTML...' : 'Export Legacy HTML'}
                         </ActionButton>
                         <ActionButton onClick={onGlbExport} disabled={isGenerating}>
                             {isGenerating ? <Icons.Loader2 className="animate-spin" size={14} /> : <Icons.Box size={14} />}
@@ -133,7 +134,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = memo(({ state, updateStat
                         <ActionButton onClick={() => onChangeState({ isFullscreen: true })}><Icons.Maximize size={14} /> Fullscreen</ActionButton>
                         <button onClick={handleCopyHtml} className={`w-full py-2 px-4 rounded font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 transition-all duration-200 ease-out select-none border shadow-depth-sm ${copySuccess ? 'bg-green-900/50 border-green-500 text-green-400' : 'bg-surface border-border text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
                             {copySuccess ? <Icons.Check size={14} /> : <Icons.Code size={14} />}
-                            {copySuccess ? "Copied!" : "Copy HTML"}
+                            {copySuccess ? "Copied!" : "Copy Legacy HTML"}
                         </button>
                     </div>
                 </div>

@@ -1,11 +1,10 @@
 import * as THREE from 'three';
 import { WebGPURenderer } from 'three/webgpu';
 import { AppState, ViewMode } from '../../../core/types/types';
-import { createTextureMaterial } from '../../../lib/glsl/shaderBuilder';
-import { createUniformsFromState } from '../../../lib/three/uniforms';
 import { disposeRoot } from '../../../lib/three/cleanup';
 import { createTslMaterial } from '../../../lib/tsl/tslBuilder';
 import { updateTslUniforms } from '../../../lib/tsl/uniforms';
+import { createLegacyOffscreenScene, getSharedLegacyRenderer } from '../legacy/offscreenLegacy';
 
 type OffscreenRenderer = THREE.WebGLRenderer | WebGPURenderer;
 
@@ -19,57 +18,7 @@ export interface OffscreenSceneSetup {
     usingTsl: boolean;
 }
 
-let sharedLegacyRenderer: THREE.WebGLRenderer | null = null;
 let sharedTslRenderer: WebGPURenderer | null = null;
-
-const getSharedLegacyRenderer = (antialias: boolean): THREE.WebGLRenderer => {
-    if (sharedLegacyRenderer) {
-        const gl = sharedLegacyRenderer.getContext();
-        if (gl.isContextLost()) {
-            console.warn('Shared legacy renderer context lost - recreating');
-            sharedLegacyRenderer.dispose();
-            sharedLegacyRenderer = null;
-        }
-    }
-
-    if (!sharedLegacyRenderer) {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('webgl2', {
-            alpha: true,
-            antialias,
-            preserveDrawingBuffer: true,
-            powerPreference: 'high-performance',
-        }) as WebGL2RenderingContext | null;
-
-        if (!context) {
-            console.error('WebGL 2 not supported, legacy export may fail with GLSL 3.0 shaders');
-        }
-
-        sharedLegacyRenderer = new THREE.WebGLRenderer({
-            canvas,
-            context: context ?? undefined,
-            alpha: true,
-            antialias,
-            preserveDrawingBuffer: true,
-            depth: false,
-            stencil: false,
-        });
-
-        sharedLegacyRenderer.setPixelRatio(1);
-        sharedLegacyRenderer.outputColorSpace = THREE.SRGBColorSpace;
-    }
-
-    try {
-        sharedLegacyRenderer.resetState();
-    } catch (error) {
-        console.warn('Shared legacy renderer reset failed, forcing recreation', error);
-        sharedLegacyRenderer.dispose();
-        sharedLegacyRenderer = null;
-        return getSharedLegacyRenderer(antialias);
-    }
-
-    return sharedLegacyRenderer;
-};
 
 const getSharedTslRenderer = async (antialias: boolean): Promise<WebGPURenderer> => {
     if (!sharedTslRenderer) {
@@ -121,8 +70,6 @@ export const setupOffscreenScene = async (
         renderer.toneMapping = THREE.NoToneMapping;
     }
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     const resources: Array<{ dispose?: () => void }> = [];
 
     const promises: Promise<void>[] = [];
@@ -166,6 +113,8 @@ export const setupOffscreenScene = async (
         (uniforms.u_resolution.value as THREE.Vector2).set(width, height);
         uniforms.u_viewMode.value = viewMode;
 
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
         const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
         scene.add(mesh);
 
@@ -187,28 +136,15 @@ export const setupOffscreenScene = async (
         };
     }
 
-    const uniforms = createUniformsFromState(state, maskTexture, baseTexture, stickerTexture);
-    uniforms.u_resolution.value.set(width, height);
-    uniforms.u_viewMode.value = viewMode;
-
-    const material = createTextureMaterial(state, uniforms);
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
-    scene.add(mesh);
-
-    return {
+    return createLegacyOffscreenScene({
+        state,
+        width,
+        height,
+        viewMode,
         renderer,
-        scene,
-        camera,
-        setTime: (time) => {
-            uniforms.u_time.value = time;
-        },
-        setViewMode: (mode) => {
-            uniforms.u_viewMode.value = mode;
-        },
-        cleanup: () => {
-            disposeRoot(scene);
-            resources.forEach(resource => resource.dispose?.());
-        },
-        usingTsl: false,
-    };
+        maskTexture,
+        baseTexture,
+        stickerTexture,
+        resources,
+    });
 };

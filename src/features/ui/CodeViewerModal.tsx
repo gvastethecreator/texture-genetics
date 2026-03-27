@@ -3,7 +3,8 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import * as Icons from 'lucide-react';
 import { AppState } from '../../core/types/types';
-import { generateStandaloneHtml, copyToClipboard } from '../../shared/utils/exportUtils';
+import { generateLegacyStandaloneHtml } from '../export/legacy/standaloneHtml';
+import { copyToClipboard } from '../../shared/utils/clipboard';
 
 gsap.registerPlugin(useGSAP);
 
@@ -21,7 +22,7 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
 
     useEffect(() => {
         if (isOpen) {
-            setCode(generateStandaloneHtml(state));
+            setCode(generateLegacyStandaloneHtml(state));
         }
     }, [isOpen, state]);
 
@@ -39,7 +40,7 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
 
     if (!isOpen) return null;
 
-    // HTML/JS syntax highlighting for the standalone export
+    // HTML/JS syntax highlighting for the legacy standalone export
     const highlightCode = useCallback((src: string) => {
         const jsKeywords = /\b(const|let|var|function|return|if|else|for|while|new|import|from|async|await|true|false|null|undefined|typeof|class|this)\b/g;
         const threeClasses = /\b(THREE|WebGLRenderer|Scene|OrthographicCamera|PlaneGeometry|Mesh|ShaderMaterial|Vector2|Vector3|Color|SRGBColorSpace|GLSL3|requestAnimationFrame)\b/g;
@@ -89,8 +90,8 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
                             <Icons.FileCode2 size={18} />
                         </div>
                         <div>
-                            <h2 className="text-sm font-black text-gray-100 uppercase tracking-widest">Standalone HTML Export</h2>
-                            <p className="text-[10px] text-gray-500">Self-contained WebGL2 HTML — paste in any browser to run the shader</p>
+                            <h2 className="text-sm font-black text-gray-100 uppercase tracking-widest">Legacy HTML Export</h2>
+                            <p className="text-[10px] text-gray-500">Compat fallback en GLSL/WebGL2 mientras el runtime principal sigue en TSL</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -99,7 +100,7 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
                             className={`flex items-center gap-2 px-3 py-1.5 rounded text-xs font-bold transition-all ${copied ? 'bg-green-900/50 text-green-400 border border-green-500/50' : 'bg-surface border border-white/10 text-gray-300 hover:bg-white/10'}`}
                         >
                             {copied ? <Icons.Check size={14} /> : <Icons.Copy size={14} />}
-                            {copied ? 'COPIED' : 'COPY HTML'}
+                            {copied ? 'COPIED' : 'COPY LEGACY HTML'}
                         </button>
                         <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg text-gray-500 hover:text-white transition-colors">
                             <Icons.X size={18} />
