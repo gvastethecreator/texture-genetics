@@ -5,9 +5,9 @@ import { Hud, OrthographicCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { WebGPURenderer } from 'three/webgpu';
 import { AppState, GeometryType, ViewMode } from '../../core/types/types';
-import { 
-    ZoomIn, ZoomOut, Maximize, 
-    Square, Box, Circle, Cylinder, Smartphone, Upload, 
+import {
+    ZoomIn, ZoomOut, Maximize,
+    Square, Box, Circle, Cylinder, Smartphone, Upload,
     Palette, Activity, AlignVerticalJustifyCenter, Sparkles, Loader2,
     Grid, Type, PenTool // NEW
 } from 'lucide-react';
@@ -36,37 +36,49 @@ interface SceneCompositionProps {
     setOrbitEnabled: (enabled: boolean) => void;
 }
 
-const SceneComposition: React.FC<SceneCompositionProps> = ({ 
-    appState, stateRef, controlsHandle, updateState, onLoadingChange, onZoomChange, orbitEnabled, setOrbitEnabled 
+const SceneComposition: React.FC<SceneCompositionProps> = ({
+    appState, stateRef, controlsHandle, updateState, onLoadingChange, onZoomChange, orbitEnabled, setOrbitEnabled
 }) => {
-    const { size, scene } = useThree();
-    
+    const { size, scene, gl } = useThree();
+
+    const supportsWebGlOnlyDrei = React.useMemo(() => {
+        try {
+            if ((gl as { isWebGPURenderer?: boolean })?.isWebGPURenderer) {
+                return false;
+            }
+            const context = (gl as { getContext?: () => unknown })?.getContext?.() as { getContextAttributes?: () => unknown } | undefined;
+            return typeof context?.getContextAttributes === 'function';
+        } catch {
+            return false;
+        }
+    }, [gl]);
+
     // Global Fog & Background Management
     useEffect(() => {
         if (appState.environment.fogEnabled) {
             const color = new THREE.Color(appState.environment.fogColor || '#000000');
             const density = appState.environment.fogDensity;
-            const far = 20 - (density * 100); 
+            const far = 20 - (density * 100);
             scene.fog = new THREE.Fog(color, 2, Math.max(5, far));
         } else {
             scene.fog = null;
         }
 
         if (appState.environment.envBackground) {
-            scene.background = null; 
+            scene.background = null;
         } else {
             if (appState.environment.bgEnabled) {
                 scene.background = new THREE.Color(appState.environment.bgColor);
             } else {
-                scene.background = null; 
+                scene.background = null;
             }
         }
     }, [
-        appState.environment.fogEnabled, 
-        appState.environment.fogDensity, 
+        appState.environment.fogEnabled,
+        appState.environment.fogDensity,
         appState.environment.fogColor,
-        appState.environment.bgEnabled, 
-        appState.environment.bgColor, 
+        appState.environment.bgEnabled,
+        appState.environment.bgColor,
         appState.environment.envBackground,
         scene
     ]);
@@ -74,53 +86,55 @@ const SceneComposition: React.FC<SceneCompositionProps> = ({
     return (
         <>
             <SceneLighting appState={appState} />
-            
-            <CameraRig 
-                appState={appState} 
-                controlsHandle={controlsHandle} 
+
+            <CameraRig
+                appState={appState}
+                controlsHandle={controlsHandle}
                 onZoomChange={onZoomChange}
                 updateState={updateState}
                 enabled={orbitEnabled}
             />
-            
+
             <group>
-                <MainMesh 
-                    appState={appState} 
-                    stateRef={stateRef} 
-                    onLoadingChange={onLoadingChange} 
+                <MainMesh
+                    appState={appState}
+                    stateRef={stateRef}
+                    onLoadingChange={onLoadingChange}
                 />
-                {appState.environment.stageEnabled && <StageFloor appState={appState} />}
+                {supportsWebGlOnlyDrei && appState.environment.stageEnabled && <StageFloor appState={appState} />}
             </group>
-            
+
             {appState.environment.particlesEnabled && (
-                <ParticleSystem 
-                    count={appState.environment.particleCount} 
+                <ParticleSystem
+                    count={appState.environment.particleCount}
                     speed={appState.environment.particleSpeed}
                     size={appState.environment.particleSize}
                 />
             )}
-            
+
             {appState.environment.smokeEnabled && <SmokeSystem appState={appState} />}
-            
+
             <Suspense fallback={null}>
                 <SceneEffects appState={appState} />
             </Suspense>
-            
-            <StickerGizmo 
-                state={appState} 
-                updateState={updateState} 
+
+            <StickerGizmo
+                state={appState}
+                updateState={updateState}
                 visible={appState.sticker.enabled}
                 setControlsEnabled={setOrbitEnabled}
             />
 
-            {/* HUD: Miniature Map Preview (Top Left) */}
-            <Hud renderPriority={2}>
-                <OrthographicCamera makeDefault position={[0, 0, 10]} zoom={1} />
-                <ambientLight intensity={1} />
-                <group position={[-size.width / 2 + 60, size.height / 2 - 60, 0]}>
-                    <MiniatureScene appState={appState} size={100} />
-                </group>
-            </Hud>
+            {/* HUD: Miniature Map Preview (Top Left) - WebGL only */}
+            {supportsWebGlOnlyDrei && (
+                <Hud renderPriority={2}>
+                    <OrthographicCamera makeDefault position={[0, 0, 10]} zoom={1} />
+                    <ambientLight intensity={1} />
+                    <group position={[-size.width / 2 + 60, size.height / 2 - 60, 0]}>
+                        <MiniatureScene appState={appState} size={100} />
+                    </group>
+                </Hud>
+            )}
         </>
     );
 };
@@ -135,8 +149,8 @@ const LoadingScreen = () => (
 );
 
 // --- MAIN COMPONENT ---
-export const TextureCanvas: React.FC<{ 
-    appState: AppState; 
+export const TextureCanvas: React.FC<{
+    appState: AppState;
     setGlRef: (gl: THREE.Renderer) => void;
     updateState: (s: Partial<AppState>) => void;
 }> = ({ appState, setGlRef, updateState }) => {
@@ -146,10 +160,10 @@ export const TextureCanvas: React.FC<{
     const [isLoading, setIsLoading] = useState(false);
     const [zoomLevel, setZoomLevel] = useState(100);
     const [orbitEnabled, setOrbitEnabled] = useState(true);
-    
+
     const { ref: containerRef, dimensions } = useContainerDimensions();
     const isReady = (dimensions.width > 0 && dimensions.height > 0);
-    
+
     useEffect(() => { stateRef.current = appState; }, [appState]);
 
     const handleModelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,9 +181,9 @@ export const TextureCanvas: React.FC<{
     const onCreated = useCallback((state: any) => {
         const renderer = state.gl;
         setGlRef(renderer);
-        
+
         // Context loss handling (WebGL backend)
-        if (renderer.domElement) {
+        if (!(renderer as { isWebGPURenderer?: boolean })?.isWebGPURenderer && renderer.domElement) {
             renderer.domElement.addEventListener('webglcontextlost', (e: Event) => {
                 e.preventDefault();
                 console.warn('WebGL Context Lost');
@@ -181,10 +195,10 @@ export const TextureCanvas: React.FC<{
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         }
         if ('toneMapping' in renderer) {
-            renderer.toneMapping = THREE.ACESFilmicToneMapping; 
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 1.0;
         }
-        
+
     }, [setGlRef]);
 
     return (
@@ -201,10 +215,10 @@ export const TextureCanvas: React.FC<{
             {isReady ? (
                 <Canvas
                     onCreated={onCreated}
-                    className="w-full h-full block" 
-                    gl={async (canvas) => {
+                    className="w-full h-full block"
+                    gl={async (props) => {
                         const renderer = new WebGPURenderer({
-                            canvas: canvas as HTMLCanvasElement,
+                            ...props,
                             antialias: appState.settings.antialias,
                             alpha: false,
                             powerPreference: "high-performance",
@@ -219,8 +233,8 @@ export const TextureCanvas: React.FC<{
                     shadows
                 >
                     <Suspense fallback={null}>
-                        <SceneComposition 
-                            appState={appState} 
+                        <SceneComposition
+                            appState={appState}
                             stateRef={stateRef}
                             controlsHandle={controlsHandle}
                             updateState={updateState}
@@ -234,7 +248,7 @@ export const TextureCanvas: React.FC<{
             ) : (
                 <LoadingScreen />
             )}
-            
+
             {/* CONTROLS OVERLAY */}
             <div className="absolute top-4 right-4 flex flex-col items-end gap-2 opacity-100 transition-opacity duration-300 pointer-events-none">
                 <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded px-2 py-1 mb-1 shadow-lg pointer-events-auto">
@@ -254,7 +268,7 @@ export const TextureCanvas: React.FC<{
                     <button onClick={() => controlsHandle.current?.setView('isometric')} className="p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm shadow-lg transition-all active:scale-95 text-[10px] font-mono font-bold" title="Isometric View">ISO</button>
                 </div>
             </div>
-            
+
             {/* View Mode & Geometry Selectors (Bottom) */}
             <div className="absolute bottom-14 right-4 z-10 flex gap-1 p-1 bg-black/40 backdrop-blur-md rounded-lg border border-white/5 opacity-100 transition-opacity duration-300">
                 {[
@@ -274,7 +288,7 @@ export const TextureCanvas: React.FC<{
                     </button>
                 ))}
             </div>
-            
+
             <div className="absolute bottom-14 left-4 z-10 flex gap-1 p-1 bg-black/40 backdrop-blur-md rounded-lg border border-white/5 opacity-100 transition-opacity duration-300">
                 {[
                     { type: GeometryType.PLANE, icon: Square },

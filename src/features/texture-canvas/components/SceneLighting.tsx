@@ -28,18 +28,30 @@ export const SceneLighting: React.FC<SceneLightingProps> = memo(({ appState }) =
     // Map numeric envType to string preset for Drei
     const preset = ENV_PRESETS[envType % ENV_PRESETS.length] || 'studio';
 
+    const supportsWebGlOnlyDrei = React.useMemo(() => {
+        try {
+            if ((gl as { isWebGPURenderer?: boolean })?.isWebGPURenderer) {
+                return false;
+            }
+            const context = (gl as { getContext?: () => unknown })?.getContext?.() as { getContextAttributes?: () => unknown } | undefined;
+            return typeof context?.getContextAttributes === 'function';
+        } catch {
+            return false;
+        }
+    }, [gl]);
+
     return (
         <>
-            {/* HDRI Environment */}
-            <Environment preset={preset} background={envBackground} blur={0.5} />
+            {/* HDRI Environment (WebGL-only via drei) */}
+            {supportsWebGlOnlyDrei && <Environment preset={preset} background={envBackground} blur={0.5} />}
 
             {/* Professional Infinite Grid */}
-            {gridOverlay && <InfiniteGrid />}
-            
+            {supportsWebGlOnlyDrei && gridOverlay && <InfiniteGrid />}
+
             {/* Dynamic Key Light */}
-            <directionalLight 
-                position={[lightX * 10, lightY * 10, 5]} 
-                intensity={lightIntensity * 2.0} 
+            <directionalLight
+                position={[lightX * 10, lightY * 10, 5]}
+                intensity={lightIntensity * 2.0}
                 color={lightColor}
                 castShadow
                 shadow-bias={-0.0005} // Prevent shadow acne
@@ -47,14 +59,14 @@ export const SceneLighting: React.FC<SceneLightingProps> = memo(({ appState }) =
             >
                 <orthographicCamera attach="shadow-camera" args={[-10, 10, 10, -10]} />
             </directionalLight>
-            
+
             {/* Fill Light (Softer) - REDUCED from 0.5 to 0.3 */}
-            <directionalLight 
-                position={[-5, 0, 5]} 
-                intensity={lightIntensity * 0.3} 
+            <directionalLight
+                position={[-5, 0, 5]}
+                intensity={lightIntensity * 0.3}
                 color="#dbeafe"
             />
-            
+
             {/* Base Ambient - DRASTICALLY REDUCED from 0.2 to 0.05 to prevent Bloom blowout */}
             <ambientLight intensity={0.05} color={ambientColor} />
         </>

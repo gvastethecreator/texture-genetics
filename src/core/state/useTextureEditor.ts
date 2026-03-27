@@ -32,6 +32,11 @@ export const useTextureEditor = () => {
         resetHistory,
         historyControl 
     } = useHistoryStack(state);
+
+    // During initialization/history synchronization, currentState can be
+    // temporarily undefined. Fall back to the source app state to avoid
+    // runtime crashes in render paths that access state fields directly.
+    const stableState = currentState ?? state;
     
     // Wire up callback via ref (safe with StrictMode)
     historyCallbackRef.current = pushToHistory;
@@ -84,7 +89,7 @@ export const useTextureEditor = () => {
     }), [stateActions, presetActions, addToast, removeToast]);
 
     return {
-        state: currentState,
+        state: stableState,
         history: enhancedHistory,
         actions,
         userPresets,

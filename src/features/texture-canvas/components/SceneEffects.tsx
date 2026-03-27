@@ -1,11 +1,35 @@
 import React from 'react';
 import { EffectComposer, Bloom, Vignette, Noise, ChromaticAberration, Scanline, Pixelation, Glitch, Outline, TiltShift, DotScreen } from '@react-three/postprocessing';
 import { BlendFunction, GlitchMode } from 'postprocessing';
+import { useThree } from '@react-three/fiber';
 import { AppState } from '../../../core/types/types';
 import * as THREE from 'three';
 
 export const SceneEffects: React.FC<{ appState: AppState }> = ({ appState }) => {
+    const { gl } = useThree();
     const env = appState.environment;
+
+    const hasAnySceneEffect = (
+        env.sceneBloom || env.sceneScanlines || env.scenePixelate || env.sceneGlitch ||
+        env.sceneChromatic || env.sceneNoise || env.sceneVignette || env.sceneOutline ||
+        env.sceneTiltShift || env.sceneAscii || env.sceneDither || env.sceneRuttEtra
+    );
+
+    const supportsPostprocessing = React.useMemo(() => {
+        try {
+            if ((gl as { isWebGPURenderer?: boolean })?.isWebGPURenderer) {
+                return false;
+            }
+            const context = (gl as { getContext?: () => unknown })?.getContext?.() as { getContextAttributes?: () => unknown } | undefined;
+            return typeof context?.getContextAttributes === 'function';
+        } catch {
+            return false;
+        }
+    }, [gl]);
+
+    if (!hasAnySceneEffect || !supportsPostprocessing) {
+        return null;
+    }
 
     const effectsKey = [
         env.sceneBloom, env.sceneScanlines, env.scenePixelate, env.sceneGlitch,

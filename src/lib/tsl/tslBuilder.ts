@@ -111,9 +111,9 @@ export function buildFragmentGraph(u: TslUniforms, state: AppState, textures: Ts
 
     const fragmentFn = Fn(() => {
         // ── UV Transforms ──
-        const baseUV = uv();
+        const baseUvNode = uv();
         const st = getTransformedUV(
-            baseUV,
+            baseUvNode,
             u.u_mouseEnabled,
             u.u_mouse,
             u.u_mouseRadius,
@@ -172,17 +172,17 @@ export function buildFragmentGraph(u: TslUniforms, state: AppState, textures: Ts
 
         // ── Base Texture ──
         if (hasBaseTexture && baseTexture) {
-            const baseUV = vec2(baseUV).toVar();
+            const baseTexUV = vec2(baseUvNode).toVar();
 
             if (baseEffect === 1) {
-                baseUV.addAssign(vec2(n, n).mul(baseEffectStrength).mul(0.1));
+                baseTexUV.addAssign(vec2(n, n).mul(baseEffectStrength).mul(0.1));
             }
 
             if (baseEffect === 4) {
-                baseUV.addAssign(sin(baseUV.mul(10.0).add(n.mul(10.0))).mul(0.01).mul(baseEffectStrength));
+                baseTexUV.addAssign(sin(baseTexUV.mul(10.0).add(n.mul(10.0))).mul(0.01).mul(baseEffectStrength));
             }
 
-            const baseSample = texture(baseTexture, baseUV);
+            const baseSample = texture(baseTexture, baseTexUV);
             const baseColor = vec3(baseSample.x, baseSample.y, baseSample.z);
             const blendedBase = applyBlendModeVec3(baseColor, col, baseBlendMode);
             col.assign(mix(baseColor, blendedBase, baseOpacity));
@@ -190,7 +190,7 @@ export function buildFragmentGraph(u: TslUniforms, state: AppState, textures: Ts
 
         // ── Sticker Layer ──
         if (hasStickerTexture && stickerTexture) {
-            const stickerUV = vec2(baseUV).sub(0.5).toVar();
+            const stickerUV = vec2(baseUvNode).sub(0.5).toVar();
             stickerUV.subAssign(vec2(stickerPosX, stickerPosY).mul(0.5));
             stickerUV.assign(rotate2d(-stickerRotation).mul(stickerUV));
             stickerUV.divAssign(stickerScale);
@@ -259,17 +259,17 @@ export function buildFragmentGraph(u: TslUniforms, state: AppState, textures: Ts
 
         // ── Post Process ──
         If(u.u_applyToMap.greaterThan(0.5).or(viewMode.equal(int(3))), () => {
-            col.assign(applyScanlines(col, baseUV, u.u_scanlines, u.u_resolution, u.u_scanlineIntensity, u.u_crtDistortion, u.u_time));
+            col.assign(applyScanlines(col, baseUvNode, u.u_scanlines, u.u_resolution, u.u_scanlineIntensity, u.u_crtDistortion, u.u_time));
             col.assign(applyColorBalance(col, u.u_brightness, u.u_contrast, u.u_saturation, u.u_hue, u.u_cycleSpeed, u.u_time, u.u_shadows, u.u_midtones, u.u_highlights));
 
             If(u.u_halftone.greaterThan(0.5), () => {
-                col.assign(applyHalftone(col, baseUV, u.u_halftoneScale));
+                col.assign(applyHalftone(col, baseUvNode, u.u_halftoneScale));
             });
             If(u.u_edgeDetect.greaterThan(0.5), () => {
-                col.assign(applyEdgeDetect(col, baseUV, u.u_edgeColor));
+                col.assign(applyEdgeDetect(col, baseUvNode, u.u_edgeColor));
             });
 
-            col.assign(applyPostProcess(col, baseUV, u.u_vignette, u.u_bloomEnabled, u.u_bloomThreshold, u.u_bloomStrength, u.u_posterize, u.u_posterizeLevels));
+            col.assign(applyPostProcess(col, baseUvNode, u.u_vignette, u.u_bloomEnabled, u.u_bloomThreshold, u.u_bloomStrength, u.u_posterize, u.u_posterizeLevels));
 
             // Chromatic Aberration
             If(u.u_chromaticAberration.greaterThan(0.0), () => {
@@ -290,7 +290,7 @@ export function buildFragmentGraph(u: TslUniforms, state: AppState, textures: Ts
             alpha.assign(mask);
 
             if (hasMaskTexture && maskTexture) {
-                alpha.assign(alpha.mul(texture(maskTexture, baseUV).x));
+                alpha.assign(alpha.mul(texture(maskTexture, baseUvNode).x));
             }
         });
 

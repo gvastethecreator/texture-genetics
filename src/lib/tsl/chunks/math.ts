@@ -4,7 +4,7 @@
  */
 import {
     Fn, float, vec2, vec3, vec4, mat2,
-    sin, cos, abs, floor, fract, dot,
+    sin, cos, abs, floor, fract, dot, atan,
     mix, step, clamp, smoothstep, sqrt, min, max, pow,
     dFdx, dFdy, fwidth,
     If, select, Loop, int,
@@ -22,7 +22,7 @@ export const toPolar = /*@__PURE__*/ Fn(([st_in]: [any]) => {
     const st = vec2(st_in);
     const pos = st.sub(0.5);
     const r = pos.length().mul(2);
-    const a = pos.y.atan2(pos.x);
+    const a = atan(pos.y, pos.x);
     return vec2(a.div(Math.PI * 2).add(0.5), r);
 });
 

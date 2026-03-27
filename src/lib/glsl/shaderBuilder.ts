@@ -1,7 +1,7 @@
 
 import * as THREE from 'three';
 import { AppState, TextureType } from '../../core/types/types';
-import { PATTERN_MAP } from '../../data/patterns';
+import { PATTERN_MAP } from './patternMap';
 import { SHADER_CHUNKS } from './glslChunks';
 
 // --- GLSL 3.0 STANDARD VERTEX SHADER ---

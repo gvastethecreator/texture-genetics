@@ -1,14 +1,5 @@
-export {
-    ABSTRACT,
-    FIRE_LIGHT,
-    GRADIENTS,
-    NATURE,
-    NOISE,
-    PATTERN_MAP,
-    SDF_PATTERNS,
-    SHAPES,
-} from '../lib/glsl/patternMap';
-import { TextureType, PatternDefinition } from '../core/types/types';
+
+import { TextureType, PatternDefinition } from '../../core/types/types';
 import { SHAPES } from './patterns/shapes';
 import { NOISE } from './patterns/noise';
 import { SDF_PATTERNS } from './patterns/sdf';

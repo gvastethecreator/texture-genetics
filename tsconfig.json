@@ -15,6 +15,7 @@
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",
+    "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "jsx": "react-jsx",
     "allowImportingTsExtensions": true,

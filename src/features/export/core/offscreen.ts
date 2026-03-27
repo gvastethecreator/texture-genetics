@@ -22,14 +22,6 @@ export interface OffscreenSceneSetup {
 let sharedLegacyRenderer: THREE.WebGLRenderer | null = null;
 let sharedTslRenderer: WebGPURenderer | null = null;
 
-const needsLegacyExport = (state: AppState): boolean => {
-    const hasMaskTexture = state.imageAlpha.maskEnabled && !!state.imageAlpha.maskTexture;
-    const hasBaseTexture = !!(state.baseTexture?.enabled && state.baseTexture.texture);
-    const hasStickerTexture = !!(state.sticker?.enabled && state.sticker.texture);
-
-    return hasMaskTexture || hasBaseTexture || hasStickerTexture;
-};
-
 const getSharedLegacyRenderer = (antialias: boolean): THREE.WebGLRenderer => {
     if (sharedLegacyRenderer) {
         const gl = sharedLegacyRenderer.getContext();
@@ -105,10 +97,16 @@ export const setupOffscreenScene = async (
     height: number,
     viewMode: ViewMode,
 ): Promise<OffscreenSceneSetup> => {
-    const usingTsl = !needsLegacyExport(state);
-    const renderer = usingTsl
-        ? await getSharedTslRenderer(state.settings.antialias)
-        : getSharedLegacyRenderer(state.settings.antialias);
+    let usingTsl = true;
+    let renderer: OffscreenRenderer;
+
+    try {
+        renderer = await getSharedTslRenderer(state.settings.antialias);
+    } catch (error) {
+        console.warn('WebGPU offscreen unavailable, falling back to legacy WebGL export', error);
+        usingTsl = false;
+        renderer = getSharedLegacyRenderer(state.settings.antialias);
+    }
 
     const currentSize = new THREE.Vector2();
     renderer.getSize(currentSize);
@@ -126,33 +124,6 @@ export const setupOffscreenScene = async (
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     const resources: Array<{ dispose?: () => void }> = [];
-
-    if (usingTsl) {
-        const { material, uniforms } = createTslMaterial(state);
-        updateTslUniforms(uniforms, state);
-        (uniforms.u_resolution.value as THREE.Vector2).set(width, height);
-        uniforms.u_viewMode.value = viewMode;
-
-        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
-        scene.add(mesh);
-
-        return {
-            renderer,
-            scene,
-            camera,
-            setTime: (time) => {
-                uniforms.u_time.value = time;
-            },
-            setViewMode: (mode) => {
-                uniforms.u_viewMode.value = mode;
-            },
-            cleanup: () => {
-                disposeRoot(scene);
-                resources.forEach(resource => resource.dispose?.());
-            },
-            usingTsl: true,
-        };
-    }
 
     const promises: Promise<void>[] = [];
     let maskTexture: THREE.Texture | null = null;
@@ -184,6 +155,37 @@ export const setupOffscreenScene = async (
     }
 
     await Promise.all(promises);
+
+    if (usingTsl) {
+        const { material, uniforms } = createTslMaterial(state, {
+            maskTexture,
+            baseTexture,
+            stickerTexture,
+        });
+        updateTslUniforms(uniforms, state);
+        (uniforms.u_resolution.value as THREE.Vector2).set(width, height);
+        uniforms.u_viewMode.value = viewMode;
+
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+        scene.add(mesh);
+
+        return {
+            renderer,
+            scene,
+            camera,
+            setTime: (time) => {
+                uniforms.u_time.value = time;
+            },
+            setViewMode: (mode) => {
+                uniforms.u_viewMode.value = mode;
+            },
+            cleanup: () => {
+                disposeRoot(scene);
+                resources.forEach(resource => resource.dispose?.());
+            },
+            usingTsl: true,
+        };
+    }
 
     const uniforms = createUniformsFromState(state, maskTexture, baseTexture, stickerTexture);
     uniforms.u_resolution.value.set(width, height);
