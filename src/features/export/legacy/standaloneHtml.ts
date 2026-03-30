@@ -39,8 +39,12 @@ export const generateLegacyStandaloneHtml = (state: AppState): string => {
     const context = canvas.getContext('webgl2', { alpha: true, antialias: ${antialias} });
 
     if (!context) {
-        document.body.innerHTML = "<div style='color:red;padding:20px;'>Error: WebGL 2 not supported by this browser.</div>";
-        throw new Error("WebGL 2 Required");
+        const fallback = document.createElement('div');
+        fallback.style.color = 'red';
+        fallback.style.padding = '20px';
+        fallback.textContent = 'Error: WebGL 2 not supported by this browser.';
+        document.body.appendChild(fallback);
+        throw new Error('WebGL 2 Required');
     }
 
     const renderer=new THREE.WebGLRenderer({ canvas: canvas, context: context, alpha:true, antialias:${antialias} });
