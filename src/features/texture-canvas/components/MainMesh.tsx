@@ -1,18 +1,31 @@
 
-import React, { useRef, useMemo, useEffect, useState, useLayoutEffect, memo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
+import React, { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import droidSansFontUrl from 'three/examples/fonts/droid/droid_sans_regular.typeface.json?url';
+import droidSerifFontUrl from 'three/examples/fonts/droid/droid_serif_regular.typeface.json?url';
+import gentilisFontUrl from 'three/examples/fonts/gentilis_regular.typeface.json?url';
+import helvetikerFontUrl from 'three/examples/fonts/helvetiker_regular.typeface.json?url';
+import optimerFontUrl from 'three/examples/fonts/optimer_regular.typeface.json?url';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
-import { AppState, GeometryType, PreviewAnimation, AnimationConfig } from '../../../core/types/types';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
+import { AnimationConfig, AppState, GeometryType, PreviewAnimation } from '../../../core/types/types';
 import { getGeometryForType } from '../../../lib/three/geometryFactory';
-import { calculateAnimatedValue } from '../../../shared/utils/animationUtils';
 import { createTslMaterial } from '../../../lib/tsl/tslBuilder';
-import { updateTslUniforms, TslUniforms } from '../../../lib/tsl/uniforms';
+import { TslUniforms, updateTslUniforms } from '../../../lib/tsl/uniforms';
 import { useTextureResource } from '../../../shared/hooks/useTextureResource';
+import { calculateAnimatedValue } from '../../../shared/utils/animationUtils';
+
+const FONT_URLS: Record<string, string> = {
+    'droid/droid_sans': droidSansFontUrl,
+    'droid/droid_serif': droidSerifFontUrl,
+    gentilis: gentilisFontUrl,
+    helvetiker: helvetikerFontUrl,
+    optimer: optimerFontUrl,
+};
 
 interface MainMeshProps {
     appState: AppState;
@@ -176,7 +189,7 @@ export const MainMesh: React.FC<MainMeshProps> = memo(({ appState, stateRef, onL
             const loadText = async () => {
                 try {
                     const loader = new FontLoader();
-                    const fontUrl = `https://unpkg.com/three@0.183.2/examples/fonts/${appState.text.font}_regular.typeface.json`;
+                    const fontUrl = FONT_URLS[appState.text.font] ?? helvetikerFontUrl;
                     const font = await loader.loadAsync(fontUrl);
 
                     const geom = new TextGeometry(appState.text.text || ' ', {
