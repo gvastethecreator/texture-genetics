@@ -1,9 +1,17 @@
-
-import { MATH_UTILS } from './chunks/math';
-import { BASE_NOISE, SIMPLEX_NOISE, VALUE_NOISE, CLASSIC_NOISE, FBM, CURL_NOISE, VORONOI, GYROID } from './chunks/noise';
-import { SPECTRAL_LIB, LIGHTING_FUNCTIONS } from './chunks/lighting';
-import { TRANSFORM_FUNCTIONS, PROCESS_FUNCTIONS } from './chunks/postProcess';
-import { SDF_LIB } from './chunks/sdf';
+import { MATH_UTILS } from "./chunks/math";
+import {
+  BASE_NOISE,
+  SIMPLEX_NOISE,
+  VALUE_NOISE,
+  CLASSIC_NOISE,
+  FBM,
+  CURL_NOISE,
+  VORONOI,
+  GYROID,
+} from "./chunks/noise";
+import { SPECTRAL_LIB, LIGHTING_FUNCTIONS } from "./chunks/lighting";
+import { TRANSFORM_FUNCTIONS, PROCESS_FUNCTIONS } from "./chunks/postProcess";
+import { SDF_LIB } from "./chunks/sdf";
 
 // ROBUST GLSL 3.0 HEADER
 // We use #ifndef guards to prevent collisions with Three.js built-ins
@@ -215,22 +223,22 @@ const HEADER = `
     #define TAU 6.28318530718
 `;
 
-const modernize = (code: string) => code; 
+const modernize = (code: string) => code;
 
 export const SHADER_CHUNKS = {
-    HEADER,
-    MATH_UTILS,
-    BASE_NOISE,
-    SIMPLEX_NOISE,
-    VALUE_NOISE,
-    CLASSIC_NOISE,
-    FBM,
-    CURL_NOISE,
-    VORONOI,
-    GYROID,
-    SPECTRAL_LIB,
-    SDF_LIB,
-    MAIN_PROCESS: `
+  HEADER,
+  MATH_UTILS,
+  BASE_NOISE,
+  SIMPLEX_NOISE,
+  VALUE_NOISE,
+  CLASSIC_NOISE,
+  FBM,
+  CURL_NOISE,
+  VORONOI,
+  GYROID,
+  SPECTRAL_LIB,
+  SDF_LIB,
+  MAIN_PROCESS: `
         ${modernize(TRANSFORM_FUNCTIONS)}
         ${PROCESS_FUNCTIONS}
         ${LIGHTING_FUNCTIONS}
@@ -372,5 +380,5 @@ export const SHADER_CHUNKS = {
             
             pc_fragColor = vec4(clamp(col, 0.0, 1.0), alpha);
         }
-    `
+    `,
 };

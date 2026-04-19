@@ -1,5 +1,5 @@
-import { AppState, ShaderParams } from '../../../core/types/types';
-import { getFragmentShader, VERTEX_SHADER } from '../../../lib/glsl/shaderBuilder';
+import { AppState, ShaderParams } from "../../../core/types/types";
+import { getFragmentShader, VERTEX_SHADER } from "../../../lib/glsl/shaderBuilder";
 
 type DynamicShaderParamKey = Extract<keyof ShaderParams, `p${number}`>;
 
@@ -8,28 +8,31 @@ type DynamicShaderParamKey = Extract<keyof ShaderParams, `p${number}`>;
  * Kept intentionally as a compatibility fallback while the app runtime is fully TSL-first.
  */
 export const generateLegacyStandaloneHtml = (state: AppState): string => {
-    const frag = getFragmentShader(state);
-    const antialias = state.settings.antialias;
+  const frag = getFragmentShader(state);
+  const antialias = state.settings.antialias;
 
-    const palette = state.params.palette || [];
-    const activeColors = palette.filter((p) => p.enabled);
-    if (activeColors.length === 0) {
-        activeColors.push({ color: '#ffffff', enabled: true });
-        activeColors.push({ color: '#000000', enabled: true });
-    }
+  const palette = state.params.palette || [];
+  const activeColors = palette.filter((p) => p.enabled);
+  if (activeColors.length === 0) {
+    activeColors.push({ color: "#ffffff", enabled: true });
+    activeColors.push({ color: "#000000", enabled: true });
+  }
 
-    const paletteColorsJS = activeColors.map((c) => `new THREE.Color("${c.color}")`).join(',');
-    const fillerCount = 8 - activeColors.length;
-    const fillerJS = fillerCount > 0 ? ',' + Array.from({ length: fillerCount }, () => 'new THREE.Color(0x000000)').join(',') : '';
-    const fullPaletteArray = `[${paletteColorsJS}${fillerJS}]`;
+  const paletteColorsJS = activeColors.map((c) => `new THREE.Color("${c.color}")`).join(",");
+  const fillerCount = 8 - activeColors.length;
+  const fillerJS =
+    fillerCount > 0
+      ? "," + Array.from({ length: fillerCount }, () => "new THREE.Color(0x000000)").join(",")
+      : "";
+  const fullPaletteArray = `[${paletteColorsJS}${fillerJS}]`;
 
-    let paramsJS = '';
-    for (let i = 1; i <= 15; i++) {
-        const key = `p${i}` as DynamicShaderParamKey;
-        paramsJS += `u_p${i}:{value:${state.params[key] ?? 0}},\n        `;
-    }
+  let paramsJS = "";
+  for (let i = 1; i <= 15; i++) {
+    const key = `p${i}` as DynamicShaderParamKey;
+    paramsJS += `u_p${i}:{value:${state.params[key] ?? 0}},\n        `;
+  }
 
-    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>EffectTextureGen Legacy Export</title><style>body{margin:0;overflow:hidden;background:#000;}</style></head><body><script type="importmap">{"imports": {"three": "https://unpkg.com/three@0.183.2/build/three.module.js"}}</script><script type="module">
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>EffectTextureGen Legacy Export</title><style>body{margin:0;overflow:hidden;background:#000;}</style></head><body><script type="importmap">{"imports": {"three": "https://unpkg.com/three@0.183.2/build/three.module.js"}}</script><script type="module">
     import * as THREE from 'three';
 
     const scene=new THREE.Scene();

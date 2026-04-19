@@ -1,4 +1,3 @@
-
 export const SDF_LIB = `
     // Basic SDF Primitives
     float sdBox(vec3 p, vec3 b) {

@@ -1,4 +1,3 @@
-
 export const SPECTRAL_LIB = `
     // Internal hash for self-contained lighting noise
     vec2 holoHash2(vec2 p) {

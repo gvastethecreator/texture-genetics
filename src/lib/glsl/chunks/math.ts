@@ -1,4 +1,3 @@
-
 export const MATH_UTILS = `
     mat2 rotate2d(float _angle){
         float s = sin(_angle);

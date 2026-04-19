@@ -3,58 +3,137 @@
  * Imports all TSL patterns and registers them in TSL_PATTERN_MAP.
  * Import this module once at app startup.
  */
-import { TextureType } from '../../core/types/types';
-import { registerTslPattern } from './tslBuilder';
+import { TextureType } from "../../core/types/types";
+import { registerTslPattern } from "./tslBuilder";
 
 // ─── Gradient Patterns ───
-import { gradientLinear, gradientRadial, gradientStripes } from './patterns/gradients';
+import { gradientLinear, gradientRadial, gradientStripes } from "./patterns/gradients";
 
 // ─── Shape Patterns ───
 import {
-    checker, circle, ring, cone, crossPattern,
-    hexagonGrid, isometric, flower, bricks, zigzag,
-    wavePattern, waveform, truchet, spiral, starburst,
-    crossStitch, rgbRings, weaveKnit, rotatingGrid, rippleGrid,
-    uvDebug, maze, pyramidScene, warpGrid, isoLines,
-} from './patterns/shapes';
+  checker,
+  circle,
+  ring,
+  cone,
+  crossPattern,
+  hexagonGrid,
+  isometric,
+  flower,
+  bricks,
+  zigzag,
+  wavePattern,
+  waveform,
+  truchet,
+  spiral,
+  starburst,
+  crossStitch,
+  rgbRings,
+  weaveKnit,
+  rotatingGrid,
+  rippleGrid,
+  uvDebug,
+  maze,
+  pyramidScene,
+  warpGrid,
+  isoLines,
+} from "./patterns/shapes";
 
 // ─── Noise Patterns ───
 import {
-    perlinNoise, simplexNoise, cellularNoise, worleyNoise,
-    gradientNoise, valueNoisePattern, fbmNoise, ridgedFractal,
-    voronoiSmoothPattern, voronoiRocks, trabeculum, turbulence,
-    gyroidPattern, curlNoisePattern, marble, wood, grunge,
-    squiggles, holoFoil, oilPaint, furFibers, fluidWarp,
-} from './patterns/noisePatterns';
+  perlinNoise,
+  simplexNoise,
+  cellularNoise,
+  worleyNoise,
+  gradientNoise,
+  valueNoisePattern,
+  fbmNoise,
+  ridgedFractal,
+  voronoiSmoothPattern,
+  voronoiRocks,
+  trabeculum,
+  turbulence,
+  gyroidPattern,
+  curlNoisePattern,
+  marble,
+  wood,
+  grunge,
+  squiggles,
+  holoFoil,
+  oilPaint,
+  furFibers,
+  fluidWarp,
+} from "./patterns/noisePatterns";
 
 // ─── Fire Patterns ───
 import {
-    complexFire, flame, fire, solar, spark,
-    flash, lightning, laser, flare, plasma,
-} from './patterns/firePatterns';
+  complexFire,
+  flame,
+  fire,
+  solar,
+  spark,
+  flash,
+  lightning,
+  laser,
+  flare,
+  plasma,
+} from "./patterns/firePatterns";
 
 // ─── Nature Patterns ───
 import {
-    cloud, realisticClouds, smoke, water, snow,
-    rain, bubbles, caustics, inkSplat, mosaic,
-    crystals, seaWaves, frostPattern,
-} from './patterns/naturePatterns';
+  cloud,
+  realisticClouds,
+  smoke,
+  water,
+  snow,
+  rain,
+  bubbles,
+  caustics,
+  inkSplat,
+  mosaic,
+  crystals,
+  seaWaves,
+  frostPattern,
+} from "./patterns/naturePatterns";
 
 // ─── Abstract Patterns ───
 import {
-    scanlines, magicCircle, mandala, electric, binaryMatrix,
-    explosion, radialWave, circuit, mandelbrot, julia,
-    flowField, infiniteFall, voxelTunnel, hypnoticRings,
-    metaballSpiral, inverseMobius, stereoFlow, smoothSwirl,
-    neonRipples, blackHole, spaceDust, gaborNoise,
-} from './patterns/abstractPatterns';
+  scanlines,
+  magicCircle,
+  mandala,
+  electric,
+  binaryMatrix,
+  explosion,
+  radialWave,
+  circuit,
+  mandelbrot,
+  julia,
+  flowField,
+  infiniteFall,
+  voxelTunnel,
+  hypnoticRings,
+  metaballSpiral,
+  inverseMobius,
+  stereoFlow,
+  smoothSwirl,
+  neonRipples,
+  blackHole,
+  spaceDust,
+  gaborNoise,
+} from "./patterns/abstractPatterns";
 
 // ─── SDF Patterns ───
 import {
-    hyperTunnel, alienBiomass, cubicSpace, lowTechTunnel,
-    octgrams, cosmicFlow, indraNet, sphericalSpiral,
-    alienCocoon, volumetricFog,
-} from './patterns/sdfPatterns';
+  hyperTunnel,
+  alienBiomass,
+  cubicSpace,
+  lowTechTunnel,
+  octgrams,
+  cosmicFlow,
+  indraNet,
+  sphericalSpiral,
+  alienCocoon,
+  volumetricFog,
+} from "./patterns/sdfPatterns";
 
 // ─── Register All ───
 

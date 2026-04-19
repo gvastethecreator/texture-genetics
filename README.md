@@ -1,4 +1,3 @@
-
 # 🌀 EffectTextureGen v4.0
 
 ![Version](https://img.shields.io/badge/version-4.0.0-blueviolet)
@@ -19,23 +18,23 @@
   - **ZIP** con todos los mapas de material.
 - **Gestión de Estado Robusta:** Presets, Historial (Undo/Redo) y persistencia local.
 - **Capas y Composición:** Mezcla de patrones procedurales con imágenes importadas.
-- **Biblioteca de Patrones:** 7 categorías (abstracto, fuego, gradientes, naturaleza, ruido, SDF, formas).
+- **Biblioteca de Patrones:** 8 categorías (abstracto, fuego, gradientes, naturaleza, ruido, SDF, formas, 3D).
 
 ## 🛠️ Stack Tecnológico
 
-| Categoría | Herramienta | Versión |
-| --------- | ----------- | ------- |
-| Runtime | Bun | >= 1.2 |
-| Framework | React | 19.x |
-| Lenguaje | TypeScript | 5.8.x |
-| Build | Vite | 8.x |
-| Bundler | Rolldown (via Vite) | integrado |
-| Estilos | Tailwind CSS | 4.x |
-| 3D | Three.js + R3F | 0.182.x |
-| Animación | GSAP | 3.12.x |
-| Linting | oxlint (OXC) | latest |
-| Formatting | oxfmt (OXC) | latest |
-| Testing | Vitest | 3.x |
+| Categoría  | Herramienta         | Versión   |
+| ---------- | ------------------- | --------- |
+| Runtime    | Bun                 | >= 1.2    |
+| Framework  | React               | 19.x      |
+| Lenguaje   | TypeScript          | 5.8.x     |
+| Build      | Vite                | 8.x       |
+| Bundler    | Rolldown (via Vite) | integrado |
+| Estilos    | Tailwind CSS        | 4.x       |
+| 3D         | Three.js + R3F      | 0.182.x   |
+| Animación  | GSAP                | 3.12.x    |
+| Linting    | oxlint (OXC)        | latest    |
+| Formatting | oxfmt (OXC)         | latest    |
+| Testing    | Vitest              | 3.x       |
 
 ## ⚡ Inicio Rápido
 
@@ -70,14 +69,14 @@ src/
 
 ## 🎮 Controles Rápidos
 
-| Acción | Atajo |
-| ------ | ----- |
-| Rotar cámara | Click Izquierdo |
-| Zoom | Rueda del ratón |
-| Pausar/Reanudar animación | `Espacio` |
-| Aleatorizar parámetros | `R` |
-| Deshacer / Rehacer | `Ctrl+Z` / `Ctrl+Y` |
-| Ocultar paneles | `H` |
+| Acción                    | Atajo               |
+| ------------------------- | ------------------- |
+| Rotar cámara              | Click Izquierdo     |
+| Zoom                      | Rueda del ratón     |
+| Pausar/Reanudar animación | `Espacio`           |
+| Aleatorizar parámetros    | `R`                 |
+| Deshacer / Rehacer        | `Ctrl+Z` / `Ctrl+Y` |
+| Ocultar paneles           | `H`                 |
 
 ## 📋 Scripts Disponibles
 

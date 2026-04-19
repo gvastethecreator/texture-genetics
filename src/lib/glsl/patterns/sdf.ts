@@ -1,9 +1,9 @@
-
-
-import { TextureType, PatternDefinition } from '../../../core/types/types';
+import { TextureType, PatternDefinition } from "../../../core/types/types";
 
 export const SDF_PATTERNS: Partial<Record<TextureType, PatternDefinition>> = {
-    [TextureType.HYPER_TUNNEL]: { deps: ['sdf'], code: `float getPattern(vec2 uv) { 
+  [TextureType.HYPER_TUNNEL]: {
+    deps: ["sdf"],
+    code: `float getPattern(vec2 uv) { 
         float d=0.0,w=0.0; 
         float t=u_time*u_speed; 
         vec3 p,k; 
@@ -43,9 +43,12 @@ export const SDF_PATTERNS: Partial<Record<TextureType, PatternDefinition>> = {
         if(u_p13 > 0.0) accum += sin(d * u_p13) * 0.1;
 
         return clamp(accum,0.0,1.0); 
-    }` },
+    }`,
+  },
 
-    [TextureType.ALIEN_BIOMASS]: { deps: ['sdf'], code: `float getPattern(vec2 uv) { 
+  [TextureType.ALIEN_BIOMASS]: {
+    deps: ["sdf"],
+    code: `float getPattern(vec2 uv) { 
         vec3 p, q, k = vec3(0.0); 
         float t = 0.0, h = 0.0, w = 0.0; 
         float T = u_time * u_speed * 2.0; 
@@ -93,9 +96,12 @@ export const SDF_PATTERNS: Partial<Record<TextureType, PatternDefinition>> = {
         if(u_p13 > 0.0) val = pow(max(0.0, val), 1.0 - u_p13 * 0.5);
 
         return clamp(val, 0.0, 1.0); 
-    }` },
+    }`,
+  },
 
-    [TextureType.CUBIC_SPACE]: { deps: ['sdf'], code: `float getPattern(vec2 uv) { 
+  [TextureType.CUBIC_SPACE]: {
+    deps: ["sdf"],
+    code: `float getPattern(vec2 uv) { 
         vec3 ro = vec3(u_p12*2.0, u_p13*2.0, -4.0 + u_p11*2.0); 
         vec3 rd = normalize(vec3((uv - 0.5) * 2.0, 1.0)); 
         float t = u_time * u_speed; 
@@ -119,15 +125,27 @@ export const SDF_PATTERNS: Partial<Record<TextureType, PatternDefinition>> = {
         if(u_p15 > 0.0) accum = pow(max(0.0, accum), 1.0 + u_p15);
 
         return clamp(accum * 0.1, 0.0, 1.0); 
-    }` },
+    }`,
+  },
 
-    [TextureType.LOW_TECH_TUNNEL]: { deps: ['sdf'], code: `vec3 P(float z) { return vec3(12.0 * cos(z * vec2(0.1, 0.12)), z); } float A(float F, float H, float K, vec3 p) { return abs(dot(sin(F * p * K), H + p - p)) / max(0.001, K); } float getPattern(vec2 uv) { vec2 u = (uv - 0.5) * 2.0; vec3 c = vec3(0.0); float T = u_time * u_speed * 4.0 + 5.0 + 5.0 * sin(u_time * 0.3); vec3 p = P(T); vec3 Z = normalize(P(T + 4.0) - p); vec3 X = normalize(vec3(Z.z, 0.0, -Z.x)); vec3 D = normalize(vec3(u, 1.0)) * mat3(-X, cross(X, Z), Z); float i = 0.0, d = 0.0, s = 0.0; float accum = 0.0; for(int j=0; j<28; j++) { p += D * s; vec3 X_path = P(p.z); float t = sin(u_time); float e = length(p - vec3(X_path.x + t, X_path.y + t*2.0, 6.0 + T + t*2.0)) - 0.01; s = cos(p.z * 0.6) * 2.0 + 4.0; s -= min(length(p.xy - X_path.x - 6.0), length((p - X_path).xy)); s += A(4.0, 0.25, 0.1, p); s += A(T + 8.0, 0.22, 2.0, p); d += s = min(e, 0.01 + 0.3 * abs(s)); accum += 1.0/max(0.001, s) + 10.0 / max(e, 0.6); if (d > 30.0) break; } return clamp(accum * 0.00002 * u_intensity, 0.0, 1.0); }` },
-    
-    [TextureType.OCTGRAMS]: { deps: ['sdf'], code: `float sdBoxOct(vec3 p, vec3 b) { vec3 q = abs(p) - b; return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0); } float boxOct(vec3 pos, float scale) { pos *= scale; float base = sdBoxOct(pos, vec3(0.4, 0.4, 0.1)) / 1.5; pos.xy *= 5.0; pos.y -= 3.5; pos.xy *= rot2D(0.75); return -base; } float box_set(vec3 pos, float time) { vec3 pos_origin = pos; pos.y += sin(time * 0.4) * 2.5; pos.xy *= rot2D(0.8); float box1 = boxOct(pos, 2.0 - abs(sin(time * 0.4)) * 1.5); pos = pos_origin; pos.y -= sin(time * 0.4) * 2.5; pos.xy *= rot2D(0.8); float box2 = boxOct(pos, 2.0 - abs(sin(time * 0.4)) * 1.5); pos = pos_origin; pos.x += sin(time * 0.4) * 2.5; pos.xy *= rot2D(0.8); float box3 = boxOct(pos, 2.0 - abs(sin(time * 0.4)) * 1.5); pos = pos_origin; float box5 = boxOct(pos, 0.5) * 6.0; return max(max(max(box1, box2), box3), box5); } float getPattern(vec2 uv) { vec2 p = (uv - 0.5) * 2.0; vec3 ro = vec3(0.0, -0.2, u_time * 4.0 * u_speed); vec3 ray = normalize(vec3(p, 1.5 / u_scale)); ray.xy *= rot2D(sin(u_time * 0.03) * 5.0); ray.yz *= rot2D(sin(u_time * 0.05) * 0.2); float t = 0.1; float ac = 0.0; for (int i = 0; i < 99; i++){ vec3 pos = ro + ray * t; pos = mod(pos - 2.0, 4.0) - 2.0; float gTime = u_time - float(i) * 0.01; float d = box_set(pos, u_time); d = max(abs(d), 0.01); ac += exp(-d * 23.0 * (1.0 - u_factor * 0.5)); t += d * 0.55; } return clamp(ac * 0.02 * u_intensity, 0.0, 1.0); }` },
-    
-    [TextureType.COSMIC_FLOW]: { deps: ['sdf'], code: `vec3 cosmicPath(float t) { vec3 p = vec3(cos(t*0.3)*4.0, sin(t*0.3)*4.0, t); float nt = noise(mod(t, 60.0)); p += cos(p.zxy + nt * 6.0) * 0.4; return p; } mat3 setCamera(vec3 ro, vec3 ta, float cr) { vec3 cw = normalize(ta-ro); vec3 cp = vec3(sin(cr), cos(cr), 0.0); vec3 cu = normalize(cross(cw,cp)); vec3 cv = normalize(cross(cu,cw)); return mat3(cu, cv, cw); } float mapCosmic(vec3 p) { float d = 100.0; p.xy += sin(p.z * 0.2 + u_time * u_speed) * u_factor; float t = length(p.xy) - 1.0; float n = 0.0; vec3 q = p * u_scale; for(int i=0; i<3; i++) { n += (1.0/float(i+1)) * noise(q); q *= 2.0; } d = t - n * 0.5; return d; } float getPattern(vec2 uv) { vec2 p = (uv - 0.5) * 2.0; vec3 ro = vec3(0.0, 0.0, u_time * 5.0 * u_speed); vec3 ta = ro + vec3(0.0, 0.0, 1.0); mat3 cam = setCamera(ro, ta, 0.0); vec3 rd = cam * normalize(vec3(p, 1.5)); float t = 0.0; float accum = 0.0; for(int i=0; i<40; i++) { vec3 pos = ro + rd * t; float d = mapCosmic(pos); if(d < 0.01) { accum += (1.0 - t/20.0); break; } accum += 0.02 / (0.05 + abs(d)) * u_intensity * 0.1; t += max(0.05, d * 0.5); if(t > 20.0) break; } return clamp(accum, 0.0, 1.0); }` },
-    
-    [TextureType.INDRA_NET]: { deps: ['sdf'], code: `float getPattern(vec2 uv) { 
+  [TextureType.LOW_TECH_TUNNEL]: {
+    deps: ["sdf"],
+    code: `vec3 P(float z) { return vec3(12.0 * cos(z * vec2(0.1, 0.12)), z); } float A(float F, float H, float K, vec3 p) { return abs(dot(sin(F * p * K), H + p - p)) / max(0.001, K); } float getPattern(vec2 uv) { vec2 u = (uv - 0.5) * 2.0; vec3 c = vec3(0.0); float T = u_time * u_speed * 4.0 + 5.0 + 5.0 * sin(u_time * 0.3); vec3 p = P(T); vec3 Z = normalize(P(T + 4.0) - p); vec3 X = normalize(vec3(Z.z, 0.0, -Z.x)); vec3 D = normalize(vec3(u, 1.0)) * mat3(-X, cross(X, Z), Z); float i = 0.0, d = 0.0, s = 0.0; float accum = 0.0; for(int j=0; j<28; j++) { p += D * s; vec3 X_path = P(p.z); float t = sin(u_time); float e = length(p - vec3(X_path.x + t, X_path.y + t*2.0, 6.0 + T + t*2.0)) - 0.01; s = cos(p.z * 0.6) * 2.0 + 4.0; s -= min(length(p.xy - X_path.x - 6.0), length((p - X_path).xy)); s += A(4.0, 0.25, 0.1, p); s += A(T + 8.0, 0.22, 2.0, p); d += s = min(e, 0.01 + 0.3 * abs(s)); accum += 1.0/max(0.001, s) + 10.0 / max(e, 0.6); if (d > 30.0) break; } return clamp(accum * 0.00002 * u_intensity, 0.0, 1.0); }`,
+  },
+
+  [TextureType.OCTGRAMS]: {
+    deps: ["sdf"],
+    code: `float sdBoxOct(vec3 p, vec3 b) { vec3 q = abs(p) - b; return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0); } float boxOct(vec3 pos, float scale) { pos *= scale; float base = sdBoxOct(pos, vec3(0.4, 0.4, 0.1)) / 1.5; pos.xy *= 5.0; pos.y -= 3.5; pos.xy *= rot2D(0.75); return -base; } float box_set(vec3 pos, float time) { vec3 pos_origin = pos; pos.y += sin(time * 0.4) * 2.5; pos.xy *= rot2D(0.8); float box1 = boxOct(pos, 2.0 - abs(sin(time * 0.4)) * 1.5); pos = pos_origin; pos.y -= sin(time * 0.4) * 2.5; pos.xy *= rot2D(0.8); float box2 = boxOct(pos, 2.0 - abs(sin(time * 0.4)) * 1.5); pos = pos_origin; pos.x += sin(time * 0.4) * 2.5; pos.xy *= rot2D(0.8); float box3 = boxOct(pos, 2.0 - abs(sin(time * 0.4)) * 1.5); pos = pos_origin; float box5 = boxOct(pos, 0.5) * 6.0; return max(max(max(box1, box2), box3), box5); } float getPattern(vec2 uv) { vec2 p = (uv - 0.5) * 2.0; vec3 ro = vec3(0.0, -0.2, u_time * 4.0 * u_speed); vec3 ray = normalize(vec3(p, 1.5 / u_scale)); ray.xy *= rot2D(sin(u_time * 0.03) * 5.0); ray.yz *= rot2D(sin(u_time * 0.05) * 0.2); float t = 0.1; float ac = 0.0; for (int i = 0; i < 99; i++){ vec3 pos = ro + ray * t; pos = mod(pos - 2.0, 4.0) - 2.0; float gTime = u_time - float(i) * 0.01; float d = box_set(pos, u_time); d = max(abs(d), 0.01); ac += exp(-d * 23.0 * (1.0 - u_factor * 0.5)); t += d * 0.55; } return clamp(ac * 0.02 * u_intensity, 0.0, 1.0); }`,
+  },
+
+  [TextureType.COSMIC_FLOW]: {
+    deps: ["sdf"],
+    code: `vec3 cosmicPath(float t) { vec3 p = vec3(cos(t*0.3)*4.0, sin(t*0.3)*4.0, t); float nt = noise(mod(t, 60.0)); p += cos(p.zxy + nt * 6.0) * 0.4; return p; } mat3 setCamera(vec3 ro, vec3 ta, float cr) { vec3 cw = normalize(ta-ro); vec3 cp = vec3(sin(cr), cos(cr), 0.0); vec3 cu = normalize(cross(cw,cp)); vec3 cv = normalize(cross(cu,cw)); return mat3(cu, cv, cw); } float mapCosmic(vec3 p) { float d = 100.0; p.xy += sin(p.z * 0.2 + u_time * u_speed) * u_factor; float t = length(p.xy) - 1.0; float n = 0.0; vec3 q = p * u_scale; for(int i=0; i<3; i++) { n += (1.0/float(i+1)) * noise(q); q *= 2.0; } d = t - n * 0.5; return d; } float getPattern(vec2 uv) { vec2 p = (uv - 0.5) * 2.0; vec3 ro = vec3(0.0, 0.0, u_time * 5.0 * u_speed); vec3 ta = ro + vec3(0.0, 0.0, 1.0); mat3 cam = setCamera(ro, ta, 0.0); vec3 rd = cam * normalize(vec3(p, 1.5)); float t = 0.0; float accum = 0.0; for(int i=0; i<40; i++) { vec3 pos = ro + rd * t; float d = mapCosmic(pos); if(d < 0.01) { accum += (1.0 - t/20.0); break; } accum += 0.02 / (0.05 + abs(d)) * u_intensity * 0.1; t += max(0.05, d * 0.5); if(t > 20.0) break; } return clamp(accum, 0.0, 1.0); }`,
+  },
+
+  [TextureType.INDRA_NET]: {
+    deps: ["sdf"],
+    code: `float getPattern(vec2 uv) { 
         vec3 ro = vec3(u_p12, u_p13, -3.0 + u_p11); 
         vec3 rd = normalize(vec3((uv - 0.5) * 2.0, 1.0)); 
         float t = u_time * u_speed; 
@@ -151,9 +169,12 @@ export const SDF_PATTERNS: Partial<Record<TextureType, PatternDefinition>> = {
         if(u_p15 > 0.0) accum = pow(max(0.0, accum), 1.0 + u_p15);
 
         return clamp(accum * 0.2, 0.0, 1.0); 
-    }` },
-    
-    [TextureType.SPHERICAL_SPIRAL]: { deps: ['sdf'], code: `float getPattern(vec2 uv) { 
+    }`,
+  },
+
+  [TextureType.SPHERICAL_SPIRAL]: {
+    deps: ["sdf"],
+    code: `float getPattern(vec2 uv) { 
         vec2 p = (uv - 0.5) * 2.0; 
         float r = length(p); 
         if(r > 1.0) return 0.0; 
@@ -175,9 +196,12 @@ export const SDF_PATTERNS: Partial<Record<TextureType, PatternDefinition>> = {
         if(u_p15 > 0.0) dots = pow(max(0.0, dots), 1.0 - u_p15 * 0.5);
 
         return clamp(dots * u_intensity, 0.0, 1.0); 
-    }` },
-    
-    [TextureType.ALIEN_COCOON]: { deps: ['sdf', 'gyroid'], code: `float getPattern(vec2 uv) { 
+    }`,
+  },
+
+  [TextureType.ALIEN_COCOON]: {
+    deps: ["sdf", "gyroid"],
+    code: `float getPattern(vec2 uv) { 
         vec3 ro = vec3(u_p12, u_p13, -3.0 / u_scale + u_p11); 
         vec3 rd = normalize(vec3((uv - 0.5) * 2.0, 1.0)); 
         
@@ -200,9 +224,12 @@ export const SDF_PATTERNS: Partial<Record<TextureType, PatternDefinition>> = {
         if(u_p15 > 0.0) accum = pow(max(0.0, accum), 1.0 + u_p15);
 
         return clamp(accum, 0.0, 1.0); 
-    }` },
-    
-    [TextureType.VOLUMETRIC_FOG]: { deps: ['fbm', 'sdf'], code: `float getPattern(vec2 uv) { 
+    }`,
+  },
+
+  [TextureType.VOLUMETRIC_FOG]: {
+    deps: ["fbm", "sdf"],
+    code: `float getPattern(vec2 uv) { 
         vec3 ro = vec3(u_p12, 1.0 + u_p13, u_time * u_speed + u_p11); 
         vec3 rd = normalize(vec3((uv - 0.5) * 2.0, 1.0)); 
         rd.y -= 0.3; 
@@ -224,5 +251,6 @@ export const SDF_PATTERNS: Partial<Record<TextureType, PatternDefinition>> = {
         if(u_p15 > 0.0) accum = pow(max(0.0, accum), 1.0 + u_p15);
 
         return clamp(accum, 0.0, 1.0); 
-    }` },
+    }`,
+  },
 };

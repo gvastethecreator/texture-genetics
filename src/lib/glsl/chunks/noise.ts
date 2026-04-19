@@ -1,4 +1,3 @@
-
 export const BASE_NOISE = `
     // LUT-less pseudo random
     float random(vec2 st) {

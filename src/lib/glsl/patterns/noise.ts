@@ -1,34 +1,36 @@
-import perlinNoiseGlsl from '../../../data/patterns/glsl/noise/perlin_noise.glsl?raw';
-import simplexNoiseGlsl from '../../../data/patterns/glsl/noise/simplex_noise.glsl?raw';
-import cellularNoiseGlsl from '../../../data/patterns/glsl/noise/cellular_noise.glsl?raw';
-import worleyNoiseGlsl from '../../../data/patterns/glsl/noise/worley_noise.glsl?raw';
-import gradientNoiseGlsl from '../../../data/patterns/glsl/noise/gradient_noise.glsl?raw';
-import valueNoiseGlsl from '../../../data/patterns/glsl/noise/value_noise.glsl?raw';
-import ridgedFractalGlsl from '../../../data/patterns/glsl/noise/ridged_fractal.glsl?raw';
-import voronoiSmoothGlsl from '../../../data/patterns/glsl/noise/voronoi_smooth.glsl?raw';
-import trabeculumGlsl from '../../../data/patterns/glsl/noise/trabeculum.glsl?raw';
-import turbulenceGlsl from '../../../data/patterns/glsl/noise/turbulence.glsl?raw';
-import gyroidGlsl from '../../../data/patterns/glsl/noise/gyroid.glsl?raw';
-import curlNoiseGlsl from '../../../data/patterns/glsl/noise/curl_noise.glsl?raw';
-import marbleGlsl from '../../../data/patterns/glsl/noise/marble.glsl?raw';
-import woodGlsl from '../../../data/patterns/glsl/noise/wood.glsl?raw';
-import grungeGlsl from '../../../data/patterns/glsl/noise/grunge.glsl?raw';
-import squigglesGlsl from '../../../data/patterns/glsl/noise/squiggles.glsl?raw';
-import holoFoilGlsl from '../../../data/patterns/glsl/noise/holo_foil.glsl?raw';
-import furFibersGlsl from '../../../data/patterns/glsl/noise/fur_fibers.glsl?raw';
+import perlinNoiseGlsl from "../../../data/patterns/glsl/noise/perlin_noise.glsl?raw";
+import simplexNoiseGlsl from "../../../data/patterns/glsl/noise/simplex_noise.glsl?raw";
+import cellularNoiseGlsl from "../../../data/patterns/glsl/noise/cellular_noise.glsl?raw";
+import worleyNoiseGlsl from "../../../data/patterns/glsl/noise/worley_noise.glsl?raw";
+import gradientNoiseGlsl from "../../../data/patterns/glsl/noise/gradient_noise.glsl?raw";
+import valueNoiseGlsl from "../../../data/patterns/glsl/noise/value_noise.glsl?raw";
+import ridgedFractalGlsl from "../../../data/patterns/glsl/noise/ridged_fractal.glsl?raw";
+import voronoiSmoothGlsl from "../../../data/patterns/glsl/noise/voronoi_smooth.glsl?raw";
+import trabeculumGlsl from "../../../data/patterns/glsl/noise/trabeculum.glsl?raw";
+import turbulenceGlsl from "../../../data/patterns/glsl/noise/turbulence.glsl?raw";
+import gyroidGlsl from "../../../data/patterns/glsl/noise/gyroid.glsl?raw";
+import curlNoiseGlsl from "../../../data/patterns/glsl/noise/curl_noise.glsl?raw";
+import marbleGlsl from "../../../data/patterns/glsl/noise/marble.glsl?raw";
+import woodGlsl from "../../../data/patterns/glsl/noise/wood.glsl?raw";
+import grungeGlsl from "../../../data/patterns/glsl/noise/grunge.glsl?raw";
+import squigglesGlsl from "../../../data/patterns/glsl/noise/squiggles.glsl?raw";
+import holoFoilGlsl from "../../../data/patterns/glsl/noise/holo_foil.glsl?raw";
+import furFibersGlsl from "../../../data/patterns/glsl/noise/fur_fibers.glsl?raw";
 
-import { TextureType, PatternDefinition } from '../../../core/types/types';
+import { TextureType, PatternDefinition } from "../../../core/types/types";
 
 export const NOISE: Partial<Record<TextureType, PatternDefinition>> = {
-    [TextureType.PERLIN_NOISE]: { code: perlinNoiseGlsl  },
+  [TextureType.PERLIN_NOISE]: { code: perlinNoiseGlsl },
 
-    [TextureType.SIMPLEX_NOISE]: { code: simplexNoiseGlsl, deps: ['simplex']  },
+  [TextureType.SIMPLEX_NOISE]: { code: simplexNoiseGlsl, deps: ["simplex"] },
 
-    [TextureType.CELLULAR_NOISE]: { code: cellularNoiseGlsl, deps: ['voronoi']  },
+  [TextureType.CELLULAR_NOISE]: { code: cellularNoiseGlsl, deps: ["voronoi"] },
 
-    [TextureType.WORLEY_NOISE]: { code: worleyNoiseGlsl  },
+  [TextureType.WORLEY_NOISE]: { code: worleyNoiseGlsl },
 
-    [TextureType.FBM_NOISE]: { deps: ['fbm'], code: `float getPattern(vec2 uv) { 
+  [TextureType.FBM_NOISE]: {
+    deps: ["fbm"],
+    code: `float getPattern(vec2 uv) { 
         float pers=0.5+(u_p1-0.5); 
         float lac=2.0+(u_p2-0.5); 
         vec2 st=uv*u_scale*3.0+u_time*0.1; 
@@ -51,17 +53,20 @@ export const NOISE: Partial<Record<TextureType, PatternDefinition>> = {
         if(u_p12 > 0.0) v += (random(st) - 0.5) * u_p12 * 0.1;
 
         return pow(clamp(v,0.0,1.0),u_intensity); 
-    }` },
+    }`,
+  },
 
-    [TextureType.GRADIENT_NOISE]: { code: gradientNoiseGlsl  },
-    
-    [TextureType.VALUE_NOISE]: { code: valueNoiseGlsl, deps: ['value']  },
-    
-    [TextureType.RIDGED_FRACTAL]: { code: ridgedFractalGlsl, deps: ['fbm']  },
-    
-    [TextureType.VORONOI_SMOOTH]: { code: voronoiSmoothGlsl, deps: ['voronoi']  },
-    
-    [TextureType.VORONOI_ROCKS]: { deps: ['voronoi'], code: `float getPattern(vec2 uv) { 
+  [TextureType.GRADIENT_NOISE]: { code: gradientNoiseGlsl },
+
+  [TextureType.VALUE_NOISE]: { code: valueNoiseGlsl, deps: ["value"] },
+
+  [TextureType.RIDGED_FRACTAL]: { code: ridgedFractalGlsl, deps: ["fbm"] },
+
+  [TextureType.VORONOI_SMOOTH]: { code: voronoiSmoothGlsl, deps: ["voronoi"] },
+
+  [TextureType.VORONOI_ROCKS]: {
+    deps: ["voronoi"],
+    code: `float getPattern(vec2 uv) { 
         vec2 p=uv*u_scale*2.0; 
         p += vec2(u_p14, u_p15);
         p+=sin(p*6.28*2.0-cos(p.yx*6.28*4.0))*0.01*u_distortion; 
@@ -76,27 +81,30 @@ export const NOISE: Partial<Record<TextureType, PatternDefinition>> = {
         if(u_p15 > 0.0) rock = pow(max(0.0, rock), 1.0 - u_p15 * 0.5);
 
         return pow(clamp(rock,0.0,1.0),u_intensity); 
-    }` },
-    
-    [TextureType.TRABECULUM]: { code: trabeculumGlsl, deps: ['voronoi']  },
-    
-    [TextureType.TURBULENCE]: { code: turbulenceGlsl, deps: ['fbm']  },
-    
-    [TextureType.GYROID]: { code: gyroidGlsl, deps: ['gyroid']  },
-    
-    [TextureType.CURL_NOISE]: { code: curlNoiseGlsl, deps: ['simplex', 'curl']  },
-    
-    [TextureType.MARBLE]: { code: marbleGlsl, deps: ['fbm']  },
-    
-    [TextureType.WOOD]: { code: woodGlsl  },
-    
-    [TextureType.GRUNGE]: { code: grungeGlsl, deps: ['fbm']  },
-    
-    [TextureType.SQUIGGLES]: { code: squigglesGlsl  },
-    
-    [TextureType.HOLO_FOIL]: { code: holoFoilGlsl  },
-    
-    [TextureType.OIL_PAINT]: { deps: ['fbm'], code: `float getPattern(vec2 uv) { 
+    }`,
+  },
+
+  [TextureType.TRABECULUM]: { code: trabeculumGlsl, deps: ["voronoi"] },
+
+  [TextureType.TURBULENCE]: { code: turbulenceGlsl, deps: ["fbm"] },
+
+  [TextureType.GYROID]: { code: gyroidGlsl, deps: ["gyroid"] },
+
+  [TextureType.CURL_NOISE]: { code: curlNoiseGlsl, deps: ["simplex", "curl"] },
+
+  [TextureType.MARBLE]: { code: marbleGlsl, deps: ["fbm"] },
+
+  [TextureType.WOOD]: { code: woodGlsl },
+
+  [TextureType.GRUNGE]: { code: grungeGlsl, deps: ["fbm"] },
+
+  [TextureType.SQUIGGLES]: { code: squigglesGlsl },
+
+  [TextureType.HOLO_FOIL]: { code: holoFoilGlsl },
+
+  [TextureType.OIL_PAINT]: {
+    deps: ["fbm"],
+    code: `float getPattern(vec2 uv) { 
         vec2 p = uv * u_scale * 2.0; 
         p += vec2(u_p14, u_p15);
         vec2 q = vec2(fbm(p + vec2(0.0, 0.0)), fbm(p + vec2(5.2, 1.3))); 
@@ -110,11 +118,14 @@ export const NOISE: Partial<Record<TextureType, PatternDefinition>> = {
         if(u_p15 > 0.0) val = pow(max(0.0, val), 1.0 - u_p15 * 0.5);
 
         return pow(clamp(val, 0.0, 1.0), u_intensity); 
-    }` },
-    
-    [TextureType.FUR_FIBERS]: { code: furFibersGlsl, deps: ['fbm']  },
-    
-    [TextureType.FLUID_WARP]: { deps: ['fbm'], code: `float getPattern(vec2 uv) { 
+    }`,
+  },
+
+  [TextureType.FUR_FIBERS]: { code: furFibersGlsl, deps: ["fbm"] },
+
+  [TextureType.FLUID_WARP]: {
+    deps: ["fbm"],
+    code: `float getPattern(vec2 uv) { 
         vec2 p = uv * u_scale * 2.0; 
         p += vec2(u_p14, u_p15);
         vec2 q = vec2(fbm(p), fbm(p + vec2(5.2, 1.3))); 
@@ -129,5 +140,6 @@ export const NOISE: Partial<Record<TextureType, PatternDefinition>> = {
         if(u_p15 > 0.0) v = pow(max(0.0, v), 1.0 - u_p15 * 0.5);
 
         return pow(clamp(v, 0.0, 1.0), u_intensity); 
-    }` },
+    }`,
+  },
 };

@@ -14,11 +14,7 @@ export default mergeConfig(
         reporter: ["text", "json", "html", "lcov"],
         reportsDirectory: "./coverage",
         include: ["src/**/*.{ts,tsx}"],
-        exclude: [
-          "src/__tests__/**",
-          "src/types/**",
-          "src/**/*.d.ts",
-        ],
+        exclude: ["src/__tests__/**", "src/types/**", "src/**/*.d.ts"],
       },
     },
   }),

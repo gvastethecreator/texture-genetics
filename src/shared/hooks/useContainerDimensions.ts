@@ -1,12 +1,11 @@
-
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 
 export const useContainerDimensions = () => {
   const ref = useRef<HTMLDivElement>(null);
   // Initialize with window dimensions as a safe fallback to prevent 0/0 division in Three.js cameras
-  const [dimensions, setDimensions] = useState({ 
-      width: window.innerWidth, 
-      height: window.innerHeight 
+  const [dimensions, setDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
   });
 
   useEffect(() => {
@@ -15,15 +14,15 @@ export const useContainerDimensions = () => {
 
     const resizeObserver = new ResizeObserver((entries) => {
       if (!Array.isArray(entries) || !entries.length) return;
-      
+
       const entry = entries[0];
       const { width, height } = entry.contentRect;
-      
+
       // Prevent 0x0 updates that might break the renderer
       if (width > 0 && height > 0) {
-          requestAnimationFrame(() => {
-              setDimensions({ width, height });
-          });
+        requestAnimationFrame(() => {
+          setDimensions({ width, height });
+        });
       }
     });
 

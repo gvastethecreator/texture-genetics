@@ -1,4 +1,3 @@
-
 export const TRANSFORM_FUNCTIONS = `
     vec2 getTransformedUV(vec2 uv) {
         vec2 st = uv;
