@@ -12,9 +12,7 @@ interface EnvironmentPanelProps {
 }
 
 export const EnvironmentPanel: React.FC<EnvironmentPanelProps> = memo(
-  ({ state, updateStateGroup, onCommit, onUpdateAnim }) => {
-    const _update = onUpdateAnim || ((_k: string, _c: AnimationConfig) => {});
-
+  ({ state, updateStateGroup, onCommit }) => {
     return (
       <ControlSection title="Scene & Light" icon={Icons.Sun} color="#FBBF24" defaultOpen={true}>
         <div className="space-y-4">

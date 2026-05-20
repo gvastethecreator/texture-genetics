@@ -56,16 +56,15 @@ export const getTransformedUV = Fn(
 
     // Mouse interaction
     If(float(u_mouseEnabled).greaterThan(0.5), () => {
-      const mouseDist = length(st.sub(u_mouse));
+      const mouse = vec2(u_mouse);
+      const mouseDist = length(st.sub(mouse));
       If(mouseDist.lessThan(float(u_mouseRadius).mul(2.0)), () => {
         const mouseInf = smoothstep(float(u_mouseRadius), 0.0, mouseDist).mul(u_mouseStrength);
         If(int(u_mouseType).equal(int(0)), () => {
-          st.subAssign(normalize(st.sub(u_mouse).add(0.0001)).mul(mouseInf));
+          st.subAssign(normalize(st.sub(mouse).add(0.0001)).mul(mouseInf));
         });
         If(int(u_mouseType).equal(int(1)), () => {
-          st.assign(
-            vec2(u_mouse).add(st.sub(u_mouse).mul(float(1.0).sub(float(mouseInf).mul(0.8)))),
-          );
+          st.assign(mouse.add(st.sub(mouse).mul(float(1.0).sub(mouseInf.mul(0.8)))));
         });
       });
     });

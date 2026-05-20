@@ -4,6 +4,7 @@ import { HexColorPicker } from "react-colorful";
 import { AppState, AnimationConfig, PaletteColor } from "../../../core/types/types";
 import { ControlSection, Label, Slider, ActionButton, Toggle } from "../../../shared/ui/Elements";
 import { ColorPicker } from "../../../shared/ui/ColorPicker";
+import { readFileAsDataUrl } from "../../../shared/utils/fileLoaders";
 
 interface ColorPanelProps {
   state: AppState;
@@ -49,7 +50,7 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(
     );
     const pickerRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const _update = onUpdateAnim || ((_k: string, _c: AnimationConfig) => {});
+    const updateAnimation = onUpdateAnim ?? (() => {});
 
     // Fallback if palette doesn't exist yet (Legacy state)
     const palette = state.params.palette || [
@@ -95,19 +96,17 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(
       return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [activeTonePicker]);
 
-    const handleMaskUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleMaskUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          if (event.target?.result) {
-            updateStateGroup("imageAlpha", {
-              maskTexture: event.target.result as string,
-              maskEnabled: true,
-            });
-          }
-        };
-        reader.readAsDataURL(file);
+        try {
+          updateStateGroup("imageAlpha", {
+            maskTexture: await readFileAsDataUrl(file),
+            maskEnabled: true,
+          });
+        } catch (error) {
+          console.error("Failed to load alpha mask", error);
+        }
       }
     };
 
@@ -218,7 +217,7 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(
               onChange={(v) => updateBalance("hue", v)}
               onCommit={onCommit}
               animConfig={state.paramAnimations["colorBalance.hue"]}
-              onAnimChange={(c) => _update("colorBalance.hue", c)}
+              onAnimChange={(c) => updateAnimation("colorBalance.hue", c)}
             />
           </div>
           <div>
@@ -231,7 +230,7 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(
               onChange={(v) => updateBalance("saturation", v)}
               onCommit={onCommit}
               animConfig={state.paramAnimations["colorBalance.saturation"]}
-              onAnimChange={(c) => _update("colorBalance.saturation", c)}
+              onAnimChange={(c) => updateAnimation("colorBalance.saturation", c)}
             />
           </div>
           <div>
@@ -244,7 +243,7 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(
               onChange={(v) => updateBalance("brightness", v)}
               onCommit={onCommit}
               animConfig={state.paramAnimations["colorBalance.brightness"]}
-              onAnimChange={(c) => _update("colorBalance.brightness", c)}
+              onAnimChange={(c) => updateAnimation("colorBalance.brightness", c)}
             />
           </div>
           <div>
@@ -257,7 +256,7 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(
               onChange={(v) => updateBalance("contrast", v)}
               onCommit={onCommit}
               animConfig={state.paramAnimations["colorBalance.contrast"]}
-              onAnimChange={(c) => _update("colorBalance.contrast", c)}
+              onAnimChange={(c) => updateAnimation("colorBalance.contrast", c)}
             />
           </div>
           <div>
@@ -270,7 +269,7 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(
               onChange={(v) => updateBalance("cycleSpeed", v)}
               onCommit={onCommit}
               animConfig={state.paramAnimations["colorBalance.cycleSpeed"]}
-              onAnimChange={(c) => _update("colorBalance.cycleSpeed", c)}
+              onAnimChange={(c) => updateAnimation("colorBalance.cycleSpeed", c)}
             />
           </div>
         </div>

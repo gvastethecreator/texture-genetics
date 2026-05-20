@@ -1,6 +1,7 @@
 const TILED_AUTH_MESSAGE_TYPE = "tiled:auth";
 const TILED_AUTH_REQUEST_MESSAGE_TYPE = "tiled:auth-request";
 const TILED_AUTH_UPDATED_EVENT = "tiled:auth-updated";
+const TILED_AUTH_GLOBAL_KEY = "__TILED_AUTH__";
 
 export interface StudioBridgeSessionUser {
   displayName: string | null;
@@ -107,7 +108,9 @@ const resolveParentOrigin = (): string | null => {
 
 const emitBridgeUpdate = (nextState: StudioBridgeState) => {
   currentState = nextState;
-  (globalThis as { __TILED_AUTH__?: StudioBridgeState }).__TILED_AUTH__ = nextState;
+  (globalThis as unknown as Record<typeof TILED_AUTH_GLOBAL_KEY, StudioBridgeState>)[
+    TILED_AUTH_GLOBAL_KEY
+  ] = nextState;
 
   for (const listener of listeners) {
     listener(nextState);

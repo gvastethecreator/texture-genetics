@@ -26,15 +26,15 @@
 | ---------- | ------------------- | --------- |
 | Runtime    | Bun                 | >= 1.2    |
 | Framework  | React               | 19.x      |
-| Lenguaje   | TypeScript          | 5.8.x     |
+| Lenguaje   | TypeScript          | 6.0.x     |
 | Build      | Vite                | 8.x       |
 | Bundler    | Rolldown (via Vite) | integrado |
 | Estilos    | Tailwind CSS        | 4.x       |
-| 3D         | Three.js + R3F      | 0.182.x   |
-| Animación  | GSAP                | 3.12.x    |
-| Linting    | oxlint (OXC)        | latest    |
-| Formatting | oxfmt (OXC)         | latest    |
-| Testing    | Vitest              | 3.x       |
+| 3D         | Three.js + R3F      | 0.184.x   |
+| Animación  | GSAP                | 3.15.x    |
+| Linting    | oxlint (OXC)        | 1.63.x    |
+| Formatting | oxfmt (OXC)         | 0.48.x    |
+| Testing    | Vitest              | 4.1.x     |
 
 ## ⚡ Inicio Rápido
 
@@ -108,6 +108,7 @@ Los scripts de validación escriben logs legibles en `logs/` tanto si se ejecuta
 - [Desarrollo](docs/DEVELOPMENT.md) — Setup, scripts, herramientas
 - [Deuda Técnica](docs/TECHNICAL_DEBT.md) — Issues conocidos y mejoras pendientes
 - [Changelog](docs/TASKS_COMPLETED.md) — Historial de cambios v4.0
+- [Auditoría 2026-05-08](docs/AUDIT-2026-05-08.md) — Revisión integral, fixes aplicados y evidencias
 
 ## 📄 Licencia
 

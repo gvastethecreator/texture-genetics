@@ -26,9 +26,11 @@ import {
   acos,
   Loop,
   If,
+  dFdx,
+  dFdy,
 } from "three/tsl";
 
-const PI = float(3.14159265359);
+const PI = float(Math.PI);
 
 // ─── Holographic hashing (self-contained) ───
 
@@ -56,8 +58,8 @@ export const holoVoronoi = Fn(([p_in]: [any]) => {
   const md = float(8.0).toVar();
   const mz = vec2(0.0).toVar();
 
-  Loop({ start: int(-1), end: int(2), type: "int", name: "j", condition: "<" }, ({ j }: any) => {
-    Loop({ start: int(-1), end: int(2), type: "int", name: "i", condition: "<" }, ({ i }: any) => {
+  Loop({ start: int(-1), end: int(2), type: "int", condition: "<" }, ({ i: j }: any) => {
+    Loop({ start: int(-1), end: int(2), type: "int", condition: "<" }, ({ i }: any) => {
       const g = vec2(float(i), float(j));
       const o = holoHash4(ip.add(g));
       const r = g.add(o.xy).sub(fp);
@@ -163,8 +165,8 @@ export const getAccurateNormal = Fn(
     const result = vec3(0.0, 0.0, 1.0).toVar();
 
     If(enabled.greaterThan(0.5), () => {
-      const dX = centerVal.dFdx();
-      const dY = centerVal.dFdy();
+      const dX = (dFdx as (node: any) => any)(centerVal);
+      const dY = (dFdy as (node: any) => any)(centerVal);
       const factor = intensity.mul(0.5).toVar();
       const nx = dX.negate().mul(factor);
       const ny = dY.negate().mul(factor);

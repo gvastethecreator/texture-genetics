@@ -7,22 +7,15 @@ import { generateVideo } from "./strategies/videoStrategy";
 import { generateTexturePack } from "./strategies/zipStrategy";
 import { generateHtml } from "./strategies/htmlStrategy";
 import { generateGlb } from "./strategies/glbStrategy";
+import { canvasToBlob, downloadBlob } from "./core/browserFiles";
 
 interface UseExportManagerProps {
   onSuccess?: (msg: string) => void;
   onError?: (msg: string) => void;
 }
 
-const downloadBlob = (blob: Blob, filename: string) => {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-};
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
 
 export function useExportManager(
   state: AppState,
@@ -38,6 +31,8 @@ export function useExportManager(
       setIsGenerating(true);
       setProgress(10);
 
+      let cleanup: (() => void) | undefined;
+
       try {
         // Give UI a moment to update
         await new Promise((r) => setTimeout(r, 50));
@@ -46,12 +41,14 @@ export function useExportManager(
         // Allow up to 4096, but warn user in UI (Settings)
         const safeRes = Math.min(state.resolution, 4096);
 
-        const { renderer, scene, camera, setTime, cleanup } = await setupOffscreenScene(
+        const offscreen = await setupOffscreenScene(
           state,
           safeRes,
           safeRes,
           mode,
         );
+        const { renderer, scene, camera, setTime } = offscreen;
+        cleanup = offscreen.cleanup;
 
         setTime(state.animate ? 0 : state.time);
         renderer.render(scene, camera);
@@ -59,26 +56,17 @@ export function useExportManager(
         const format = state.settings.exportFormat;
         const ext = format === "jpeg" ? "jpg" : format;
 
-        renderer.domElement.toBlob(
-          (blob) => {
-            if (blob) {
-              const name = `texture_${state.textureType.replace(/\s/g, "_")}_${mode === ViewMode.RENDER ? "render" : "map"}.${ext}`;
-              downloadBlob(blob, name);
-              if (onSuccess) onSuccess(`Exported ${name}`);
-            } else {
-              if (onError) onError("Failed to create image blob");
-            }
-            cleanup();
-            setIsGenerating(false);
-            setProgress(0);
-          },
-          `image/${format}`,
-          0.9,
-        );
+        const blob = await canvasToBlob(renderer.domElement, `image/${format}`, 0.9);
+        const name = `texture_${state.textureType.replace(/\s/g, "_")}_${mode === ViewMode.RENDER ? "render" : "map"}.${ext}`;
+        downloadBlob(blob, name);
+        if (onSuccess) onSuccess(`Exported ${name}`);
       } catch (e) {
         console.error(e);
-        if (onError) onError("Export Failed");
+        if (onError) onError(`Export Failed: ${getErrorMessage(e)}`);
+      } finally {
+        cleanup?.();
         setIsGenerating(false);
+        setProgress(0);
       }
     },
     [state, isGenerating, onSuccess, onError],
@@ -99,9 +87,9 @@ export function useExportManager(
         const blob = await taskFn(state, setProgress);
         downloadBlob(blob, filename);
         if (onSuccess) onSuccess(`${taskName} Exported`);
-      } catch (e: any) {
+      } catch (e) {
         console.error(e);
-        if (onError) onError(`${taskName} Failed: ${e.message}`);
+        if (onError) onError(`${taskName} Failed: ${getErrorMessage(e)}`);
       } finally {
         setIsGenerating(false);
         setProgress(0);

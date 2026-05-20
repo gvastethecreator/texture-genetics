@@ -20,7 +20,7 @@ const MATERIAL_PRESETS = [
 
 export const MaterialPanel: React.FC<MaterialPanelProps> = memo(
   ({ state, updateStateGroup, onCommit, onUpdateAnim }) => {
-    const _update = onUpdateAnim || ((_k: string, _c: AnimationConfig) => {});
+    const updateAnimation = onUpdateAnim ?? (() => {});
 
     const applyPreset = (preset: (typeof MATERIAL_PRESETS)[0]) => {
       updateStateGroup("environment", {
@@ -147,7 +147,7 @@ export const MaterialPanel: React.FC<MaterialPanelProps> = memo(
                   onChange={(v) => updateStateGroup("normalMap", { strength: v })}
                   onCommit={onCommit}
                   animConfig={state.paramAnimations["normalMap.strength"]}
-                  onAnimChange={(c) => _update("normalMap.strength", c)}
+                  onAnimChange={(c) => updateAnimation("normalMap.strength", c)}
                 />
               </div>
               <div>
@@ -217,7 +217,7 @@ export const MaterialPanel: React.FC<MaterialPanelProps> = memo(
                 onChange={(v) => updateStateGroup("displacement", { strength: v })}
                 onCommit={onCommit}
                 animConfig={state.paramAnimations["displacement.strength"]}
-                onAnimChange={(c) => _update("displacement.strength", c)}
+                onAnimChange={(c) => updateAnimation("displacement.strength", c)}
               />
             </div>
             <div>
@@ -253,7 +253,7 @@ export const MaterialPanel: React.FC<MaterialPanelProps> = memo(
                   onChange={(v) => updateStateGroup("ao", { strength: v })}
                   onCommit={onCommit}
                   animConfig={state.paramAnimations["ao.strength"]}
-                  onAnimChange={(c) => _update("ao.strength", c)}
+                  onAnimChange={(c) => updateAnimation("ao.strength", c)}
                 />
               </div>
               <div>
@@ -266,7 +266,7 @@ export const MaterialPanel: React.FC<MaterialPanelProps> = memo(
                   onChange={(v) => updateStateGroup("ao", { radius: v })}
                   onCommit={onCommit}
                   animConfig={state.paramAnimations["ao.radius"]}
-                  onAnimChange={(c) => _update("ao.radius", c)}
+                  onAnimChange={(c) => updateAnimation("ao.radius", c)}
                 />
               </div>
             </div>

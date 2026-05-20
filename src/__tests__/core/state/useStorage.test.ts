@@ -146,6 +146,6 @@ describe("useStorage", () => {
     expect(persisted.baseTexture.texture).toBeNull();
     expect(persisted.sticker.texture).toBeNull();
     expect(persisted.customModel).toBeNull();
-    expect(persisted._version).toBe(2);
+    expect(persisted["_version"]).toBe(2);
   });
 });

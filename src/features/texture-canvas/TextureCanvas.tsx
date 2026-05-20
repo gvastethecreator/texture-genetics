@@ -38,6 +38,11 @@ import { ParticleSystem } from "./components/ParticleSystem";
 import { SmokeSystem } from "./components/SmokeSystem";
 import { SceneEffects } from "./components/SceneEffects";
 
+const handleCanvasContextLost = (event: Event) => {
+  event.preventDefault();
+  console.warn("WebGL Context Lost");
+};
+
 // --- SCENE COMPOSITION ---
 interface SceneCompositionProps {
   appState: AppState;
@@ -168,6 +173,7 @@ export const TextureCanvas: React.FC<{
 }> = ({ appState, setGlRef, updateState }) => {
   const controlsHandle = useRef<CameraHandler | null>(null);
   const modelInputRef = useRef<HTMLInputElement>(null);
+  const contextCleanupRef = useRef<(() => void) | null>(null);
   const stateRef = useRef(appState);
   const [isLoading, setIsLoading] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100);
@@ -187,6 +193,13 @@ export const TextureCanvas: React.FC<{
   useEffect(() => {
     setOrbitEnabled(appState.geometry !== GeometryType.BACKGROUND);
   }, [appState.geometry]);
+
+  useEffect(() => {
+    return () => {
+      contextCleanupRef.current?.();
+      contextCleanupRef.current = null;
+    };
+  }, []);
 
   // Cleanup for model URLs
   useEffect(() => {
@@ -219,15 +232,14 @@ export const TextureCanvas: React.FC<{
 
       // Context loss handling (WebGL backend)
       if (!(renderer as { isWebGPURenderer?: boolean })?.isWebGPURenderer && renderer.domElement) {
-        const handleContextLost = (e: Event) => {
-          e.preventDefault();
-          console.warn("WebGL Context Lost");
-        };
-        renderer.domElement.addEventListener("webglcontextlost", handleContextLost, false);
-
-        // Store cleanup function
-        return () => {
-          renderer.domElement.removeEventListener("webglcontextlost", handleContextLost, false);
+        contextCleanupRef.current?.();
+        renderer.domElement.addEventListener("webglcontextlost", handleCanvasContextLost, false);
+        contextCleanupRef.current = () => {
+          renderer.domElement.removeEventListener(
+            "webglcontextlost",
+            handleCanvasContextLost,
+            false,
+          );
         };
       }
 

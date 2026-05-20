@@ -30,6 +30,8 @@ import {
   select,
 } from "three/tsl";
 
+const stepVector = step as (edge: any, value: any) => any;
+
 // ========================
 // BASE RANDOM
 // ========================
@@ -163,8 +165,8 @@ export const snoise3d = /*@__PURE__*/ Fn(([v_in]: [any]) => {
   const i = floor(v.add(dot(v, C.yyy))).toVar();
   const x0 = v.sub(i).add(dot(i, C.xxx));
 
-  const g = step(x0.yzx, x0.xyz);
-  const l = float(1).sub(g);
+  const g = vec3(stepVector(x0.yzx, x0.xyz));
+  const l = vec3(1).sub(g);
   const i1 = min(g.xyz, l.zxy);
   const i2 = max(g.xyz, l.zxy);
 
@@ -184,24 +186,24 @@ export const snoise3d = /*@__PURE__*/ Fn(([v_in]: [any]) => {
       .add(vec4(0.0, i1.x, i2.x, 1.0)),
   );
 
-  const n_ = float(0.142857142857);
-  const ns = n_.mul(D.wyz).sub(D.xzx);
+  const simplexScale = float(0.142857142857);
+  const ns = D.wyz.mul(simplexScale).sub(D.xzx);
 
   const j = p.sub(floor(p.mul(ns.z).mul(ns.z)).mul(49.0));
 
-  const x_ = floor(j.mul(ns.z));
-  const y_ = floor(j.sub(x_.mul(7.0)));
+  const xCells = floor(j.mul(ns.z));
+  const yCells = floor(j.sub(xCells.mul(7.0)));
 
-  const xv = x_.mul(ns.x).add(ns.yyyy);
-  const yv = y_.mul(ns.x).add(ns.yyyy);
-  const hv = float(1).sub(abs(xv)).sub(abs(yv));
+  const xv = xCells.mul(ns.x).add(ns.yyyy);
+  const yv = yCells.mul(ns.x).add(ns.yyyy);
+  const hv = vec4(1).sub(abs(xv)).sub(abs(yv));
 
   const b0 = vec4(xv.xy, yv.xy);
   const b1 = vec4(xv.zw, yv.zw);
 
   const s0 = floor(b0).mul(2.0).add(1.0);
   const s1 = floor(b1).mul(2.0).add(1.0);
-  const sh = step(hv, vec4(0)).negate();
+  const sh = vec4(stepVector(hv, vec4(0))).negate();
 
   const a0 = b0.xzyw.add(s0.xzyw.mul(sh.xxyy));
   const a1 = b1.xzyw.add(s1.xzyw.mul(sh.zzww));
@@ -218,7 +220,7 @@ export const snoise3d = /*@__PURE__*/ Fn(([v_in]: [any]) => {
   const p3n = p3.mul(norm.w);
 
   const m = max(
-    float(0.6).sub(vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3))),
+    vec4(0.6).sub(vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3))),
     0.0,
   ).toVar();
   m.assign(m.mul(m));
@@ -512,7 +514,7 @@ export const worley3d = /*@__PURE__*/ Fn(([p_in]: [any]) => {
     });
   });
 
-  return sqrt(d.xyz);
+  return vec3(sqrt(d.x), sqrt(d.y), sqrt(d.z));
 });
 
 // ========================

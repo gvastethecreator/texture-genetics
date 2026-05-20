@@ -65,7 +65,7 @@ const TILING_PRESETS = [
 export const TransformPanel: React.FC<TransformPanelProps> = memo(
   ({ state, onChangeState, updateStateGroup, onCommit, onUpdateAnim }) => {
     // Helper to safely call update anim if available (it should be prop drilled)
-    const _update = onUpdateAnim || ((_k: string, _c: AnimationConfig) => {});
+    const updateAnimation = onUpdateAnim ?? (() => {});
 
     const applyTilingPreset = (settings: Partial<AppState["tiling"]>) => {
       updateStateGroup("tiling", settings);
@@ -85,7 +85,7 @@ export const TransformPanel: React.FC<TransformPanelProps> = memo(
               onChange={(v) => updateStateGroup("transform", { angle: v })}
               onCommit={onCommit}
               animConfig={state.paramAnimations["transform.angle"]}
-              onAnimChange={(c) => _update("transform.angle", c)}
+              onAnimChange={(c) => updateAnimation("transform.angle", c)}
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -98,7 +98,7 @@ export const TransformPanel: React.FC<TransformPanelProps> = memo(
                 onChange={(v) => updateStateGroup("transform", { offsetX: v })}
                 onCommit={onCommit}
                 animConfig={state.paramAnimations["transform.offsetX"]}
-                onAnimChange={(c) => _update("transform.offsetX", c)}
+                onAnimChange={(c) => updateAnimation("transform.offsetX", c)}
               />
             </div>
             <div>
@@ -110,7 +110,7 @@ export const TransformPanel: React.FC<TransformPanelProps> = memo(
                 onChange={(v) => updateStateGroup("transform", { offsetY: v })}
                 onCommit={onCommit}
                 animConfig={state.paramAnimations["transform.offsetY"]}
-                onAnimChange={(c) => _update("transform.offsetY", c)}
+                onAnimChange={(c) => updateAnimation("transform.offsetY", c)}
               />
             </div>
           </div>

@@ -19,7 +19,7 @@ export const generateGif = async (
   );
 
   const canvas = renderer.domElement;
-  const frames: { data: Uint8ClampedArray; delay: number }[] = [];
+  const frames: { data: Uint8ClampedArray<ArrayBuffer>; delay: number }[] = [];
   const delayMs = Math.round((spriteSheet.duration / spriteSheet.totalFrames) * 1000);
   const startTime = Date.now();
 
@@ -39,7 +39,10 @@ export const generateGif = async (
       ctx.drawImage(canvas, 0, 0);
       const imageData = ctx.getImageData(0, 0, gifResolution, gifResolution);
 
-      frames.push({ data: imageData.data, delay: delayMs });
+      const frameData = new Uint8ClampedArray(imageData.data.length);
+      frameData.set(imageData.data);
+
+      frames.push({ data: frameData, delay: delayMs });
 
       onProgress(Math.round((i / spriteSheet.totalFrames) * 50));
       await new Promise((r) => setTimeout(r, 10));

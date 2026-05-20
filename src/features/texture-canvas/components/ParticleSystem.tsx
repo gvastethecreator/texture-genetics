@@ -76,10 +76,10 @@ export const ParticleSystem = memo(
 
       uniformsRef.current = { u_time, u_mouse, u_speed, u_size, u_color, u_opacity, u_spread };
 
-      const origin = vec3(instancedBufferAttribute(originAttribute, "vec3"));
-      const random = float(instancedBufferAttribute(randomAttribute, "float"));
-      const baseSize = float(instancedBufferAttribute(sizeAttribute, "float"));
-      const localSpeed = float(instancedBufferAttribute(speedAttribute, "float"));
+      const origin = vec3(instancedBufferAttribute<"vec3">(originAttribute, "vec3"));
+      const random = float(instancedBufferAttribute<"float">(randomAttribute, "float"));
+      const baseSize = float(instancedBufferAttribute<"float">(sizeAttribute, "float"));
+      const localSpeed = float(instancedBufferAttribute<"float">(speedAttribute, "float"));
 
       const t = u_time.mul(localSpeed).mul(u_speed).mul(0.3).add(random.mul(100.0));
       const noiseBase = origin.mul(1.5);

@@ -58,9 +58,9 @@ export const SmokeSystem: React.FC<{ appState: AppState }> = ({ appState }) => {
     const u_color = uniform(new THREE.Color(appState.environment.smokeColor));
     uniformsRef.current = { u_time, u_speed, u_density, u_color };
 
-    const offset = vec3(instancedBufferAttribute(offsetAttribute, "vec3"));
-    const baseScale = float(instancedBufferAttribute(scaleAttribute, "float"));
-    const random = float(instancedBufferAttribute(randomAttribute, "float"));
+    const offset = vec3(instancedBufferAttribute<"vec3">(offsetAttribute, "vec3"));
+    const baseScale = float(instancedBufferAttribute<"float">(scaleAttribute, "float"));
+    const random = float(instancedBufferAttribute<"float">(randomAttribute, "float"));
 
     const life = mod(u_time.mul(random.mul(0.1).add(0.1)).mul(u_speed).add(random.mul(10.0)), 1.0);
     const noisePos = offset.mul(0.5).add(vec3(0.0, u_time.mul(0.2), 0.0));

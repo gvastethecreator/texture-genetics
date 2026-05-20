@@ -33,7 +33,7 @@ import type { TslUniforms } from "../uniforms";
 import { rotate2d } from "../chunks/math";
 import { random2d, noise2d as _noise2d } from "../chunks/noise";
 
-const PI = float(3.14159265359);
+const PI = float(Math.PI);
 
 // Helper: short alias that remaps noise from [-1,1] to [0,1]
 const noiseVal = (p: any, seed: any) => _noise2d(p, seed).mul(0.5).add(0.5);
@@ -61,7 +61,6 @@ export const checker: TslPatternFn = (st: any, u: TslUniforms) => {
       ).mul(float(u.u_p2).mul(0.5)),
     );
     const id = floor(uv);
-    const _f = fract(uv);
     const check = mod(id.x.add(id.y), 2.0).toVar();
 
     const softness = float(u.u_p1).mul(0.5);

@@ -31,6 +31,8 @@ coverage/
 .vite/
 .cache/
 .turbo/
+.playwright-mcp/
+.agents/
 *.tsbuildinfo
 
 # ── Editor / IDE ────────────────────────────────────────────

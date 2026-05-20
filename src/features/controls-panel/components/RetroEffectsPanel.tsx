@@ -12,7 +12,7 @@ interface RetroEffectsPanelProps {
 
 export const RetroEffectsPanel: React.FC<RetroEffectsPanelProps> = memo(
   ({ state, updateStateGroup, onCommit, onUpdateAnim }) => {
-    const _update = onUpdateAnim || ((_k: string, _c: AnimationConfig) => {});
+    const updateAnimation = onUpdateAnim ?? (() => {});
 
     return (
       <ControlSection title="Retro & Glitch" icon={Icons.Gamepad2} color="#06B6D4">
@@ -93,7 +93,7 @@ export const RetroEffectsPanel: React.FC<RetroEffectsPanelProps> = memo(
                     onChange={(v) => updateStateGroup("postProcess", { glitchStrength: v })}
                     onCommit={onCommit}
                     animConfig={state.paramAnimations["postProcess.glitchStrength"]}
-                    onAnimChange={(c) => _update("postProcess.glitchStrength", c)}
+                    onAnimChange={(c) => updateAnimation("postProcess.glitchStrength", c)}
                   />
                 </div>
                 <div>
@@ -106,7 +106,7 @@ export const RetroEffectsPanel: React.FC<RetroEffectsPanelProps> = memo(
                     onChange={(v) => updateStateGroup("postProcess", { glitchSpeed: v })}
                     onCommit={onCommit}
                     animConfig={state.paramAnimations["postProcess.glitchSpeed"]}
-                    onAnimChange={(c) => _update("postProcess.glitchSpeed", c)}
+                    onAnimChange={(c) => updateAnimation("postProcess.glitchSpeed", c)}
                   />
                 </div>
               </div>

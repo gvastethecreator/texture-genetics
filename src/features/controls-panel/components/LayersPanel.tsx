@@ -9,6 +9,7 @@ import {
 } from "../../../core/types/types";
 import { TEXTURE_CATEGORIES } from "../../../data/textureData";
 import { ControlSection, Label, Slider, Toggle, ActionButton } from "../../../shared/ui/Elements";
+import { loadImageFromSource, readFileAsDataUrl } from "../../../shared/utils/fileLoaders";
 
 interface LayersPanelProps {
   state: AppState;
@@ -38,65 +39,54 @@ const BASE_EFFECTS = [
 
 // ELITE FIX: Image Compression Pipeline
 // Prevents App Crash due to LocalStorage Quota Exceeded while maintaining PRO quality.
-const processImageUpload = (file: File, callback: (result: string) => void) => {
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      // ELITE FIX: Increased from 512 to 1024.
-      // 512px is too blurry for professional texture work.
-      // 1024px offers 4x pixels but stays within reasonable localStorage limits if compressed as JPEG.
-      const MAX_SIZE = 1024;
-      let width = img.width;
-      let height = img.height;
+const processImageUpload = async (file: File): Promise<string> => {
+  const img = await loadImageFromSource(await readFileAsDataUrl(file));
+  const canvas = document.createElement("canvas");
+  // 1024px keeps source images usable for texture work while staying friendly to local persistence.
+  const MAX_SIZE = 1024;
+  let width = img.width;
+  let height = img.height;
 
-      if (width > height) {
-        if (width > MAX_SIZE) {
-          height *= MAX_SIZE / width;
-          width = MAX_SIZE;
-        }
-      } else {
-        if (height > MAX_SIZE) {
-          width *= MAX_SIZE / height;
-          height = MAX_SIZE;
-        }
-      }
+  if (width > height) {
+    if (width > MAX_SIZE) {
+      height *= MAX_SIZE / width;
+      width = MAX_SIZE;
+    }
+  } else {
+    if (height > MAX_SIZE) {
+      width *= MAX_SIZE / height;
+      height = MAX_SIZE;
+    }
+  }
 
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
 
-      // High quality smoothing for the downscale
-      if (ctx) {
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(img, 0, 0, width, height);
+  if (!ctx) {
+    throw new Error("Canvas 2D context is not available for image upload.");
+  }
 
-        // Compress to JPEG 0.85 (Good balance)
-        const format = "image/jpeg";
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, 0, 0, width, height);
 
-        const dataUrl = canvas.toDataURL(format, 0.85);
-        callback(dataUrl);
-      }
-    };
-    img.src = event.target?.result as string;
-  };
-  reader.readAsDataURL(file);
+  return canvas.toDataURL("image/jpeg", 0.85);
 };
 
 export const LayersPanel: React.FC<LayersPanelProps> = memo(
   ({ state, updateStateGroup, onCommit, onUpdateAnim }) => {
     const allTextures = Object.values(TEXTURE_CATEGORIES)
       .flatMap((c) => c.types)
-      .sort();
+      .toSorted();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const _update = onUpdateAnim || ((_k: string, _c: AnimationConfig) => {});
+    const updateAnimation = onUpdateAnim ?? (() => {});
 
-    const handleBaseTextureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleBaseTextureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
-        processImageUpload(file, (resizedDataUrl) => {
+        try {
+          const resizedDataUrl = await processImageUpload(file);
           // Initialize with enabled: true and safe blended defaults
           updateStateGroup("baseTexture", {
             texture: resizedDataUrl,
@@ -105,7 +95,9 @@ export const LayersPanel: React.FC<LayersPanelProps> = memo(
             blendMode: BlendMode.MULTIPLY,
           });
           onCommit();
-        });
+        } catch (error) {
+          console.error("Failed to load base texture", error);
+        }
       }
     };
 
@@ -218,7 +210,7 @@ export const LayersPanel: React.FC<LayersPanelProps> = memo(
                             onChange={(v) => updateStateGroup("baseTexture", { effectStrength: v })}
                             onCommit={onCommit}
                             animConfig={state.paramAnimations["baseTexture.effectStrength"]}
-                            onAnimChange={(c) => _update("baseTexture.effectStrength", c)}
+                            onAnimChange={(c) => updateAnimation("baseTexture.effectStrength", c)}
                           />
                         </div>
                       ) : null}
@@ -236,7 +228,7 @@ export const LayersPanel: React.FC<LayersPanelProps> = memo(
                         onChange={(v) => updateStateGroup("baseTexture", { opacity: v })}
                         onCommit={onCommit}
                         animConfig={state.paramAnimations["baseTexture.opacity"]}
-                        onAnimChange={(c) => _update("baseTexture.opacity", c)}
+                        onAnimChange={(c) => updateAnimation("baseTexture.opacity", c)}
                       />
                     </div>
                   </>
@@ -311,7 +303,7 @@ export const LayersPanel: React.FC<LayersPanelProps> = memo(
                     onChange={(v) => updateStateGroup("blending", { opacity: v })}
                     onCommit={onCommit}
                     animConfig={state.paramAnimations["blending.opacity"]}
-                    onAnimChange={(c) => _update("blending.opacity", c)}
+                    onAnimChange={(c) => updateAnimation("blending.opacity", c)}
                   />
                 </div>
 
@@ -325,7 +317,7 @@ export const LayersPanel: React.FC<LayersPanelProps> = memo(
                       onChange={(v) => updateStateGroup("blending", { scale: v })}
                       onCommit={onCommit}
                       animConfig={state.paramAnimations["blending.scale"]}
-                      onAnimChange={(c) => _update("blending.scale", c)}
+                      onAnimChange={(c) => updateAnimation("blending.scale", c)}
                     />
                   </div>
                   <div>
@@ -337,7 +329,7 @@ export const LayersPanel: React.FC<LayersPanelProps> = memo(
                       onChange={(v) => updateStateGroup("blending", { intensity: v })}
                       onCommit={onCommit}
                       animConfig={state.paramAnimations["blending.intensity"]}
-                      onAnimChange={(c) => _update("blending.intensity", c)}
+                      onAnimChange={(c) => updateAnimation("blending.intensity", c)}
                     />
                   </div>
                   <div>
@@ -349,7 +341,7 @@ export const LayersPanel: React.FC<LayersPanelProps> = memo(
                       onChange={(v) => updateStateGroup("blending", { factor: v })}
                       onCommit={onCommit}
                       animConfig={state.paramAnimations["blending.factor"]}
-                      onAnimChange={(c) => _update("blending.factor", c)}
+                      onAnimChange={(c) => updateAnimation("blending.factor", c)}
                     />
                   </div>
                 </div>

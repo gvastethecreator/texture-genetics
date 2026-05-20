@@ -9,6 +9,12 @@ import { calculateAnimatedValue } from "../../shared/utils/animationUtils";
 
 gsap.registerPlugin(useGSAP);
 
+const blurInputOnEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  if (event.key === "Enter") {
+    event.currentTarget.blur();
+  }
+};
+
 // --- PORTAL TOOLTIP (Ensures tooltips escape overflow:hidden) ---
 export const PortalTooltip: React.FC<{ label: string; children: React.ReactElement }> = ({
   label,
@@ -155,12 +161,6 @@ export const Slider: React.FC<SliderProps> = memo(
       commitInput();
     };
 
-    const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
-        (e.target as HTMLInputElement).blur();
-      }
-    };
-
     const commitInput = () => {
       let val = parseFloat(inputValue);
       if (isNaN(val)) val = value;
@@ -265,7 +265,7 @@ export const Slider: React.FC<SliderProps> = memo(
             onFocus={() => setIsFocused(true)}
             onChange={handleInputChange}
             onBlur={handleInputBlur}
-            onKeyDown={handleInputKeyDown}
+            onKeyDown={blurInputOnEnter}
           />
 
           {/* Anim Trigger Button */}

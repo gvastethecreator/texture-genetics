@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { get, set } from "idb-keyval";
 import { AppState, UserPreset } from "../types/types";
 import { safeReplacer } from "./useAppState";
+import { readTextFile } from "../../shared/utils/fileLoaders";
 
 const PRESETS_STORAGE_KEY = "effect_gen_v3_user_presets";
 
@@ -106,35 +107,31 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
   }, [userPresets, addToast]);
 
   const importPresets = useCallback(
-    (file: File) => {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          const json = JSON.parse(event.target?.result as string);
-          if (Array.isArray(json)) {
-            const valid = json.every((p) => p.id && p.name && p.state);
-            if (valid) {
-              const merged = [...userPresets, ...json];
-              const unique = Array.from(new Map(merged.map((item) => [item.id, item])).values());
-              setUserPresets(unique);
+    async (file: File) => {
+      try {
+        const json = JSON.parse(await readTextFile(file));
+        if (Array.isArray(json)) {
+          const valid = json.every((p) => p.id && p.name && p.state);
+          if (valid) {
+            const merged = [...userPresets, ...json];
+            const unique = Array.from(new Map(merged.map((item) => [item.id, item])).values());
+            setUserPresets(unique);
 
-              try {
-                await set(PRESETS_STORAGE_KEY, JSON.parse(JSON.stringify(unique, safeReplacer())));
-                addToast("success", `Imported ${json.length} presets`);
-              } catch (idbError) {
-                console.error("IDB preset import error", idbError);
-                addToast("error", `Imported ${json.length} presets locally but failed to persist`);
-              }
-            } else {
-              throw new Error("Invalid preset format");
+            try {
+              await set(PRESETS_STORAGE_KEY, JSON.parse(JSON.stringify(unique, safeReplacer())));
+              addToast("success", `Imported ${json.length} presets`);
+            } catch (idbError) {
+              console.error("IDB preset import error", idbError);
+              addToast("error", `Imported ${json.length} presets locally but failed to persist`);
             }
+          } else {
+            throw new Error("Invalid preset format");
           }
-        } catch (e) {
-          console.error(e);
-          addToast("error", "Failed to import presets. Invalid JSON or Circular Ref.");
         }
-      };
-      reader.readAsText(file);
+      } catch (e) {
+        console.error(e);
+        addToast("error", "Failed to import presets. Invalid JSON or Circular Ref.");
+      }
     },
     [userPresets, addToast],
   );

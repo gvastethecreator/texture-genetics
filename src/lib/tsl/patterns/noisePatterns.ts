@@ -181,7 +181,7 @@ export const worleyNoise: TslPatternFn = (st: any, u: TslUniforms) => {
         If(float(u.u_speed).greaterThan(0.0), () => {
           const phase = float(u.u_time).mul(u.u_speed).mul(2.0);
           jitter.assign(
-            vec2(sin(phase.add(point.x.mul(6.2831))), sin(phase.add(point.y.mul(6.2831))))
+            vec2(sin(phase.add(point.x.mul(Math.PI * 2))), sin(phase.add(point.y.mul(Math.PI * 2))))
               .mul(0.5)
               .add(0.5),
           );
@@ -559,7 +559,7 @@ export const squiggles: TslPatternFn = (st: any, u: TslUniforms) => {
     const grid = floor(uv);
     const sub = fract(uv).sub(0.5).toVar();
     const n = random2d(grid, u.u_seed);
-    const a = n.mul(2.0).mul(3.14159).add(u.u_time).add(float(u.u_factor).mul(5.0));
+    const a = n.mul(2.0).mul(Math.PI).add(u.u_time).add(float(u.u_factor).mul(5.0));
     sub.assign(rotate2d(a).mul(sub));
     const d = abs(length(sub).sub(0.5));
     const val = smoothstep(0.1, float(0.05).mul(float(1.0).sub(u.u_detail)), d).toVar();
@@ -637,7 +637,7 @@ export const furFibers: TslPatternFn = (st: any, u: TslUniforms) => {
   return Fn(() => {
     const uv = vec2(st).mul(u.u_scale).mul(10.0).toVar();
     uv.addAssign(vec2(u.u_p14, u.u_p15));
-    const stv = rotate2d(float(u.u_p3).mul(3.14159)).mul(uv).toVar();
+    const stv = rotate2d(float(u.u_p3).mul(Math.PI)).mul(uv).toVar();
     stv.x.mulAssign(float(1.0).add(float(u.u_factor).mul(10.0)));
     const n = fbm2d(stv.add(vec2(0.0, float(u.u_time).mul(0.5))), u.u_seed, u.u_detail).toVar();
     If(float(u.u_p15).greaterThan(0.0), () => {

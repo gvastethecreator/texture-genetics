@@ -3,6 +3,7 @@ import * as Icons from "lucide-react";
 import { AppState, BlendMode } from "../../../core/types/types";
 import { ControlSection, Label, Slider, Toggle, ActionButton } from "../../../shared/ui/Elements";
 import { ColorPicker } from "../../../shared/ui/ColorPicker";
+import { loadImageFromSource, readFileAsDataUrl } from "../../../shared/utils/fileLoaders";
 
 interface StickerPanelProps {
   state: AppState;
@@ -24,44 +25,43 @@ export const StickerPanel: React.FC<StickerPanelProps> = memo(
   ({ state, updateStateGroup, onCommit }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement("canvas");
-            // Resize to safe texture size (e.g. 512)
-            const MAX_SIZE = 512;
-            let width = img.width;
-            let height = img.height;
+        try {
+          const img = await loadImageFromSource(await readFileAsDataUrl(file));
+          const canvas = document.createElement("canvas");
+          // Keep stickers compact while preserving alpha.
+          const MAX_SIZE = 512;
+          let width = img.width;
+          let height = img.height;
 
-            if (width > height) {
-              if (width > MAX_SIZE) {
-                height *= MAX_SIZE / width;
-                width = MAX_SIZE;
-              }
-            } else {
-              if (height > MAX_SIZE) {
-                width *= MAX_SIZE / height;
-                height = MAX_SIZE;
-              }
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
             }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
 
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            if (ctx) {
-              ctx.drawImage(img, 0, 0, width, height);
-              const dataUrl = canvas.toDataURL("image/png"); // Keep alpha for stickers
-              updateStateGroup("sticker", { texture: dataUrl, enabled: true });
-              onCommit();
-            }
-          };
-          img.src = event.target?.result as string;
-        };
-        reader.readAsDataURL(file);
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+
+          if (!ctx) {
+            throw new Error("Canvas 2D context is not available for sticker upload.");
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          updateStateGroup("sticker", { texture: canvas.toDataURL("image/png"), enabled: true });
+          onCommit();
+        } catch (error) {
+          console.error("Failed to load sticker texture", error);
+        }
       }
     };
 

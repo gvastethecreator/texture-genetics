@@ -27,6 +27,9 @@ import {
   int,
 } from "three/tsl";
 
+const stepVector = step as (edge: any, value: any) => any;
+const mixVector = mix as (a: any, b: any, t: any) => any;
+
 /** 2D rotation matrix from angle */
 export const rotate2d = (angle: any) => {
   const s = sin(angle);
@@ -137,7 +140,7 @@ export const applyBlendModeVec3 = /*@__PURE__*/ Fn(
     const result = vec3(blend).toVar();
 
     If(mode.equal(1), () => {
-      result.assign(min(base.add(blend), vec3(1)));
+      result.assign(clamp(base.add(blend), 0.0, 1.0));
     });
     If(mode.equal(2), () => {
       result.assign(base.mul(blend));
@@ -147,19 +150,24 @@ export const applyBlendModeVec3 = /*@__PURE__*/ Fn(
     });
     If(mode.equal(4), () => {
       result.assign(
-        mix(
-          base.mul(blend).mul(2),
-          vec3(1).sub(vec3(1).sub(base).mul(vec3(1).sub(blend)).mul(2)),
-          step(vec3(0.5), base),
+        vec3(
+          mixVector(
+            base.mul(blend).mul(2),
+            vec3(1).sub(vec3(1).sub(base).mul(vec3(1).sub(blend)).mul(2)),
+            vec3(stepVector(vec3(0.5), base)),
+          ),
         ),
       );
     });
     If(mode.equal(5), () => {
+      const sqrtBase = vec3(sqrt(base.x), sqrt(base.y), sqrt(base.z));
       result.assign(
-        mix(
-          base.sub(vec3(1).sub(blend.mul(2)).mul(base).mul(vec3(1).sub(base))),
-          base.add(blend.mul(2).sub(vec3(1)).mul(sqrt(base).sub(base))),
-          step(vec3(0.5), blend),
+        vec3(
+          mixVector(
+            base.sub(vec3(1).sub(blend.mul(2)).mul(base).mul(vec3(1).sub(base))),
+            base.add(blend.mul(2).sub(vec3(1)).mul(sqrtBase.sub(base))),
+            vec3(stepVector(vec3(0.5), blend)),
+          ),
         ),
       );
     });

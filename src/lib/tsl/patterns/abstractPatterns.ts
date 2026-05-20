@@ -292,8 +292,14 @@ export const infiniteFall: TslPatternFn = (st: any, u: TslUniforms) => {
     Loop({ start: int(0), end: int(20), type: "int", condition: "<" }, ({ i }: { i: any }) => {
       const fi = float(i);
       const k = fi.sub(t);
-      const a = float(1.0).sub(cos(float(6.2831).mul(k).div(20.0)));
-      const sc = exp(mod(k, 20.0).mul(0.6931)); // exp2 = exp(x * ln2)
+      const a = float(1.0).sub(
+        cos(
+          float(Math.PI * 2)
+            .mul(k)
+            .div(20.0),
+        ),
+      );
+      const sc = exp(mod(k, 20.0).mul(Math.LN2)); // exp2 = exp(x * ln2)
       const n = noiseVal(uv.mul(sc).mul(0.2));
       v.addAssign(a.div(sc).mul(float(1.0).sub(abs(float(2.0).mul(n).sub(1.0)))));
       tot.addAssign(a.div(sc));
@@ -318,7 +324,6 @@ export const voxelTunnel: TslPatternFn = (st: any, u: TslUniforms) => {
     const accum = float(0.0).toVar();
     Loop({ start: int(0), end: int(10), type: "int", condition: "<" }, ({ i }: { i: any }) => {
       const fi = float(i);
-      const _layerY = float(-2.0).mul(fi.div(10.0));
       // Approximate hit point using depth projection
       const hitXZ = vec2(
         p.x.mul(float(10.0).div(max(fi.add(1.0), 0.1))).add(t.mul(15.0)),
@@ -389,7 +394,7 @@ export const inverseMobius: TslPatternFn = (st: any, u: TslUniforms) => {
     );
     const r = length(z);
     const angle = atan(z.y, z.x);
-    const gridUV = vec2(angle.div(6.2831), log(max(0.001, r))).toVar();
+    const gridUV = vec2(angle.div(Math.PI * 2), log(max(0.001, r))).toVar();
     gridUV.x.addAssign(float(u.u_time).mul(0.1));
     gridUV.y.subAssign(float(u.u_time).mul(0.5));
     gridUV.mulAssign(float(u.u_scale).mul(5.0));

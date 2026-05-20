@@ -5,7 +5,7 @@ import { Fn, float, vec2, sin, cos, pow, max, clamp } from "three/tsl";
 import type { TslPatternFn } from "../tslBuilder";
 import type { TslUniforms } from "../uniforms";
 
-const PI = float(3.14159265359);
+const PI = float(Math.PI);
 
 export const gradientLinear: TslPatternFn = (st: any, u: TslUniforms) => {
   return Fn(() => {

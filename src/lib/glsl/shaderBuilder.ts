@@ -64,9 +64,9 @@ function mangleFunctionNames(code: string, suffix: string): string {
 
   // 2. Rename definitions and calls
   // Sort by length desc to avoid replacing substrings (e.g. 'noise' vs 'snoise')
-  functionsToRename.sort((a, b) => b.length - a.length);
+  const orderedFunctions = functionsToRename.toSorted((a, b) => b.length - a.length);
 
-  functionsToRename.forEach((name) => {
+  orderedFunctions.forEach((name) => {
     const newName = `${name}_${suffix}`;
     // Replace definition
     // Use a precise regex to match whole words only to avoid replacing substrings

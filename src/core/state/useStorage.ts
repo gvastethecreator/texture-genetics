@@ -70,9 +70,9 @@ const isUnsafeObject = (value: any): boolean => {
   }
 };
 
-export const sanitizeValue = <T>(value: T): T | null => {
-  if (value === undefined) return undefined as T | null;
-  if (isUnsafeObject(value)) return null;
+export const sanitizeValue = <T>(value: T): T | undefined => {
+  if (value === undefined) return undefined;
+  if (isUnsafeObject(value)) return undefined;
   return value;
 };
 

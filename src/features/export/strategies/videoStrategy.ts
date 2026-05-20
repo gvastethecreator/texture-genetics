@@ -30,20 +30,28 @@ export const generateVideo = async (
   });
 
   const chunks: Blob[] = [];
-  recorder.ondataavailable = (e) => {
+  recorder.addEventListener("dataavailable", (e) => {
     if (e.data.size > 0) chunks.push(e.data);
-  };
+  });
 
   const recordingPromise = new Promise<Blob>((resolve, reject) => {
-    recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: "video/webm" });
-      cleanup();
-      resolve(blob);
-    };
-    recorder.onerror = (e) => {
-      cleanup();
-      reject(e);
-    };
+    recorder.addEventListener(
+      "stop",
+      () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        cleanup();
+        resolve(blob);
+      },
+      { once: true },
+    );
+    recorder.addEventListener(
+      "error",
+      (e) => {
+        cleanup();
+        reject(e);
+      },
+      { once: true },
+    );
   });
 
   recorder.start();

@@ -13,7 +13,7 @@ interface PostProcessPanelProps {
 
 export const PostProcessPanel: React.FC<PostProcessPanelProps> = memo(
   ({ state, updateStateGroup, onCommit, onUpdateAnim }) => {
-    const _update = onUpdateAnim || ((_k: string, _c: AnimationConfig) => {});
+    const updateAnimation = onUpdateAnim ?? (() => {});
 
     return (
       <ControlSection title="Post FX & Distortion" icon={Icons.Fingerprint} color="#8B5CF6">
@@ -41,7 +41,7 @@ export const PostProcessPanel: React.FC<PostProcessPanelProps> = memo(
               onChange={(v) => updateStateGroup("params", { distortion: v })}
               onCommit={onCommit}
               animConfig={state.paramAnimations["distortion"]}
-              onAnimChange={(c) => _update("distortion", c)}
+              onAnimChange={(c) => updateAnimation("distortion", c)}
             />
           </div>
           <div>
@@ -54,7 +54,7 @@ export const PostProcessPanel: React.FC<PostProcessPanelProps> = memo(
               onChange={(v) => updateStateGroup("params", { detail: v })}
               onCommit={onCommit}
               animConfig={state.paramAnimations["detail"]}
-              onAnimChange={(c) => _update("detail", c)}
+              onAnimChange={(c) => updateAnimation("detail", c)}
             />
           </div>
           <div>
@@ -200,7 +200,7 @@ export const PostProcessPanel: React.FC<PostProcessPanelProps> = memo(
                     onChange={(v) => updateStateGroup("postProcess", { bloomThreshold: v })}
                     onCommit={onCommit}
                     animConfig={state.paramAnimations["postProcess.bloomThreshold"]}
-                    onAnimChange={(c) => _update("postProcess.bloomThreshold", c)}
+                    onAnimChange={(c) => updateAnimation("postProcess.bloomThreshold", c)}
                   />
                 </div>
                 <div>
@@ -213,7 +213,7 @@ export const PostProcessPanel: React.FC<PostProcessPanelProps> = memo(
                     onChange={(v) => updateStateGroup("postProcess", { bloomStrength: v })}
                     onCommit={onCommit}
                     animConfig={state.paramAnimations["postProcess.bloomStrength"]}
-                    onAnimChange={(c) => _update("postProcess.bloomStrength", c)}
+                    onAnimChange={(c) => updateAnimation("postProcess.bloomStrength", c)}
                   />
                 </div>
               </div>
@@ -238,7 +238,7 @@ export const PostProcessPanel: React.FC<PostProcessPanelProps> = memo(
                   onChange={(v) => updateStateGroup("postProcess", { blurStrength: v })}
                   onCommit={onCommit}
                   animConfig={state.paramAnimations["postProcess.blurStrength"]}
-                  onAnimChange={(c) => _update("postProcess.blurStrength", c)}
+                  onAnimChange={(c) => updateAnimation("postProcess.blurStrength", c)}
                 />
               </div>
             )}
@@ -299,7 +299,7 @@ export const PostProcessPanel: React.FC<PostProcessPanelProps> = memo(
                 onChange={(v) => updateStateGroup("postProcess", { chromaticAberration: v })}
                 onCommit={onCommit}
                 animConfig={state.paramAnimations["postProcess.chromaticAberration"]}
-                onAnimChange={(c) => _update("postProcess.chromaticAberration", c)}
+                onAnimChange={(c) => updateAnimation("postProcess.chromaticAberration", c)}
               />
             </div>
             <div>
@@ -311,7 +311,7 @@ export const PostProcessPanel: React.FC<PostProcessPanelProps> = memo(
                 onChange={(v) => updateStateGroup("postProcess", { radialMask: v })}
                 onCommit={onCommit}
                 animConfig={state.paramAnimations["postProcess.radialMask"]}
-                onAnimChange={(c) => _update("postProcess.radialMask", c)}
+                onAnimChange={(c) => updateAnimation("postProcess.radialMask", c)}
               />
             </div>
             <div>
@@ -323,7 +323,7 @@ export const PostProcessPanel: React.FC<PostProcessPanelProps> = memo(
                 onChange={(v) => updateStateGroup("postProcess", { vignette: v })}
                 onCommit={onCommit}
                 animConfig={state.paramAnimations["postProcess.vignette"]}
-                onAnimChange={(c) => _update("postProcess.vignette", c)}
+                onAnimChange={(c) => updateAnimation("postProcess.vignette", c)}
               />
             </div>
           </div>

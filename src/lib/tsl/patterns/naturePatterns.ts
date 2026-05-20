@@ -306,7 +306,7 @@ export const crystals: TslPatternFn = (st: any, u: TslUniforms) => {
         const o = sin(
           float(u.u_time)
             .mul(0.5)
-            .add(random2d(n.add(g), u.u_seed).mul(6.2831)),
+            .add(random2d(n.add(g), u.u_seed).mul(Math.PI * 2)),
         )
           .mul(0.5)
           .add(0.5);
@@ -372,7 +372,7 @@ export const frostPattern: TslPatternFn = (st: any, u: TslUniforms) => {
     const v = float(50.0).mul(length(max(abs(uv).sub(0.05), 0.0)));
     const f = min(v, float(1.0).sub(v))
       .mul(2.0)
-      .mul(fract(atan(uv.y, uv.x).div(3.14159).sub(float(u.u_time).mul(0.3))));
+      .mul(fract(atan(uv.y, uv.x).div(Math.PI).sub(float(u.u_time).mul(0.3))));
     // Simplified: skip full raymarching, use noise-based approximation
     const rd = normalize(vec3(vec2(st).sub(0.5).mul(2.0), 1.0));
     const accum = float(0.0).toVar();
