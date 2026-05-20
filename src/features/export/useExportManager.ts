@@ -41,12 +41,7 @@ export function useExportManager(
         // Allow up to 4096, but warn user in UI (Settings)
         const safeRes = Math.min(state.resolution, 4096);
 
-        const offscreen = await setupOffscreenScene(
-          state,
-          safeRes,
-          safeRes,
-          mode,
-        );
+        const offscreen = await setupOffscreenScene(state, safeRes, safeRes, mode);
         const { renderer, scene, camera, setTime } = offscreen;
         cleanup = offscreen.cleanup;
 
