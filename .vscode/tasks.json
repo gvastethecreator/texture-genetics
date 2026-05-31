@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "🚀 Dev Server",
+      "label": "🚀 Dev",
       "type": "shell",
       "command": "bun run dev",
       "group": "build",
@@ -14,7 +14,7 @@
       }
     },
     {
-      "label": "📦 Build",
+      "label": "🏗️ Build",
       "type": "shell",
       "command": "bun run build",
       "group": {
@@ -28,19 +28,29 @@
       }
     },
     {
-      "label": "👁️ Preview",
+      "label": "✅ Check",
       "type": "shell",
-      "command": "bun run preview",
-      "group": "build",
-      "isBackground": true,
+      "command": "bun run check",
+      "group": "test",
       "problemMatcher": [],
       "presentation": {
         "reveal": "always",
-        "panel": "dedicated"
+        "panel": "shared"
       }
     },
     {
-      "label": "🔍 Lint",
+      "label": "🧠 Typecheck",
+      "type": "shell",
+      "command": "bun run typecheck",
+      "group": "test",
+      "problemMatcher": ["$tsc"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "🧹 Lint",
       "type": "shell",
       "command": "bun run lint",
       "group": "test",
@@ -62,7 +72,7 @@
       }
     },
     {
-      "label": "🎨 Format",
+      "label": "✨ Format",
       "type": "shell",
       "command": "bun run fmt",
       "group": "test",
@@ -73,7 +83,7 @@
       }
     },
     {
-      "label": "🎨 Format Check",
+      "label": "✅ Format Check",
       "type": "shell",
       "command": "bun run fmt:check",
       "group": "test",
@@ -98,7 +108,7 @@
       }
     },
     {
-      "label": "🧪 Test Watch",
+      "label": "👀 Test Watch",
       "type": "shell",
       "command": "bun run test:watch",
       "group": "test",
@@ -110,7 +120,7 @@
       }
     },
     {
-      "label": "📊 Test Coverage",
+      "label": "📊 Coverage",
       "type": "shell",
       "command": "bun run test:coverage",
       "group": "test",
@@ -121,29 +131,19 @@
       }
     },
     {
-      "label": "✅ Typecheck",
+      "label": "👁️ Preview",
       "type": "shell",
-      "command": "bun run typecheck",
-      "group": "test",
-      "problemMatcher": ["$tsc"],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "✅ Full Check",
-      "type": "shell",
-      "command": "bun run check",
-      "group": "test",
+      "command": "bun run preview",
+      "group": "build",
+      "isBackground": true,
       "problemMatcher": [],
       "presentation": {
         "reveal": "always",
-        "panel": "shared"
+        "panel": "dedicated"
       }
     },
     {
-      "label": "🧹 Clean",
+      "label": "🗑️ Clean",
       "type": "shell",
       "command": "bun run clean",
       "problemMatcher": [],
