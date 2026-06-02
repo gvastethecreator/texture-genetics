@@ -1,99 +1,99 @@
-# 🌀 EffectTextureGen v4.0
+# EffectTextureGen v4.0
 
 ![Version](https://img.shields.io/badge/version-4.0.0-blueviolet)
 ![Tech](https://img.shields.io/badge/tech-React_19_%7C_Three.js_%7C_Vite_8-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**EffectTextureGen** es una estación de trabajo profesional basada en el navegador para la generación de texturas procedurales. Diseñada para Artistas Técnicos (Tech Artists), Desarrolladores de Juegos y Diseñadores UI, permite crear activos gráficos complejos mediante algoritmos matemáticos (SDF, Ruido, Fractales) sin necesidad de software de escritorio pesado.
+**EffectTextureGen** is a professional browser-based workstation for procedural texture generation. Designed for Technical Artists, Game Developers, and UI Designers, it enables the creation of complex graphic assets through mathematical algorithms (SDF, Noise, Fractals) without the need for heavy desktop software.
 
-## 🚀 Características Principales
+## Key Features
 
-- **Motor de Shaders Híbrido:** Compilación dinámica de fragment shaders GLSL basada en una arquitectura modular de "Chunks".
-- **Visualización PBR en Tiempo Real:** Previsualización instantánea con iluminación basada en física (GGX), mapas de normales y desplazamiento.
-- **Exportación Versátil:**
-  - Mapas estáticos hasta 4K (PNG/JPG/WEBP).
-  - **Sprite Sheets** automáticos para VFX de juegos.
-  - Grabación de **Video (WebM)** y **GIFs** animados.
-  - Exportación de **Código HTML Standalone** y **GLB 3D**.
-  - **ZIP** con todos los mapas de material.
-- **Gestión de Estado Robusta:** Presets, Historial (Undo/Redo) y persistencia local.
-- **Capas y Composición:** Mezcla de patrones procedurales con imágenes importadas.
-- **Biblioteca de Patrones:** 8 categorías (abstracto, fuego, gradientes, naturaleza, ruido, SDF, formas, 3D).
+- **Hybrid Shader Engine:** Dynamic GLSL fragment shader compilation based on a modular "Chunks" architecture.
+- **Real-Time PBR Visualization:** Instant preview with physics-based lighting (GGX), normal maps, and displacement.
+- **Versatile Export:**
+  - Static maps up to 4K (PNG/JPG/WEBP).
+  - Automatic **Sprite Sheets** for game VFX.
+  - **Video (WebM)** and **GIF** animated recording.
+  - **Standalone HTML Code** and **3D GLB** export.
+  - **ZIP** with all material maps.
+- **Robust State Management:** Presets, History (Undo/Redo), and local persistence.
+- **Layers & Compositing:** Blending procedural patterns with imported images.
+- **Pattern Library:** 8 categories (abstract, fire, gradients, nature, noise, SDF, shapes, 3D).
 
-## 🛠️ Stack Tecnológico
+## Tech Stack
 
-| Categoría  | Herramienta         | Versión   |
+| Category   | Tool                | Version   |
 | ---------- | ------------------- | --------- |
 | Runtime    | Bun                 | >= 1.2    |
 | Framework  | React               | 19.x      |
-| Lenguaje   | TypeScript          | 6.0.x     |
+| Language   | TypeScript          | 6.0.x     |
 | Build      | Vite                | 8.x       |
-| Bundler    | Rolldown (via Vite) | integrado |
-| Estilos    | Tailwind CSS        | 4.x       |
+| Bundler    | Rolldown (via Vite) | integrated |
+| Styling    | Tailwind CSS        | 4.x       |
 | 3D         | Three.js + R3F      | 0.184.x   |
-| Animación  | GSAP                | 3.15.x    |
+| Animation  | GSAP                | 3.15.x    |
 | Linting    | oxlint (OXC)        | 1.63.x    |
 | Formatting | oxfmt (OXC)         | 0.48.x    |
 | Testing    | Vitest              | 4.1.x     |
 
-## ⚡ Inicio Rápido
+## Quick Start
 
 ```bash
-# Instalar Bun (si no está instalado)
+# Install Bun (if not installed)
 # https://bun.sh/
 
-# Clonar e instalar
+# Clone and install
 git clone <repo-url>
 cd texture-genetics
 bun install
 
-# Iniciar servidor de desarrollo
+# Start dev server
 bun run dev
 ```
 
-El servidor se inicia en `http://localhost:3000`.
+The server starts at `http://localhost:3000`.
 
-## 📂 Estructura del Proyecto
+## Project Structure
 
 ```text
 src/
-├── core/        # Lógica de negocio, tipos, constantes, estado
-├── features/    # Componentes UI por funcionalidad
-├── lib/         # Motores internos (shaders, geometría, uniforms)
-├── shared/      # Código compartido (hooks, UI, utils)
-├── data/        # Definiciones de patrones y presets
-└── types/       # Declaraciones de tipos adicionales
+├── core/        # Business logic, types, constants, state
+├── features/    # UI components by functionality
+├── lib/         # Internal engines (shaders, geometry, uniforms)
+├── shared/      # Shared code (hooks, UI, utils)
+├── data/        # Pattern and preset definitions
+└── types/       # Additional type declarations
 ```
 
-👉 **[Arquitectura detallada](docs/ARCHITECTURE.md)** | **[Guía de desarrollo](docs/DEVELOPMENT.md)**
+[Detailed Architecture](docs/ARCHITECTURE.md) | [Development Guide](docs/DEVELOPMENT.md)
 
-## 🎮 Controles Rápidos
+## Quick Controls
 
-| Acción                    | Atajo               |
-| ------------------------- | ------------------- |
-| Rotar cámara              | Click Izquierdo     |
-| Zoom                      | Rueda del ratón     |
-| Pausar/Reanudar animación | `Espacio`           |
-| Aleatorizar parámetros    | `R`                 |
-| Deshacer / Rehacer        | `Ctrl+Z` / `Ctrl+Y` |
-| Ocultar paneles           | `H`                 |
+| Action                   | Shortcut            |
+| ------------------------ | ------------------- |
+| Rotate camera            | Left Click          |
+| Zoom                     | Mouse Wheel         |
+| Pause/Resume animation   | `Space`             |
+| Randomize parameters     | `R`                 |
+| Undo / Redo              | `Ctrl+Z` / `Ctrl+Y` |
+| Hide panels              | `H`                 |
 
-## 📋 Scripts Disponibles
+## Available Scripts
 
 ```bash
-bun run dev           # Servidor de desarrollo
-bun run build         # Build de producción + logs/build.log
-bun run test          # Tests unitarios + logs/test.log
-bun run test:coverage # Cobertura + logs/test-coverage.log
+bun run dev           # Dev server
+bun run build         # Production build + logs/build.log
+bun run test          # Unit tests + logs/test.log
+bun run test:coverage # Coverage + logs/test-coverage.log
 bun run lint          # Linting + logs/lint.log
-bun run fmt           # Formatear código + logs/format-write.log
-bun run typecheck     # Verificar tipos + logs/typecheck.log
-bun run check         # Checks combinados + logs/check.log
+bun run fmt           # Format code + logs/format-write.log
+bun run typecheck     # Type checking + logs/typecheck.log
+bun run check         # Combined checks + logs/check.log
 ```
 
-## 🪵 Logs y debugging
+## Logs & Debugging
 
-Los scripts de validación escriben logs legibles en `logs/` tanto si se ejecutan desde terminal como desde las tareas de VS Code.
+Validation scripts write readable logs to `logs/` whether run from terminal or VS Code tasks.
 
 - `build` → `logs/build.log`
 - `lint` / `lint:fix` → `logs/lint.log` / `logs/lint-fix.log`
@@ -102,14 +102,13 @@ Los scripts de validación escriben logs legibles en `logs/` tanto si se ejecuta
 - `test` / `test:coverage` → `logs/test.log` / `logs/test-coverage.log`
 - `check` → `logs/check.log`
 
-## 📚 Documentación
+## Documentation
 
-- [Arquitectura](docs/ARCHITECTURE.md) — Diagrama, patrones, estructura
-- [Desarrollo](docs/DEVELOPMENT.md) — Setup, scripts, herramientas
-- [Deuda Técnica](docs/TECHNICAL_DEBT.md) — Issues conocidos y mejoras pendientes
-- [Changelog](docs/TASKS_COMPLETED.md) — Historial de cambios v4.0
-- [Auditoría 2026-05-08](docs/AUDIT-2026-05-08.md) — Revisión integral, fixes aplicados y evidencias
+- [Architecture](docs/ARCHITECTURE.md) — Diagram, patterns, structure
+- [Development](docs/DEVELOPMENT.md) — Setup, scripts, tooling
+- [Technical Debt](docs/TECHNICAL_DEBT.md) — Known issues and pending improvements
+- [Changelog](docs/TASKS_COMPLETED.md) — v4.0 change history
 
-## 📄 Licencia
+## License
 
 MIT

@@ -34,6 +34,7 @@ coverage/
 .playwright-mcp/
 .agents/
 *.tsbuildinfo
+skills/
 
 # ── Editor / IDE ────────────────────────────────────────────
 .vscode/*
@@ -55,7 +56,6 @@ Desktop.ini
 # ── Environment variables ───────────────────────────────────
 .env
 .env.*
-!.env.example
 
 # ── Temporary / backup files ────────────────────────────────
 *.tmp
