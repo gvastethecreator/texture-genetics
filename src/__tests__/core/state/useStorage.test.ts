@@ -59,13 +59,13 @@ describe("useStorage", () => {
     mockStorage.clear();
   });
 
-  it("sanitizeValue filtra objetos inseguros y preserva valores válidos", () => {
+  it("sanitizeValue filters unsafe objects and preserves valid values", () => {
     expect(sanitizeValue({ nodeType: 1 })).toBeUndefined();
     expect(sanitizeValue({ _reactInternals: {} })).toBeUndefined();
     expect(sanitizeValue("ok")).toBe("ok");
   });
 
-  it("safeReplacer elimina referencias circulares y props internas de React", () => {
+  it("safeReplacer strips circular references and React internal props", () => {
     const replacer = safeReplacer();
     const circular: Record<string, unknown> = { ok: true };
     circular.self = circular;
@@ -76,7 +76,7 @@ describe("useStorage", () => {
     expect(replacer("self", circular)).toBeUndefined();
   });
 
-  it("carga el estado ligero y reinyecta assets pesados desde IndexedDB", async () => {
+  it("loads lightweight state and rehydrates heavy assets from IndexedDB", async () => {
     const initialState = mockAppState();
     const onLoaded = vi.fn();
 
@@ -113,7 +113,7 @@ describe("useStorage", () => {
     expect(loadedState.colorBalance.shadows.g).toBe(initialState.colorBalance.shadows.g);
   });
 
-  it("guarda assets pesados en IndexedDB y los elimina del payload ligero", async () => {
+  it("stores heavy assets in IndexedDB and removes them from the lightweight payload", async () => {
     const onLoaded = vi.fn();
     const { result } = renderHook(() => useStorage(mockAppState(), onLoaded));
 

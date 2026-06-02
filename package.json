@@ -3,6 +3,30 @@
   "version": "4.0.0",
   "private": true,
   "type": "module",
+  "description": "Browser-based procedural texture generation workstation (TSL/GLSL, Three.js, React).",
+  "author": "gvastethecreator",
+  "license": "MIT",
+  "homepage": "https://github.com/gvastethecreator/texture-genetics#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gvastethecreator/texture-genetics.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gvastethecreator/texture-genetics/issues"
+  },
+  "keywords": [
+    "procedural-texture",
+    "texture-generation",
+    "shader",
+    "glsl",
+    "tsl",
+    "threejs",
+    "react",
+    "pbr",
+    "normal-map",
+    "sprite-sheet",
+    "game-dev"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "node ./scripts/run-with-log.mjs build.log vite build",

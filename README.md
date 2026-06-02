@@ -1,114 +1,65 @@
-# EffectTextureGen v4.0
+# EffectTextureGen
 
-![Version](https://img.shields.io/badge/version-4.0.0-blueviolet)
-![Tech](https://img.shields.io/badge/tech-React_19_%7C_Three.js_%7C_Vite_8-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+Browser-based procedural texture generation workstation.
 
-**EffectTextureGen** is a professional browser-based workstation for procedural texture generation. Designed for Technical Artists, Game Developers, and UI Designers, it enables the creation of complex graphic assets through mathematical algorithms (SDF, Noise, Fractals) without the need for heavy desktop software.
+EffectTextureGen is a workstation for technical artists, game developers, and
+UI designers who need PBR-ready procedural textures, normal maps, and animated
+materials without leaving the browser. It runs on Three.js (TSL + GLSL) inside
+a React 19 + Vite 8 app and exports to PNG/JPG/WEBP, GLB, animated GIF, WebM,
+sprite sheets, standalone HTML, and ZIP.
 
-## Key Features
+## Features
 
-- **Hybrid Shader Engine:** Dynamic GLSL fragment shader compilation based on a modular "Chunks" architecture.
-- **Real-Time PBR Visualization:** Instant preview with physics-based lighting (GGX), normal maps, and displacement.
-- **Versatile Export:**
-  - Static maps up to 4K (PNG/JPG/WEBP).
-  - Automatic **Sprite Sheets** for game VFX.
-  - **Video (WebM)** and **GIF** animated recording.
-  - **Standalone HTML Code** and **3D GLB** export.
-  - **ZIP** with all material maps.
-- **Robust State Management:** Presets, History (Undo/Redo), and local persistence.
-- **Layers & Compositing:** Blending procedural patterns with imported images.
-- **Pattern Library:** 8 categories (abstract, fire, gradients, nature, noise, SDF, shapes, 3D).
-
-## Tech Stack
-
-| Category   | Tool                | Version   |
-| ---------- | ------------------- | --------- |
-| Runtime    | Bun                 | >= 1.2    |
-| Framework  | React               | 19.x      |
-| Language   | TypeScript          | 6.0.x     |
-| Build      | Vite                | 8.x       |
-| Bundler    | Rolldown (via Vite) | integrated |
-| Styling    | Tailwind CSS        | 4.x       |
-| 3D         | Three.js + R3F      | 0.184.x   |
-| Animation  | GSAP                | 3.15.x    |
-| Linting    | oxlint (OXC)        | 1.63.x    |
-| Formatting | oxfmt (OXC)         | 0.48.x    |
-| Testing    | Vitest              | 4.1.x     |
+- Hybrid TSL/GLSL shader engine with a modular chunk system
+- Real-time PBR preview (GGX lighting, normal maps, displacement)
+- Pattern library: abstract, fire, gradients, nature, noise, SDF, shapes (7 categories)
+- Layered compositing with masks, base textures, and stickers
+- Undo/redo, presets, and IndexedDB persistence
+- Strategy-pattern export pipeline: image, sprite sheet, video, GIF, GLB, HTML, ZIP
+- Lazy-loaded modals and chunk-split bundles for fast first paint
 
 ## Quick Start
 
 ```bash
-# Install Bun (if not installed)
-# https://bun.sh/
-
-# Clone and install
+# Requires Bun >= 1.2 (https://bun.sh)
 git clone <repo-url>
 cd texture-genetics
 bun install
-
-# Start dev server
 bun run dev
 ```
 
-The server starts at `http://localhost:3000`.
-
-## Project Structure
-
-```text
-src/
-├── core/        # Business logic, types, constants, state
-├── features/    # UI components by functionality
-├── lib/         # Internal engines (shaders, geometry, uniforms)
-├── shared/      # Shared code (hooks, UI, utils)
-├── data/        # Pattern and preset definitions
-└── types/       # Additional type declarations
-```
-
-[Detailed Architecture](docs/ARCHITECTURE.md) | [Development Guide](docs/DEVELOPMENT.md)
+Open `http://localhost:3000` and start generating.
 
 ## Quick Controls
 
-| Action                   | Shortcut            |
-| ------------------------ | ------------------- |
-| Rotate camera            | Left Click          |
-| Zoom                     | Mouse Wheel         |
-| Pause/Resume animation   | `Space`             |
-| Randomize parameters     | `R`                 |
-| Undo / Redo              | `Ctrl+Z` / `Ctrl+Y` |
-| Hide panels              | `H`                 |
+| Action                | Shortcut            |
+| --------------------- | ------------------- |
+| Pause / resume        | `Space`             |
+| Randomize             | `R`                 |
+| Undo / redo           | `Ctrl+Z` / `Ctrl+Y` |
+| Toggle side panels    | `H`                 |
 
-## Available Scripts
-
-```bash
-bun run dev           # Dev server
-bun run build         # Production build + logs/build.log
-bun run test          # Unit tests + logs/test.log
-bun run test:coverage # Coverage + logs/test-coverage.log
-bun run lint          # Linting + logs/lint.log
-bun run fmt           # Format code + logs/format-write.log
-bun run typecheck     # Type checking + logs/typecheck.log
-bun run check         # Combined checks + logs/check.log
-```
-
-## Logs & Debugging
-
-Validation scripts write readable logs to `logs/` whether run from terminal or VS Code tasks.
-
-- `build` → `logs/build.log`
-- `lint` / `lint:fix` → `logs/lint.log` / `logs/lint-fix.log`
-- `fmt` / `fmt:check` → `logs/format-write.log` / `logs/format.log`
-- `typecheck` → `logs/typecheck.log`
-- `test` / `test:coverage` → `logs/test.log` / `logs/test-coverage.log`
-- `check` → `logs/check.log`
+The full shortcut list is in the in-app `?` modal.
 
 ## Documentation
 
-- [Architecture](docs/ARCHITECTURE.md) — Diagram, patterns, structure
-- [Development](docs/DEVELOPMENT.md) — Setup, scripts, tooling
-- [Technical Debt](docs/TECHNICAL_DEBT.md) — Known issues and pending improvements
-- [Changelog](docs/TASKS_COMPLETED.md) — v4.0 change history
+- Setup and scripts: [`docs/SETUP.md`](docs/SETUP.md)
+- Architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- Component map: [`docs/COMPONENT_MAP.md`](docs/COMPONENT_MAP.md)
+- Reference (stack, shortcuts, logs): [`docs/REFERENCE.md`](docs/REFERENCE.md)
+- Technical debt: [`docs/TECHNICAL_DEBT.md`](docs/TECHNICAL_DEBT.md)
+- Changelog: [`docs/TASKS_COMPLETED.md`](docs/TASKS_COMPLETED.md)
+- Agent instructions: [`AGENTS.md`](AGENTS.md)
+
+## Status
+
+- v4.0 runtime is TSL-first; a GLSL fallback remains for the legacy HTML export.
+- WebGL 2 / WebGPU preview. Some post-processing paths degrade gracefully when
+  WebGPU is unavailable.
+- Test coverage is partial (~16%). The shared hooks, pattern registry, and
+  primitives are tested. Shader and export paths need additional test infra.
+- Browser support targets evergreen Chromium, Firefox, and Safari.
 
 ## License
 
-MIT
+MIT — see [`LICENSE`](LICENSE).

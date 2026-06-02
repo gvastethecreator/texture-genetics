@@ -6,7 +6,6 @@
 node_modules/
 .pnp
 .pnp.js
-resources/*
 
 # ── Build output ────────────────────────────────────────────
 dist/
@@ -56,6 +55,7 @@ Desktop.ini
 # ── Environment variables ───────────────────────────────────
 .env
 .env.*
+!.env.example
 
 # ── Temporary / backup files ────────────────────────────────
 *.tmp

@@ -1,0 +1,33 @@
+# Line endings
+# Normalize all text files to LF in the repository. This is the
+# standard for cross-platform source code. Disable local auto-conversion
+# noise on Windows.
+
+* text=auto eol=lf
+
+# Specific overrides for binary or platform files
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.glb   binary
+*.gltf  binary
+*.bin   binary
+*.obj   binary
+*.mtl   binary
+*.tga   binary
+*.CUBE  binary
+*.ICC   binary
+*.CSP   binary
+*.3DL   binary
+*.svg   binary
+*.ico   binary
+*.zip   binary
+*.gz    binary
+*.bz2   binary
+*.7z    binary
+*.tar   binary
