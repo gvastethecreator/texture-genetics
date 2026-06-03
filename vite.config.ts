@@ -6,7 +6,11 @@ import { defineConfig } from "vite";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
+const repoBase = "/texture-genetics/";
+
 export default defineConfig({
+  base: repoBase,
+
   plugins: [react(), tailwindcss()],
 
   resolve: {

@@ -2,6 +2,8 @@
 
 Browser-based procedural texture generation workstation.
 
+> **Live demo:** [gvastethecreator.github.io/texture-genetics](https://gvastethecreator.github.io/texture-genetics/)
+
 EffectTextureGen is a workstation for technical artists, game developers, and
 UI designers who need PBR-ready procedural textures, normal maps, and animated
 materials without leaving the browser. It runs on Three.js (TSL + GLSL) inside
@@ -43,7 +45,7 @@ The full shortcut list is in the in-app `?` modal.
 
 ## Documentation
 
-- Setup and scripts: [`docs/SETUP.md`](docs/SETUP.md)
+- Setup, scripts, and Pages deploy: [`docs/SETUP.md`](docs/SETUP.md)
 - Architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - Component map: [`docs/COMPONENT_MAP.md`](docs/COMPONENT_MAP.md)
 - Reference (stack, shortcuts, logs): [`docs/REFERENCE.md`](docs/REFERENCE.md)
