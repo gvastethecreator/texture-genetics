@@ -5,6 +5,7 @@ import { disposeRoot } from "../../../lib/three/cleanup";
 import { createTslMaterial } from "../../../lib/tsl/tslBuilder";
 import { updateTslUniforms } from "../../../lib/tsl/uniforms";
 import { createLegacyOffscreenScene, getSharedLegacyRenderer } from "../legacy/offscreenLegacy";
+import { loadRequiredExportTextures } from "./exportAssets";
 
 type OffscreenRenderer = THREE.WebGLRenderer | WebGPURenderer;
 
@@ -77,59 +78,8 @@ export const setupOffscreenScene = async (
     renderer.toneMapping = THREE.NoToneMapping;
   }
 
-  const resources: Array<{ dispose?: () => void }> = [];
-
-  const promises: Promise<void>[] = [];
-  let maskTexture: THREE.Texture | null = null;
-  let baseTexture: THREE.Texture | null = null;
-  let stickerTexture: THREE.Texture | null = null;
-
-  if (state.imageAlpha.maskEnabled && state.imageAlpha.maskTexture) {
-    promises.push(
-      new THREE.TextureLoader()
-        .loadAsync(state.imageAlpha.maskTexture)
-        .then((texture) => {
-          texture.colorSpace = THREE.SRGBColorSpace;
-          maskTexture = texture;
-          resources.push(texture);
-        })
-        .catch((e) => {
-          console.error("Failed to load mask texture:", e);
-        }),
-    );
-  }
-
-  if (state.baseTexture?.enabled && state.baseTexture.texture) {
-    promises.push(
-      new THREE.TextureLoader()
-        .loadAsync(state.baseTexture.texture)
-        .then((texture) => {
-          texture.colorSpace = THREE.SRGBColorSpace;
-          baseTexture = texture;
-          resources.push(texture);
-        })
-        .catch((e) => {
-          console.error("Failed to load base texture:", e);
-        }),
-    );
-  }
-
-  if (state.sticker?.enabled && state.sticker.texture) {
-    promises.push(
-      new THREE.TextureLoader()
-        .loadAsync(state.sticker.texture)
-        .then((texture) => {
-          texture.colorSpace = THREE.SRGBColorSpace;
-          stickerTexture = texture;
-          resources.push(texture);
-        })
-        .catch((e) => {
-          console.error("Failed to load sticker texture:", e);
-        }),
-    );
-  }
-
-  await Promise.all(promises);
+  const { maskTexture, baseTexture, stickerTexture, resources } =
+    await loadRequiredExportTextures(state);
 
   if (usingTsl) {
     const { material, uniforms } = createTslMaterial(state, {

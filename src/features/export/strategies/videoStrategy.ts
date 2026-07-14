@@ -1,5 +1,6 @@
 import { AppState } from "../../../core/types/types";
 import { setupOffscreenScene } from "../core/offscreen";
+import { createIdempotentFinalizer } from "../core/finalization";
 
 export const generateVideo = async (
   state: AppState,
@@ -17,17 +18,27 @@ export const generateVideo = async (
   );
 
   const stream = renderer.domElement.captureStream(60); // 60 FPS target
+  const finalize = createIdempotentFinalizer(() => {
+    stream.getTracks().forEach((track) => track.stop());
+    cleanup();
+  });
   const mimeType = "video/webm;codecs=vp9";
 
   if (!MediaRecorder.isTypeSupported(mimeType)) {
-    cleanup();
+    finalize();
     throw new Error("VP9 WebM not supported on this browser.");
   }
 
-  const recorder = new MediaRecorder(stream, {
-    mimeType,
-    videoBitsPerSecond: 8000000, // 8 Mbps high quality
-  });
+  let recorder: MediaRecorder;
+  try {
+    recorder = new MediaRecorder(stream, {
+      mimeType,
+      videoBitsPerSecond: 8000000, // 8 Mbps high quality
+    });
+  } catch (error) {
+    finalize();
+    throw error;
+  }
 
   const chunks: Blob[] = [];
   recorder.addEventListener("dataavailable", (e) => {
@@ -39,7 +50,7 @@ export const generateVideo = async (
       "stop",
       () => {
         const blob = new Blob(chunks, { type: "video/webm" });
-        cleanup();
+        finalize();
         resolve(blob);
       },
       { once: true },
@@ -47,7 +58,7 @@ export const generateVideo = async (
     recorder.addEventListener(
       "error",
       (e) => {
-        cleanup();
+        finalize();
         reject(e);
       },
       { once: true },
@@ -69,8 +80,8 @@ export const generateVideo = async (
       onProgress(Math.round((i / totalFrames) * 100));
     }
   } catch (e) {
-    recorder.stop();
-    cleanup();
+    if (recorder.state !== "inactive") recorder.stop();
+    finalize();
     throw e;
   }
 

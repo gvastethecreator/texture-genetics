@@ -50,6 +50,7 @@ interface SceneCompositionProps {
   controlsHandle: React.MutableRefObject<CameraHandler | null>;
   updateState: (s: Partial<AppState>) => void;
   onLoadingChange: (loading: boolean) => void;
+  onAssetError: (message: string | null) => void;
   onZoomChange: (zoom: number) => void;
   orbitEnabled: boolean;
   setOrbitEnabled: (enabled: boolean) => void;
@@ -61,6 +62,7 @@ const SceneComposition: React.FC<SceneCompositionProps> = ({
   controlsHandle,
   updateState,
   onLoadingChange,
+  onAssetError,
   onZoomChange,
   orbitEnabled,
   setOrbitEnabled,
@@ -115,7 +117,12 @@ const SceneComposition: React.FC<SceneCompositionProps> = ({
       />
 
       <group>
-        <MainMesh appState={appState} stateRef={stateRef} onLoadingChange={onLoadingChange} />
+        <MainMesh
+          appState={appState}
+          stateRef={stateRef}
+          onLoadingChange={onLoadingChange}
+          onAssetError={onAssetError}
+        />
         {supportsAdvancedWebGlTargets &&
           !isBackgroundGeometry &&
           appState.environment.stageEnabled && <StageFloor appState={appState} />}
@@ -176,6 +183,7 @@ export const TextureCanvas: React.FC<{
   const contextCleanupRef = useRef<(() => void) | null>(null);
   const stateRef = useRef(appState);
   const [isLoading, setIsLoading] = useState(false);
+  const [assetError, setAssetError] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [orbitEnabled, setOrbitEnabled] = useState(true);
   const rendererDpr =
@@ -201,21 +209,10 @@ export const TextureCanvas: React.FC<{
     };
   }, []);
 
-  // Cleanup for model URLs
-  useEffect(() => {
-    return () => {
-      if (appState.svg.url) {
-        URL.revokeObjectURL(appState.svg.url);
-      }
-      if (appState.customModel) {
-        URL.revokeObjectURL(appState.customModel);
-      }
-    };
-  }, [appState.svg.url, appState.customModel]);
-
   const handleModelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setAssetError(null);
       const url = URL.createObjectURL(file);
       if (file.name.toLowerCase().endsWith(".svg")) {
         updateState({ geometry: GeometryType.SVG, svg: { ...appState.svg, url } });
@@ -302,6 +299,7 @@ export const TextureCanvas: React.FC<{
               controlsHandle={controlsHandle}
               updateState={updateState}
               onLoadingChange={setIsLoading}
+              onAssetError={setAssetError}
               onZoomChange={setZoomLevel}
               orbitEnabled={orbitEnabled}
               setOrbitEnabled={setOrbitEnabled}
@@ -310,6 +308,27 @@ export const TextureCanvas: React.FC<{
         </Canvas>
       ) : (
         <LoadingScreen />
+      )}
+
+      {assetError && (
+        <div
+          role="alert"
+          className="absolute top-4 left-1/2 z-50 w-[min(32rem,calc(100%-2rem))] -translate-x-1/2 rounded-lg border border-red-400/40 bg-red-950/90 px-4 py-3 text-sm text-red-100 shadow-2xl backdrop-blur"
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="font-semibold">Model import failed</p>
+              <p className="mt-1 text-xs text-red-100/80">{assetError}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAssetError(null)}
+              className="shrink-0 rounded border border-red-200/20 px-2 py-1 text-[10px] font-bold uppercase tracking-wide hover:bg-white/10"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
       )}
 
       {/* CONTROLS OVERLAY */}

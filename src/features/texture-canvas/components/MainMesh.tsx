@@ -8,8 +8,6 @@ import helvetikerFontUrl from "three/examples/fonts/helvetiker_regular.typeface.
 import optimerFontUrl from "three/examples/fonts/optimer_regular.typeface.json?url";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import {
   AnimationConfig,
@@ -18,6 +16,7 @@ import {
   PreviewAnimation,
 } from "../../../core/types/types";
 import { getGeometryForType } from "../../../lib/three/geometryFactory";
+import { loadModelGeometry, ModelLoadError } from "../../../lib/three/modelLoader";
 import { createTslMaterial } from "../../../lib/tsl/tslBuilder";
 import { TslUniforms, updateTslUniforms } from "../../../lib/tsl/uniforms";
 import { useTextureResource } from "../../../shared/hooks/useTextureResource";
@@ -35,9 +34,11 @@ interface MainMeshProps {
   appState: AppState;
   stateRef: React.MutableRefObject<AppState>;
   onLoadingChange?: (loading: boolean) => void;
+  onAssetError?: (message: string | null) => void;
 }
 
-export const MainMesh: React.FC<MainMeshProps> = memo(({ appState, stateRef, onLoadingChange }) => {
+export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
+  const { appState, stateRef, onLoadingChange, onAssetError } = props;
   const { size, viewport } = useThree();
   const meshRef = useRef<THREE.Mesh>(null);
   const instanceRef = useRef<THREE.InstancedMesh>(null);
@@ -93,42 +94,26 @@ export const MainMesh: React.FC<MainMeshProps> = memo(({ appState, stateRef, onL
     if (appState.geometry === GeometryType.CUSTOM && appState.customModel) {
       if (appState.customModel === lastLoadedModelUrl.current) return;
       if (onLoadingChange) onLoadingChange(true);
+      onAssetError?.(null);
       lastLoadedModelUrl.current = appState.customModel;
 
       const loadModel = async () => {
         try {
-          const url = appState.customModel!;
-          let loadedGeom: THREE.BufferGeometry | null = null;
-
-          const onLoad = (object: THREE.Object3D) => {
-            object.traverse((child) => {
-              if ((child as THREE.Mesh).isMesh && !loadedGeom) {
-                loadedGeom = (child as THREE.Mesh).geometry.clone();
-              }
-            });
-          };
-
-          if (url.includes("obj") || url.startsWith("blob:")) {
-            const objLoader = new OBJLoader();
-            const gltfLoader = new GLTFLoader();
-            try {
-              const object = await objLoader.loadAsync(url);
-              onLoad(object);
-            } catch {
-              const gltf = await gltfLoader.loadAsync(url);
-              onLoad(gltf.scene);
-            }
-          }
-
-          if (active && loadedGeom) {
-            const geom = loadedGeom as THREE.BufferGeometry;
-            geom.center();
-            geom.computeVertexNormals();
+          const geom = await loadModelGeometry(appState.customModel!);
+          if (active) {
             clearCustomGeom();
             setCustomGeometry(geom);
+          } else {
+            geom.dispose();
           }
         } catch (e) {
           console.error("Failed to load model", e);
+          if (active) {
+            lastLoadedModelUrl.current = null;
+            const reason =
+              e instanceof ModelLoadError ? e.message : "The selected file could not be parsed";
+            onAssetError?.(`Model could not be loaded. ${reason}`);
+          }
         } finally {
           if (active && onLoadingChange) onLoadingChange(false);
         }
@@ -248,7 +233,14 @@ export const MainMesh: React.FC<MainMeshProps> = memo(({ appState, stateRef, onL
       active = false;
       if (onLoadingChange) onLoadingChange(false);
     };
-  }, [appState.geometry, appState.customModel, appState.svg, appState.text, onLoadingChange]);
+  }, [
+    appState.geometry,
+    appState.customModel,
+    appState.svg,
+    appState.text,
+    onLoadingChange,
+    onAssetError,
+  ]);
 
   // Material Logic (TSL)
   const material = useMemo(() => {

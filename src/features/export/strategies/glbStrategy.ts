@@ -2,11 +2,18 @@ import * as THREE from "three";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
 import { AppState, ViewMode, GeometryType } from "../../../core/types/types";
 import { setupOffscreenScene } from "../core/offscreen";
+import { createIdempotentFinalizer } from "../core/finalization";
 
 export const generateGlb = async (
   state: AppState,
   onProgress: (p: number) => void,
 ): Promise<Blob> => {
+  if ([GeometryType.CUSTOM, GeometryType.SVG, GeometryType.TEXT].includes(state.geometry)) {
+    throw new Error(
+      `GLB export does not support ${state.geometry} geometry yet; select a built-in mesh`,
+    );
+  }
+
   onProgress(10);
 
   // 1. Generate Texture
@@ -68,26 +75,31 @@ export const generateGlb = async (
   // 3. Export GLB
   return new Promise((resolve, reject) => {
     const exporter = new GLTFExporter();
-    const cleanupAll = () => {
+    const cleanupAll = createIdempotentFinalizer(() => {
       mesh.removeFromParent();
       geometry.dispose();
       exportMaterial.dispose();
       texture.dispose();
       cleanup();
-    };
+    });
 
-    exporter.parse(
-      exportScene,
-      (gltf) => {
-        cleanupAll();
-        onProgress(100);
-        resolve(new Blob([gltf as ArrayBuffer], { type: "model/gltf-binary" }));
-      },
-      (error) => {
-        cleanupAll();
-        reject(error);
-      },
-      { binary: true },
-    );
+    try {
+      exporter.parse(
+        exportScene,
+        (gltf) => {
+          cleanupAll();
+          onProgress(100);
+          resolve(new Blob([gltf as ArrayBuffer], { type: "model/gltf-binary" }));
+        },
+        (error) => {
+          cleanupAll();
+          reject(error);
+        },
+        { binary: true },
+      );
+    } catch (error) {
+      cleanupAll();
+      reject(error);
+    }
   });
 };

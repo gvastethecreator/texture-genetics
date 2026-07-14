@@ -43,6 +43,10 @@ const createMockStorage = (): Storage => {
 describe("useStorage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllGlobals();
+    idbMocks.get.mockReset().mockResolvedValue(undefined);
+    idbMocks.set.mockReset().mockResolvedValue(undefined);
+    idbMocks.del.mockReset().mockResolvedValue(undefined);
 
     const mockStorage = createMockStorage();
     Object.defineProperty(window, "localStorage", {
@@ -52,6 +56,11 @@ describe("useStorage", () => {
     });
     Object.defineProperty(globalThis, "localStorage", {
       value: mockStorage,
+      configurable: true,
+      writable: true,
+    });
+    Object.defineProperty(URL, "createObjectURL", {
+      value: vi.fn(() => "blob:rehydrated-asset"),
       configurable: true,
       writable: true,
     });
@@ -113,6 +122,21 @@ describe("useStorage", () => {
     expect(loadedState.colorBalance.shadows.g).toBe(initialState.colorBalance.shadows.g);
   });
 
+  it("preserves valid lightweight state when one IndexedDB asset cannot be read", async () => {
+    const onLoaded = vi.fn();
+    localStorage.setItem("effect_gen_v3_release", JSON.stringify({ animate: false }));
+    idbMocks.get.mockImplementation(async (key: string) => {
+      if (key === "asset_custom_model") throw new Error("corrupt asset record");
+      return undefined;
+    });
+
+    renderHook(() => useStorage(mockAppState(), onLoaded));
+    await waitFor(() => expect(onLoaded).toHaveBeenCalledTimes(1));
+
+    expect(onLoaded.mock.calls[0][0].animate).toBe(false);
+    expect(localStorage.getItem("effect_gen_v3_release")).not.toBeNull();
+  });
+
   it("stores heavy assets in IndexedDB and removes them from the lightweight payload", async () => {
     const onLoaded = vi.fn();
     const { result } = renderHook(() => useStorage(mockAppState(), onLoaded));
@@ -130,22 +154,79 @@ describe("useStorage", () => {
         enabled: true,
         texture: "y".repeat(180),
       },
-      customModel: "blob:custom-model-" + "z".repeat(120),
+      customModel: "data:model/gltf-binary;base64," + "z".repeat(120),
     });
 
     await act(async () => {
       await result.current.saveState(nextState);
     });
 
-    expect(idbMocks.set).toHaveBeenCalledWith("asset_base_texture", nextState.baseTexture.texture);
-    expect(idbMocks.set).toHaveBeenCalledWith("asset_sticker_texture", nextState.sticker.texture);
-    expect(idbMocks.set).toHaveBeenCalledWith("asset_custom_model", nextState.customModel);
-    expect(idbMocks.del).toHaveBeenCalledWith("asset_mask_texture");
+    expect(idbMocks.set).toHaveBeenCalledTimes(1);
+    const [bundleKey, bundle] = idbMocks.set.mock.calls[0];
+    expect(bundleKey).toMatch(/^effect_gen_v3_assets_/);
+    expect(bundle).toMatchObject({
+      version: 1,
+      assets: {
+        asset_base_texture: nextState.baseTexture.texture,
+        asset_sticker_texture: nextState.sticker.texture,
+        asset_custom_model: nextState.customModel,
+      },
+    });
 
     const persisted = JSON.parse(localStorage.getItem("effect_gen_v3_release") ?? "{}");
     expect(persisted.baseTexture.texture).toBeNull();
     expect(persisted.sticker.texture).toBeNull();
     expect(persisted.customModel).toBeNull();
-    expect(persisted["_version"]).toBe(2);
+    expect(persisted.svg.url).toBeNull();
+    expect(persisted["_version"]).toBe(3);
+    expect(bundleKey).toBe(`effect_gen_v3_assets_${persisted["_assetRevision"]}`);
+  });
+
+  it("does not commit lightweight state when an asset transaction fails", async () => {
+    idbMocks.set.mockRejectedValueOnce(new Error("quota exceeded"));
+    const { result } = renderHook(() => useStorage(mockAppState(), vi.fn()));
+    await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+    await act(async () => {
+      await result.current.saveState(
+        mockAppState({
+          baseTexture: { ...mockAppState().baseTexture, texture: "data:image/png;base64,x" },
+        }),
+      );
+    });
+
+    expect(localStorage.getItem("effect_gen_v3_release")).toBeNull();
+  });
+
+  it("persists blob URLs as durable Blob values and rehydrates them on load", async () => {
+    const modelBlob = new Blob(["glTF"], { type: "model/gltf-binary" });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: true, blob: vi.fn().mockResolvedValue(modelBlob) }),
+    );
+    const firstHook = renderHook(() => useStorage(mockAppState(), vi.fn()));
+    await waitFor(() => expect(firstHook.result.current.isInitialized).toBe(true));
+
+    await act(async () => {
+      await firstHook.result.current.saveState(
+        mockAppState({ customModel: "blob:temporary-model" }),
+      );
+    });
+
+    const [bundleKey, savedBundle] = idbMocks.set.mock.calls[0];
+    expect(savedBundle.assets.asset_custom_model).toBe(modelBlob);
+
+    firstHook.unmount();
+    const persisted = JSON.parse(localStorage.getItem("effect_gen_v3_release") ?? "{}");
+    idbMocks.get
+      .mockReset()
+      .mockImplementation(async (key: string) => (key === bundleKey ? savedBundle : undefined));
+    const onLoaded = vi.fn();
+    renderHook(() => useStorage(mockAppState(), onLoaded));
+    await waitFor(() => expect(onLoaded).toHaveBeenCalledTimes(1));
+
+    expect(persisted._assetRevision).toBe(bundleKey.replace("effect_gen_v3_assets_", ""));
+    expect(onLoaded.mock.calls[0][0].customModel).toBe("blob:rehydrated-asset");
+    expect(URL.createObjectURL).toHaveBeenCalledWith(modelBlob);
   });
 });

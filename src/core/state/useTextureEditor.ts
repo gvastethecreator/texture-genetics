@@ -15,12 +15,19 @@ export const useTextureEditor = () => {
 
   // Ref-based callback registration to avoid mutable action objects
   const historyCallbackRef = useRef<(s: AppState) => void>(() => {});
+  const handleStorageWarning = useCallback(
+    (message: string) => addToast("error", message),
+    [addToast],
+  );
 
   const {
     state,
     actions: stateActions,
     isBusy,
-  } = useAppState({ onStateChangeForHistory: (s: AppState) => historyCallbackRef.current(s) });
+  } = useAppState({
+    onStateChangeForHistory: (s: AppState) => historyCallbackRef.current(s),
+    onStorageWarning: handleStorageWarning,
+  });
 
   // History stack tracks the AppState
   const { history, currentState, pushToHistory, historyControl } = useHistoryStack(state);

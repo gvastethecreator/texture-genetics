@@ -26,7 +26,10 @@ const INITIAL_STATE: AppState = createDefaultAppState();
 // Re-export safeReplacer for other consumers (like PresetManager)
 export { safeReplacer } from "./useStorage";
 
-export const useAppState = (props: { onStateChangeForHistory: (s: AppState) => void }) => {
+export const useAppState = (props: {
+  onStateChangeForHistory: (s: AppState) => void;
+  onStorageWarning?: (message: string) => void;
+}) => {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
   const stateRef = useRef(state);
 
@@ -36,27 +39,31 @@ export const useAppState = (props: { onStateChangeForHistory: (s: AppState) => v
   }, [state]);
 
   // Use separated storage logic
-  const { isInitialized, saveState } = useStorage(INITIAL_STATE, (loadedState) => {
-    // Validation for camera prop if loading old/corrupt state
-    if (
-      !loadedState.camera ||
-      !Array.isArray(loadedState.camera.position) ||
-      !Array.isArray(loadedState.camera.target)
-    ) {
-      loadedState.camera = { ...DEFAULTS.CAMERA };
-    }
+  const { isInitialized, saveState } = useStorage(
+    INITIAL_STATE,
+    (loadedState) => {
+      // Validation for camera prop if loading old/corrupt state
+      if (
+        !loadedState.camera ||
+        !Array.isArray(loadedState.camera.position) ||
+        !Array.isArray(loadedState.camera.target)
+      ) {
+        loadedState.camera = { ...DEFAULTS.CAMERA };
+      }
 
-    if (!isValidViewMode(loadedState.viewMode)) {
-      loadedState.viewMode = DEFAULTS.VIEW_MODE;
-    }
+      if (!isValidViewMode(loadedState.viewMode)) {
+        loadedState.viewMode = DEFAULTS.VIEW_MODE;
+      }
 
-    if (!isValidGeometryType(loadedState.geometry)) {
-      loadedState.geometry = DEFAULTS.GEOMETRY;
-    }
+      if (!isValidGeometryType(loadedState.geometry)) {
+        loadedState.geometry = DEFAULTS.GEOMETRY;
+      }
 
-    setState(loadedState);
-    props.onStateChangeForHistory(loadedState);
-  });
+      setState(loadedState);
+      props.onStateChangeForHistory(loadedState);
+    },
+    props.onStorageWarning,
+  );
 
   // Auto-Save
   useEffect(() => {

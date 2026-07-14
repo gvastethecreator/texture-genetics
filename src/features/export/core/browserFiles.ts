@@ -4,10 +4,13 @@ export const downloadBlob = (blob: Blob, filename: string) => {
 
   link.href = url;
   link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  try {
+    document.body.appendChild(link);
+    link.click();
+  } finally {
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
 };
 
 export const canvasToBlob = (

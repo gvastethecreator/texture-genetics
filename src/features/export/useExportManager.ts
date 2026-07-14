@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { AppState, ViewMode } from "../../core/types/types";
 import { setupOffscreenScene } from "./core/offscreen";
 import { generateGif } from "./strategies/gifStrategy";
@@ -23,11 +23,16 @@ export function useExportManager(
 ) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const activeTaskRef = useRef(false);
 
   // --- Single Image Export ---
   const generateHighResImage = useCallback(
     async (overrideViewMode?: ViewMode) => {
-      if (isGenerating) return;
+      if (activeTaskRef.current) {
+        onError?.("An export is already in progress");
+        return;
+      }
+      activeTaskRef.current = true;
       setIsGenerating(true);
       setProgress(10);
 
@@ -52,6 +57,7 @@ export function useExportManager(
         const ext = format === "jpeg" ? "jpg" : format;
 
         const blob = await canvasToBlob(renderer.domElement, `image/${format}`, 0.9);
+        if (blob.size === 0) throw new Error("Generated image is empty");
         const name = `texture_${state.textureType.replace(/\s/g, "_")}_${mode === ViewMode.RENDER ? "render" : "map"}.${ext}`;
         downloadBlob(blob, name);
         if (onSuccess) onSuccess(`Exported ${name}`);
@@ -60,11 +66,12 @@ export function useExportManager(
         if (onError) onError(`Export Failed: ${getErrorMessage(e)}`);
       } finally {
         cleanup?.();
+        activeTaskRef.current = false;
         setIsGenerating(false);
         setProgress(0);
       }
     },
-    [state, isGenerating, onSuccess, onError],
+    [state, onSuccess, onError],
   );
 
   // --- Complex Exports Wrapper ---
@@ -74,23 +81,29 @@ export function useExportManager(
       filename: string,
       taskFn: (s: AppState, cb: (p: number) => void) => Promise<Blob>,
     ) => {
-      if (isGenerating) return;
+      if (activeTaskRef.current) {
+        onError?.("An export is already in progress");
+        return;
+      }
+      activeTaskRef.current = true;
       setIsGenerating(true);
       setProgress(0);
 
       try {
         const blob = await taskFn(state, setProgress);
+        if (blob.size === 0) throw new Error(`${taskName} generated an empty file`);
         downloadBlob(blob, filename);
         if (onSuccess) onSuccess(`${taskName} Exported`);
       } catch (e) {
         console.error(e);
         if (onError) onError(`${taskName} Failed: ${getErrorMessage(e)}`);
       } finally {
+        activeTaskRef.current = false;
         setIsGenerating(false);
         setProgress(0);
       }
     },
-    [state, isGenerating, onSuccess, onError],
+    [state, onSuccess, onError],
   );
 
   // --- Public API ---

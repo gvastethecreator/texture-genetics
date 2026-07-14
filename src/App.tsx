@@ -1,4 +1,4 @@
-import React, { useState, useRef, lazy, Suspense } from "react";
+import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
@@ -21,6 +21,7 @@ import { StatusBar } from "./features/status-bar/StatusBar";
 import { DragDropOverlay } from "./shared/ui/DragDropOverlay";
 import { ToastContainer } from "./shared/ui/Toast";
 import { ErrorBoundary } from "./shared/components/ErrorBoundary";
+import { collectStateObjectUrls, revokeReplacedObjectUrls } from "./shared/utils/objectUrls";
 
 // Lazy-loaded modals (loaded on demand)
 const SettingsModal = lazy(() =>
@@ -57,6 +58,19 @@ export default function App() {
   // Layout State
   const [showLeft, setShowLeft] = useState(true);
   const [showRight, setShowRight] = useState(true);
+  const ownedObjectUrlsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const currentUrls = collectStateObjectUrls(state);
+    revokeReplacedObjectUrls(ownedObjectUrlsRef.current, currentUrls);
+    ownedObjectUrlsRef.current = currentUrls;
+  }, [
+    state.baseTexture.texture,
+    state.sticker.texture,
+    state.imageAlpha.maskTexture,
+    state.customModel,
+    state.svg.url,
+  ]);
 
   // Refs for GSAP
   const appContainerRef = useRef<HTMLDivElement>(null);
@@ -114,7 +128,6 @@ export default function App() {
         geometry: GeometryType.CUSTOM,
         customModel: url,
       });
-      actions.addToast("success", "Custom Model Loaded");
     } else {
       // Texture
       const reader = new FileReader();

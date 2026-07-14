@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { AppState } from "../types/types";
 import { get, set, del } from "idb-keyval";
 
 const STORAGE_KEY = "effect_gen_v3_release";
 // Version for future state migrations. Increment when state format changes
 // and add migration logic in the load path to handle older saves
-const STATE_VERSION = 2;
+const STATE_VERSION = 3;
+const ASSET_BUNDLE_VERSION = 1;
+const ASSET_BUNDLE_PREFIX = "effect_gen_v3_assets_";
 
 // Keys of properties that contain heavy base64 strings
 type HeavyAssetDescriptor = {
@@ -14,7 +16,8 @@ type HeavyAssetDescriptor = {
     | ["baseTexture", "texture"]
     | ["sticker", "texture"]
     | ["imageAlpha", "maskTexture"]
-    | ["customModel"];
+    | ["customModel"]
+    | ["svg", "url"];
 };
 
 const HEAVY_ASSETS: readonly HeavyAssetDescriptor[] = [
@@ -22,7 +25,20 @@ const HEAVY_ASSETS: readonly HeavyAssetDescriptor[] = [
   { path: ["sticker", "texture"], key: "asset_sticker_texture" },
   { path: ["imageAlpha", "maskTexture"], key: "asset_mask_texture" },
   { path: ["customModel"], key: "asset_custom_model" },
+  { path: ["svg", "url"], key: "asset_svg" },
 ] as const;
+
+type StoredAsset = string | Blob;
+
+interface AssetBundle {
+  version: typeof ASSET_BUNDLE_VERSION;
+  assets: Record<string, StoredAsset>;
+}
+
+interface PersistedStateMetadata {
+  _version?: number;
+  _assetRevision?: string;
+}
 
 const applyHeavyAsset = (state: AppState, asset: HeavyAssetDescriptor, value: string) => {
   switch (asset.key) {
@@ -38,6 +54,9 @@ const applyHeavyAsset = (state: AppState, asset: HeavyAssetDescriptor, value: st
     case "asset_custom_model":
       state.customModel = value;
       return;
+    case "asset_svg":
+      state.svg = { ...state.svg, url: value };
+      return;
   }
 };
 
@@ -51,9 +70,38 @@ const getHeavyAssetValue = (state: AppState, asset: HeavyAssetDescriptor): strin
       return state.imageAlpha.maskTexture;
     case "asset_custom_model":
       return state.customModel;
+    case "asset_svg":
+      return state.svg.url;
   }
 
   return null;
+};
+
+const isStoredAsset = (value: unknown): value is StoredAsset =>
+  typeof value === "string" || (typeof Blob !== "undefined" && value instanceof Blob);
+
+const isAssetBundle = (value: unknown): value is AssetBundle => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const bundle = value as Partial<AssetBundle>;
+  if (bundle.version !== ASSET_BUNDLE_VERSION || !bundle.assets) return false;
+  return Object.values(bundle.assets).every(isStoredAsset);
+};
+
+const materializeStoredAsset = (value: StoredAsset): string =>
+  typeof value === "string" ? value : URL.createObjectURL(value);
+
+const serializeAsset = async (value: string): Promise<StoredAsset> => {
+  if (!value.startsWith("blob:")) return value;
+  const response = await fetch(value);
+  if (!response.ok) throw new Error(`asset blob could not be read (HTTP ${response.status})`);
+  return response.blob();
+};
+
+const createRevision = (): string => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 };
 
 // --- SAFETY UTILS ---
@@ -88,29 +136,31 @@ export const safeReplacer = () => {
   };
 };
 
-export const useStorage = (initialState: AppState, onLoaded: (s: AppState) => void) => {
+export const useStorage = (
+  initialState: AppState,
+  onLoaded: (s: AppState) => void,
+  onWarning?: (message: string) => void,
+) => {
   const [isInitialized, setIsInitialized] = useState(false);
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
 
-  // Load Strategy: LocalStorage (Sync) -> IndexedDB (Async)
   useEffect(() => {
     const load = async () => {
-      try {
-        // 1. Load Light State from LocalStorage
-        const savedStateIdx = localStorage.getItem(STORAGE_KEY);
-        let mergedState = { ...initialState };
+      let mergedState = { ...initialState };
+      let metadata: PersistedStateMetadata = {};
+      const savedState = localStorage.getItem(STORAGE_KEY);
 
-        if (savedStateIdx) {
-          const parsed = JSON.parse(savedStateIdx);
+      if (savedState) {
+        try {
+          const parsed = JSON.parse(savedState) as Partial<AppState> & PersistedStateMetadata;
+          metadata = parsed;
           mergedState = { ...initialState, ...parsed };
-
-          // Deep merge vital sections to prevent crashes from missing keys
           mergedState.postProcess = { ...initialState.postProcess, ...parsed.postProcess };
           mergedState.environment = { ...initialState.environment, ...parsed.environment };
           mergedState.settings = { ...initialState.settings, ...parsed.settings };
           mergedState.blending = { ...initialState.blending, ...parsed.blending };
           mergedState.sticker = { ...initialState.sticker, ...parsed.sticker };
-
-          // CRITICAL: Deep merge colorBalance to avoid undefined 'hue'/'sat' on older saves
+          mergedState.svg = { ...initialState.svg, ...parsed.svg };
           mergedState.colorBalance = {
             ...initialState.colorBalance,
             ...parsed.colorBalance,
@@ -121,67 +171,125 @@ export const useStorage = (initialState: AppState, onLoaded: (s: AppState) => vo
               ...parsed.colorBalance?.highlights,
             },
           };
+        } catch (error) {
+          console.error("Stored editor state is invalid", error);
+          onWarning?.(
+            "Saved editor settings were invalid; defaults were loaded without deleting them.",
+          );
         }
-
-        // 2. Load Heavy Assets from IndexedDB
-        const assetPromises = HEAVY_ASSETS.map(async (asset) => {
-          const val = await get(asset.key);
-          if (typeof val === "string" && val.length > 0) {
-            applyHeavyAsset(mergedState, asset, val);
-          }
-        });
-
-        await Promise.all(assetPromises);
-
-        onLoaded(mergedState);
-      } catch (e) {
-        console.error("Failed to load state", e);
-        localStorage.removeItem(STORAGE_KEY);
-        onLoaded(initialState);
-      } finally {
-        setIsInitialized(true);
       }
+
+      try {
+        if (metadata._assetRevision) {
+          const storedBundle = await get(`${ASSET_BUNDLE_PREFIX}${metadata._assetRevision}`);
+          if (!isAssetBundle(storedBundle)) throw new Error("asset bundle is missing or invalid");
+          HEAVY_ASSETS.forEach((asset) => {
+            const value = storedBundle.assets[asset.key];
+            if (isStoredAsset(value))
+              applyHeavyAsset(mergedState, asset, materializeStoredAsset(value));
+          });
+        } else {
+          const legacyResults = await Promise.allSettled(
+            HEAVY_ASSETS.map(async (asset) => ({ asset, value: await get(asset.key) })),
+          );
+          let failedAssets = 0;
+          legacyResults.forEach((result) => {
+            if (result.status === "rejected") {
+              failedAssets += 1;
+              return;
+            }
+            const { asset, value } = result.value;
+            if (isStoredAsset(value)) {
+              applyHeavyAsset(mergedState, asset, materializeStoredAsset(value));
+            }
+          });
+          if (failedAssets > 0) {
+            onWarning?.(
+              `${failedAssets} saved asset${failedAssets === 1 ? "" : "s"} could not be restored; editor settings were preserved.`,
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Failed to restore saved assets", error);
+        onWarning?.("Saved assets could not be restored; editor settings were preserved.");
+      }
+
+      if (mergedState.svg.url?.startsWith("blob:") && !metadata._assetRevision) {
+        mergedState.svg = { ...mergedState.svg, url: null };
+      }
+      onLoaded(mergedState);
+      setIsInitialized(true);
     };
 
-    load();
+    void load();
   }, []);
 
-  // Save Strategy: Split Light & Heavy
-  const saveState = async (state: AppState) => {
-    if (!isInitialized) return;
-    try {
-      // 1. Extract and Save Heavy Assets to IDB
-      const assetsToSave = [];
+  const saveState = useCallback(
+    (state: AppState): Promise<boolean> => {
+      if (!isInitialized) return Promise.resolve(false);
 
-      for (const asset of HEAVY_ASSETS) {
-        const val = getHeavyAssetValue(state, asset);
-        if (val && typeof val === "string" && val.length > 0) {
-          assetsToSave.push(set(asset.key, val));
-        } else {
-          // If null or empty, remove from IDB to clean up
-          assetsToSave.push(del(asset.key));
+      const operation = saveQueueRef.current.then(async () => {
+        const revision = createRevision();
+        const bundleKey = `${ASSET_BUNDLE_PREFIX}${revision}`;
+        const assets: Record<string, StoredAsset> = {};
+
+        for (const asset of HEAVY_ASSETS) {
+          const value = getHeavyAssetValue(state, asset);
+          if (value) assets[asset.key] = await serializeAsset(value);
         }
-      }
 
-      // Fire and forget IDB writes (don't block UI)
-      Promise.all(assetsToSave).catch((e) => console.warn("IDB Save Error", e));
+        const previousState = localStorage.getItem(STORAGE_KEY);
+        let previousRevision: string | undefined;
+        if (previousState) {
+          try {
+            previousRevision = (JSON.parse(previousState) as PersistedStateMetadata)._assetRevision;
+          } catch {
+            // Preserve invalid source data; the new revision becomes authoritative after commit.
+          }
+        }
 
-      // 2. Create Light State for LocalStorage (Strip Heavy Assets)
-      const stateToSave = {
-        ...state,
-        _version: STATE_VERSION,
-        imageAlpha: { ...state.imageAlpha, maskTexture: null }, // Stripped
-        baseTexture: { ...state.baseTexture, texture: null }, // Stripped
-        sticker: { ...state.sticker, texture: null }, // Stripped
-        customModel: null, // Stripped
-      };
+        await set(bundleKey, { version: ASSET_BUNDLE_VERSION, assets } satisfies AssetBundle);
 
-      const json = JSON.stringify(stateToSave, safeReplacer());
-      localStorage.setItem(STORAGE_KEY, json);
-    } catch (e) {
-      console.warn("State Save Failed:", e);
-    }
-  };
+        const stateToSave = {
+          ...state,
+          _version: STATE_VERSION,
+          _assetRevision: revision,
+          imageAlpha: { ...state.imageAlpha, maskTexture: null },
+          baseTexture: { ...state.baseTexture, texture: null },
+          sticker: { ...state.sticker, texture: null },
+          customModel: null,
+          svg: { ...state.svg, url: null },
+        };
+
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave, safeReplacer()));
+        } catch (error) {
+          await del(bundleKey).catch(() => undefined);
+          throw error;
+        }
+
+        if (previousRevision && previousRevision !== revision) {
+          await del(`${ASSET_BUNDLE_PREFIX}${previousRevision}`).catch((error) => {
+            console.warn("Failed to remove superseded asset bundle", error);
+          });
+        }
+      });
+
+      saveQueueRef.current = operation.then(
+        () => undefined,
+        () => undefined,
+      );
+      return operation.then(
+        () => true,
+        (error) => {
+          console.warn("State save failed", error);
+          onWarning?.("Editor changes could not be saved; the previous saved version is intact.");
+          return false;
+        },
+      );
+    },
+    [isInitialized, onWarning],
+  );
 
   return { isInitialized, saveState };
 };

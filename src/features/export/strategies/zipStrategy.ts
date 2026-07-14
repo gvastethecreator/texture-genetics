@@ -1,6 +1,8 @@
 import JSZip from "jszip";
 import { AppState, ViewMode } from "../../../core/types/types";
 import { setupOffscreenScene } from "../core/offscreen";
+import { canvasToBlob } from "../core/browserFiles";
+import { createIdempotentFinalizer } from "../core/finalization";
 
 export const generateTexturePack = async (
   state: AppState,
@@ -16,6 +18,7 @@ export const generateTexturePack = async (
     safeRes,
     ViewMode.ALBEDO,
   );
+  const finalize = createIdempotentFinalizer(cleanup);
 
   const maps = [
     { mode: ViewMode.ALBEDO, name: "Albedo" },
@@ -39,23 +42,16 @@ export const generateTexturePack = async (
 
       renderer.render(scene, camera);
 
-      const blob = await new Promise<Blob | null>((resolve) =>
-        renderer.domElement.toBlob(resolve, mime, 0.9),
-      );
-      if (blob) {
-        zip.file(`${map.name}.${ext}`, blob);
-      }
+      const blob = await canvasToBlob(renderer.domElement, mime, 0.9);
+      zip.file(`${map.name}.${ext}`, blob);
 
       onProgress(Math.round(((i + 1) / maps.length) * 80));
       await new Promise((r) => setTimeout(r, 10)); // Yield
     }
 
     onProgress(90);
-    cleanup();
-
     return await zip.generateAsync({ type: "blob" });
-  } catch (e) {
-    cleanup();
-    throw e;
+  } finally {
+    finalize();
   }
 };
