@@ -1,10 +1,29 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { get, set } from "idb-keyval";
 import { AppState, UserPreset } from "../types/types";
-import { safeReplacer } from "./useAppState";
 import { readTextFile } from "../../shared/utils/fileLoaders";
+import {
+  createPresetDocument,
+  parsePresetDocument,
+  PresetDocumentError,
+  recoverStoredPresetCollection,
+} from "./presetFile";
 
 const PRESETS_STORAGE_KEY = "effect_gen_v3_user_presets";
+const MAX_PRESET_FILE_BYTES = 10 * 1024 * 1024;
+const MAX_PRESET_NAME_LENGTH = 120;
+
+const createPresetId = (): string => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  const randomPart =
+    typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function"
+      ? crypto.getRandomValues(new Uint32Array(1))[0].toString(16)
+      : Math.random().toString(16).slice(2);
+  return `${Date.now()}-${randomPart}`;
+};
 
 interface PresetManagerProps {
   initialState: AppState;
@@ -14,27 +33,73 @@ interface PresetManagerProps {
 
 export const usePresetManager = ({ initialState, onLoadPreset, addToast }: PresetManagerProps) => {
   const [userPresets, setUserPresets] = useState<UserPreset[]>([]);
+  const userPresetsRef = useRef<UserPreset[]>([]);
+  const mutationQueueRef = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
     const load = async () => {
       try {
-        const savedPresets = await get<UserPreset[]>(PRESETS_STORAGE_KEY);
+        const savedPresets = await get<unknown>(PRESETS_STORAGE_KEY);
         if (savedPresets) {
-          setUserPresets(savedPresets);
+          const recovered = recoverStoredPresetCollection(savedPresets);
+          userPresetsRef.current = recovered.presets;
+          setUserPresets(recovered.presets);
+          if (recovered.rejectedCount > 0) {
+            const loadedLabel = `${recovered.presets.length} saved preset${recovered.presets.length === 1 ? "" : "s"}`;
+            const skippedLabel = `${recovered.rejectedCount} invalid preset${recovered.rejectedCount === 1 ? "" : "s"}`;
+            addToast(
+              "error",
+              `Loaded ${loadedLabel}; skipped ${skippedLabel}. Original storage was left unchanged.`,
+            );
+          }
         }
       } catch (e) {
         console.error("Failed to load presets", e);
+        addToast("error", "Saved presets could not be loaded because their data is invalid");
       }
     };
-    load();
+    const operation = mutationQueueRef.current.then(load);
+    mutationQueueRef.current = operation.then(
+      () => undefined,
+      () => undefined,
+    );
   }, []);
+
+  const persistMutation = useCallback(
+    (
+      transform: (current: readonly UserPreset[]) => UserPreset[] | null,
+    ): Promise<UserPreset[] | null> => {
+      const operation = mutationQueueRef.current.then(async () => {
+        const candidate = transform(userPresetsRef.current);
+        if (candidate === null) return null;
+
+        const normalized = parsePresetDocument(candidate);
+        await set(PRESETS_STORAGE_KEY, normalized);
+        userPresetsRef.current = normalized;
+        setUserPresets(normalized);
+        return normalized;
+      });
+      mutationQueueRef.current = operation.then(
+        () => undefined,
+        () => undefined,
+      );
+      return operation;
+    },
+    [],
+  );
 
   const saveUserPreset = useCallback(
     async (name: string) => {
       try {
+        const normalizedName = name.trim();
+        if (normalizedName.length === 0 || normalizedName.length > MAX_PRESET_NAME_LENGTH) {
+          addToast("error", "Preset name must contain 1 to 120 characters");
+          return;
+        }
+
         const newPreset: UserPreset = {
-          id: Date.now().toString(),
-          name,
+          id: createPresetId(),
+          name: normalizedName,
           date: Date.now(),
           state: {
             ...initialState,
@@ -44,43 +109,37 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
             customModel: null,
           },
         };
-        const updated = [...userPresets, newPreset];
-        setUserPresets(updated);
-
         try {
-          await set(PRESETS_STORAGE_KEY, JSON.parse(JSON.stringify(updated, safeReplacer())));
-          addToast("success", `Preset "${name}" saved!`);
+          await persistMutation((current) => [...current, newPreset]);
+          addToast("success", `Preset "${normalizedName}" saved!`);
         } catch (idbError) {
           console.error("IDB preset save error", idbError);
-          addToast("error", "Preset saved locally but failed to persist to storage");
+          addToast("error", "Preset could not be saved; no changes were applied");
         }
       } catch (e) {
         console.error("Failed to save preset", e);
         addToast("error", "Failed to save preset (Storage/JSON Error)");
       }
     },
-    [initialState, userPresets, addToast],
+    [initialState, persistMutation, addToast],
   );
 
   const deleteUserPreset = useCallback(
     async (id: string) => {
       try {
-        const updated = userPresets.filter((p) => p.id !== id);
-        setUserPresets(updated);
-
         try {
-          await set(PRESETS_STORAGE_KEY, JSON.parse(JSON.stringify(updated, safeReplacer())));
+          await persistMutation((current) => current.filter((preset) => preset.id !== id));
           addToast("info", "Preset deleted");
         } catch (idbError) {
           console.error("IDB preset delete error", idbError);
-          addToast("error", "Preset removed locally but failed to update storage");
+          addToast("error", "Preset could not be deleted; no changes were applied");
         }
       } catch (e) {
         console.error("Failed to delete preset", e);
         addToast("error", "Failed to delete preset");
       }
     },
-    [userPresets, addToast],
+    [persistMutation, addToast],
   );
 
   const exportPresets = useCallback(() => {
@@ -89,10 +148,10 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
       return;
     }
     try {
-      // Use safeReplacer for export as well
+      const presetDocument = createPresetDocument(parsePresetDocument(userPresets));
       const dataStr =
         "data:text/json;charset=utf-8," +
-        encodeURIComponent(JSON.stringify(userPresets, safeReplacer(), 2));
+        encodeURIComponent(JSON.stringify(presetDocument, null, 2));
       const downloadAnchorNode = document.createElement("a");
       downloadAnchorNode.setAttribute("href", dataStr);
       downloadAnchorNode.setAttribute("download", "effect_gen_presets.json");
@@ -108,32 +167,56 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
 
   const importPresets = useCallback(
     async (file: File) => {
+      let imported: UserPreset[];
       try {
-        const json = JSON.parse(await readTextFile(file));
-        if (Array.isArray(json)) {
-          const valid = json.every((p) => p.id && p.name && p.state);
-          if (valid) {
-            const merged = [...userPresets, ...json];
-            const unique = Array.from(new Map(merged.map((item) => [item.id, item])).values());
-            setUserPresets(unique);
-
-            try {
-              await set(PRESETS_STORAGE_KEY, JSON.parse(JSON.stringify(unique, safeReplacer())));
-              addToast("success", `Imported ${json.length} presets`);
-            } catch (idbError) {
-              console.error("IDB preset import error", idbError);
-              addToast("error", `Imported ${json.length} presets locally but failed to persist`);
-            }
-          } else {
-            throw new Error("Invalid preset format");
-          }
+        if (file.size > MAX_PRESET_FILE_BYTES) {
+          throw new PresetDocumentError("document exceeds the 10 MB import limit");
         }
-      } catch (e) {
-        console.error(e);
-        addToast("error", "Failed to import presets. Invalid JSON or Circular Ref.");
+
+        imported = parsePresetDocument(JSON.parse(await readTextFile(file)));
+      } catch (error) {
+        console.error("Invalid preset file", error);
+        const reason =
+          error instanceof PresetDocumentError
+            ? error.message
+            : error instanceof SyntaxError
+              ? "invalid JSON"
+              : "file could not be read";
+        addToast("error", `Invalid preset file: ${reason}`);
+        return;
+      }
+
+      try {
+        let importedCount = 0;
+        let skipped = 0;
+        const merged = await persistMutation((current) => {
+          const existingIds = new Set(current.map((preset) => preset.id));
+          const additions = imported.filter((preset) => !existingIds.has(preset.id));
+          importedCount = additions.length;
+          skipped = imported.length - additions.length;
+          return additions.length > 0 ? [...current, ...additions] : null;
+        });
+
+        if (merged === null) {
+          addToast(
+            "info",
+            skipped > 0 ? "No presets imported; every ID already exists" : "No presets to import",
+          );
+          return;
+        }
+
+        addToast(
+          "success",
+          skipped > 0
+            ? `Imported ${importedCount} presets; skipped ${skipped} existing IDs`
+            : `Imported ${importedCount} presets`,
+        );
+      } catch (error) {
+        console.error("Preset import persistence error", error);
+        addToast("error", "Preset import could not be saved; no changes were applied");
       }
     },
-    [userPresets, addToast],
+    [persistMutation, addToast],
   );
 
   const actions = {

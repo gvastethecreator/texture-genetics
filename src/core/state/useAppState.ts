@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { AppState, TextureType, AnimationConfig, ViewMode, GeometryType } from "../types/types";
 import { DEFAULTS } from "../constants";
 import { useStorage, sanitizeValue } from "./useStorage";
+import { createDefaultAppState } from "./defaultState";
 import {
   generateSmartRandomState,
   generateHarmoniousPalette,
@@ -20,45 +21,7 @@ const isValidGeometryType = (value: unknown): value is GeometryType =>
 const CAMERA_ANIMATION_TYPES = ["TURNTABLE", "TUMBLE", "HOVER", "HEARTBEAT", "SHAKE"];
 
 // --- INITIAL STATE DEFINITION ---
-const INITIAL_STATE: AppState = {
-  resolution: DEFAULTS.RESOLUTION,
-  textureType: DEFAULTS.TEXTURE_TYPE,
-  geometry: DEFAULTS.GEOMETRY,
-  geometryConfig: { ...DEFAULTS.GEOMETRY_CONFIG },
-  viewMode: DEFAULTS.VIEW_MODE,
-  animate: DEFAULTS.ANIMATE,
-  time: DEFAULTS.TIME,
-  isFullscreen: false,
-  tilingPreview: false,
-  tileMode: DEFAULTS.TILE_MODE,
-  gridOverlay: false,
-  isSidebarOpen: true,
-  isSettingsOpen: false,
-  isCodeOpen: DEFAULTS.IS_CODE_OPEN,
-  isShortcutsOpen: DEFAULTS.IS_SHORTCUTS_OPEN,
-  params: { ...DEFAULTS.PARAMS },
-  paramAnimations: { ...DEFAULTS.PARAM_ANIMATIONS },
-  blending: { ...DEFAULTS.BLENDING },
-  baseTexture: { ...DEFAULTS.BASE_TEXTURE },
-  sticker: { ...DEFAULTS.STICKER },
-  transform: { ...DEFAULTS.TRANSFORM },
-  symmetry: { ...DEFAULTS.SYMMETRY },
-  tiling: { ...DEFAULTS.TILING },
-  postProcess: { ...DEFAULTS.POST_PROCESS },
-  normalMap: { ...DEFAULTS.NORMAL_MAP },
-  displacement: { ...DEFAULTS.DISPLACEMENT },
-  ao: { ...DEFAULTS.AO },
-  colorBalance: { ...DEFAULTS.COLOR_BALANCE },
-  imageAlpha: { ...DEFAULTS.IMAGE_ALPHA },
-  spriteSheet: { ...DEFAULTS.SPRITE_SHEET },
-  mouse: { ...DEFAULTS.MOUSE },
-  environment: { ...DEFAULTS.ENVIRONMENT },
-  settings: { ...DEFAULTS.SETTINGS },
-  camera: { ...DEFAULTS.CAMERA },
-  customModel: DEFAULTS.CUSTOM_MODEL,
-  svg: { ...DEFAULTS.SVG },
-  text: { ...DEFAULTS.TEXT },
-};
+const INITIAL_STATE: AppState = createDefaultAppState();
 
 // Re-export safeReplacer for other consumers (like PresetManager)
 export { safeReplacer } from "./useStorage";

@@ -1,0 +1,56 @@
+import { DEFAULTS } from "../constants";
+import { AppState } from "../types/types";
+
+export const createDefaultAppState = (): AppState => ({
+  resolution: DEFAULTS.RESOLUTION,
+  textureType: DEFAULTS.TEXTURE_TYPE,
+  geometry: DEFAULTS.GEOMETRY,
+  geometryConfig: { ...DEFAULTS.GEOMETRY_CONFIG },
+  viewMode: DEFAULTS.VIEW_MODE,
+  animate: DEFAULTS.ANIMATE,
+  time: DEFAULTS.TIME,
+  isFullscreen: false,
+  tilingPreview: false,
+  tileMode: DEFAULTS.TILE_MODE,
+  gridOverlay: false,
+  isSidebarOpen: true,
+  isSettingsOpen: false,
+  isCodeOpen: DEFAULTS.IS_CODE_OPEN,
+  isShortcutsOpen: DEFAULTS.IS_SHORTCUTS_OPEN,
+  params: {
+    ...DEFAULTS.PARAMS,
+    palette: DEFAULTS.PARAMS.palette.map((entry) => ({ ...entry })),
+  },
+  paramAnimations: { ...DEFAULTS.PARAM_ANIMATIONS },
+  blending: { ...DEFAULTS.BLENDING },
+  baseTexture: { ...DEFAULTS.BASE_TEXTURE },
+  sticker: { ...DEFAULTS.STICKER },
+  transform: { ...DEFAULTS.TRANSFORM },
+  symmetry: { ...DEFAULTS.SYMMETRY },
+  tiling: { ...DEFAULTS.TILING },
+  postProcess: { ...DEFAULTS.POST_PROCESS },
+  normalMap: { ...DEFAULTS.NORMAL_MAP },
+  displacement: { ...DEFAULTS.DISPLACEMENT },
+  ao: { ...DEFAULTS.AO },
+  colorBalance: {
+    ...DEFAULTS.COLOR_BALANCE,
+    shadows: { ...DEFAULTS.COLOR_BALANCE.shadows },
+    midtones: { ...DEFAULTS.COLOR_BALANCE.midtones },
+    highlights: { ...DEFAULTS.COLOR_BALANCE.highlights },
+  },
+  imageAlpha: { ...DEFAULTS.IMAGE_ALPHA },
+  spriteSheet: { ...DEFAULTS.SPRITE_SHEET },
+  mouse: { ...DEFAULTS.MOUSE },
+  environment: { ...DEFAULTS.ENVIRONMENT },
+  settings: { ...DEFAULTS.SETTINGS },
+  camera: {
+    ...DEFAULTS.CAMERA,
+    position: [...DEFAULTS.CAMERA.position],
+    target: [...DEFAULTS.CAMERA.target],
+  },
+  customModel: DEFAULTS.CUSTOM_MODEL,
+  svg: { ...DEFAULTS.SVG },
+  text: { ...DEFAULTS.TEXT },
+});
+
+export const DEFAULT_APP_STATE = createDefaultAppState();
