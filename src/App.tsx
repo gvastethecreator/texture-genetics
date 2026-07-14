@@ -1,6 +1,4 @@
-import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+import React, { useState, useRef, useEffect, lazy, Suspense, useCallback } from "react";
 
 // Register all TSL patterns at startup (side-effect)
 import "./lib/tsl/registerPatterns";
@@ -8,8 +6,8 @@ import { GeometryType } from "./core/types/types";
 import { useTextureEditor } from "./core/state/useTextureEditor";
 import { useExportManager } from "./features/export/useExportManager";
 import { useHotkeys } from "./shared/hooks/useHotkeys";
-
-gsap.registerPlugin(useGSAP);
+import { matchesMediaQuery, useMediaQuery } from "./shared/hooks/useMediaQuery";
+import { useModalFocus } from "./shared/hooks/useModalFocus";
 
 // Eager components (always visible)
 import { Header } from "./features/ui/Header";
@@ -56,8 +54,9 @@ export default function App() {
   const [gl, setGl] = useState<CanvasRenderer | null>(null);
 
   // Layout State
-  const [showLeft, setShowLeft] = useState(true);
-  const [showRight, setShowRight] = useState(true);
+  const isCompactWorkbench = useMediaQuery("(max-width: 1279px)");
+  const [showLeft, setShowLeft] = useState(() => !matchesMediaQuery("(max-width: 1279px)"));
+  const [showRight, setShowRight] = useState(() => !matchesMediaQuery("(max-width: 1279px)"));
   const ownedObjectUrlsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -72,38 +71,41 @@ export default function App() {
     state.svg.url,
   ]);
 
-  // Refs for GSAP
   const appContainerRef = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
 
-  useGSAP(
-    () => {
-      if (!leftPanelRef.current) return;
-      gsap.to(leftPanelRef.current, {
-        width: showLeft ? 320 : 0,
-        x: showLeft ? 0 : -320,
-        opacity: showLeft ? 1 : 0,
-        duration: 0.4,
-        ease: "power3.inOut",
-      });
-    },
-    { dependencies: [showLeft], scope: appContainerRef },
-  );
+  useEffect(() => {
+    setShowLeft(!isCompactWorkbench);
+    setShowRight(!isCompactWorkbench);
+  }, [isCompactWorkbench]);
 
-  useGSAP(
-    () => {
-      if (!rightPanelRef.current) return;
-      gsap.to(rightPanelRef.current, {
-        width: showRight ? 288 : 0,
-        x: showRight ? 0 : 288,
-        opacity: showRight ? 1 : 0,
-        duration: 0.4,
-        ease: "power3.inOut",
-      });
-    },
-    { dependencies: [showRight], scope: appContainerRef },
-  );
+  const closeCompactPanels = useCallback(() => {
+    if (!isCompactWorkbench) return;
+    setShowLeft(false);
+    setShowRight(false);
+  }, [isCompactWorkbench]);
+
+  const toggleLeftPanel = useCallback(() => {
+    setShowLeft((current) => !current);
+    if (isCompactWorkbench) setShowRight(false);
+  }, [isCompactWorkbench]);
+
+  const toggleRightPanel = useCallback(() => {
+    setShowRight((current) => !current);
+    if (isCompactWorkbench) setShowLeft(false);
+  }, [isCompactWorkbench]);
+
+  useModalFocus({
+    isOpen: isCompactWorkbench && showLeft,
+    containerRef: leftPanelRef,
+    onClose: closeCompactPanels,
+  });
+  useModalFocus({
+    isOpen: isCompactWorkbench && showRight,
+    containerRef: rightPanelRef,
+    onClose: closeCompactPanels,
+  });
 
   // Hotkeys
   useHotkeys({
@@ -115,7 +117,7 @@ export default function App() {
         actions.updateState({ animate: !state.animate });
     },
     r: actions.randomize,
-    h: () => setShowLeft((p) => !p),
+    h: toggleLeftPanel,
   });
 
   // Drag & Drop
@@ -152,6 +154,8 @@ export default function App() {
         <div className="fixed inset-0 z-50 bg-black w-full h-full">
           <TextureCanvas appState={state} setGlRef={setGl} updateState={actions.updateState} />
           <button
+            type="button"
+            aria-label="Exit fullscreen"
             onClick={() => actions.updateState({ isFullscreen: false })}
             className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded hover:bg-white/20 pointer-events-auto backdrop-blur-md border border-white/10"
           >
@@ -175,18 +179,35 @@ export default function App() {
           actions={actions}
           history={history}
           onShowCode={() => actions.updateState({ isCodeOpen: true })}
-          toggleLeftPanel={() => setShowLeft(!showLeft)}
-          toggleRightPanel={() => setShowRight(!showRight)}
+          toggleLeftPanel={toggleLeftPanel}
+          toggleRightPanel={toggleRightPanel}
+          leftPanelOpen={showLeft}
+          rightPanelOpen={showRight}
         />
 
         {/* MAIN CONTENT */}
         <div className="flex-1 flex overflow-hidden relative w-full h-full">
+          {isCompactWorkbench && (showLeft || showRight) && (
+            <button
+              type="button"
+              aria-label="Close inspector"
+              onClick={closeCompactPanels}
+              className="absolute inset-0 z-30 bg-black/55 backdrop-blur-[2px] motion-reduce:backdrop-blur-none"
+            />
+          )}
           {/* LEFT PANEL (Controls) */}
           <div
             ref={leftPanelRef}
-            className="border-r border-border relative z-20 shrink-0 bg-panel w-80"
+            id="texture-tools-panel"
+            role={isCompactWorkbench ? "dialog" : undefined}
+            aria-modal={isCompactWorkbench ? true : undefined}
+            aria-label="Texture tools"
+            tabIndex={isCompactWorkbench ? -1 : undefined}
+            aria-hidden={!showLeft}
+            inert={!showLeft}
+            className={`${isCompactWorkbench ? "absolute inset-y-0 left-0 z-40 w-[min(20rem,calc(100vw-3rem))] shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none" : `relative z-20 shrink-0 ${showLeft ? "w-80" : "w-0"}`} ${showLeft ? "translate-x-0" : "-translate-x-full"} overflow-hidden border-r border-border bg-panel`}
           >
-            <div className="absolute inset-0 overflow-hidden w-80">
+            <div className="h-full w-full min-w-80 overflow-hidden">
               <Controls state={state} actions={actions} history={history} />
             </div>
           </div>
@@ -209,7 +230,12 @@ export default function App() {
 
             {/* Progress Bar for Exporting */}
             {isGenerating && (
-              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 bg-black/80 backdrop-blur border border-accent-primary/30 rounded-full px-6 py-2 flex items-center gap-3 shadow-2xl">
+              <div
+                role="status"
+                aria-live="polite"
+                aria-label={`Exporting, ${progress}% complete`}
+                className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 bg-black/80 backdrop-blur border border-accent-primary/30 rounded-full px-6 py-2 flex items-center gap-3 shadow-2xl"
+              >
                 <div className="w-4 h-4 border-2 border-t-accent-primary border-r-accent-primary border-b-transparent border-l-transparent rounded-full animate-spin" />
                 <span className="text-xs font-mono font-bold text-white">
                   EXPORTING... {progress}%
@@ -226,9 +252,16 @@ export default function App() {
           {/* RIGHT PANEL (Export/Env) */}
           <div
             ref={rightPanelRef}
-            className="border-l border-border relative z-20 shrink-0 bg-panel w-72"
+            id="output-inspector-panel"
+            role={isCompactWorkbench ? "dialog" : undefined}
+            aria-modal={isCompactWorkbench ? true : undefined}
+            aria-label="Output and scene inspector"
+            tabIndex={isCompactWorkbench ? -1 : undefined}
+            aria-hidden={!showRight}
+            inert={!showRight}
+            className={`${isCompactWorkbench ? "absolute inset-y-0 right-0 z-40 w-[min(22rem,calc(100vw-3rem))] shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none" : `relative z-20 shrink-0 ${showRight ? "w-72" : "w-0"}`} ${showRight ? "translate-x-0" : "translate-x-full"} overflow-hidden border-l border-border bg-panel`}
           >
-            <div className="absolute inset-0 overflow-hidden w-72">
+            <div className="h-full w-full min-w-72 overflow-hidden">
               <RightControls
                 state={state}
                 actions={actions}

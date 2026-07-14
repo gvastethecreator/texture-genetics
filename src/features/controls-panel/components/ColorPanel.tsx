@@ -351,17 +351,21 @@ export const ColorPanel: React.FC<ColorPanelProps> = memo(
               <Icons.Upload size={12} /> {state.imageAlpha.maskTexture ? "Replace" : "Upload"}
             </ActionButton>
             {state.imageAlpha.maskTexture && (
-              <div
+              <button
+                type="button"
+                aria-label="Replace custom mask"
                 className="w-8 h-8 rounded border border-gray-600 bg-gray-800 flex items-center justify-center overflow-hidden relative group cursor-pointer"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <img
                   src={state.imageAlpha.maskTexture}
+                  width={32}
+                  height={32}
                   className="w-full h-full object-contain"
                   alt="Mask"
                 />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
+              </button>
             )}
           </div>
           {state.imageAlpha.maskTexture && (

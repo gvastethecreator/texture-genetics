@@ -21,6 +21,7 @@ export const PatternLibrary: React.FC<PatternLibraryProps> = memo(
             onClick={onRandom}
             className="p-1 text-gray-500 hover:text-white hover:bg-white/10 rounded transition-colors"
             title="Random Pattern Type"
+            aria-label="Random pattern type"
           >
             <Icons.Shuffle size={12} />
           </button>

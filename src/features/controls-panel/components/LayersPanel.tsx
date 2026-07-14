@@ -127,17 +127,21 @@ export const LayersPanel: React.FC<LayersPanelProps> = memo(
               </ActionButton>
 
               {state.baseTexture?.texture && (
-                <div
+                <button
+                  type="button"
+                  aria-label="Replace base image"
                   className="w-8 h-8 rounded border border-gray-600 bg-gray-800 flex items-center justify-center overflow-hidden relative group cursor-pointer"
                   onClick={() => fileInputRef.current?.click()}
                   title="Click to replace"
                 >
                   <img
                     src={state.baseTexture.texture}
+                    width={32}
+                    height={32}
                     className="w-full h-full object-cover"
                     alt="Base"
                   />
-                </div>
+                </button>
               )}
             </div>
 

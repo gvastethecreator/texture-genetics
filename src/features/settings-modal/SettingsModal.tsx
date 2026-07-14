@@ -1,11 +1,8 @@
 import React, { useRef } from "react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
 import * as Icons from "lucide-react";
 import { AppState } from "../../core/types/types";
+import { useModalFocus } from "../../shared/hooks/useModalFocus";
 import { Label, Toggle } from "../../shared/ui/Elements";
-
-gsap.registerPlugin(useGSAP);
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -22,40 +19,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   updateState,
   updateSettings,
 }) => {
-  const backdropRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  useGSAP(
-    () => {
-      if (!isOpen) return;
-      gsap.from(backdropRef.current, { autoAlpha: 0, duration: 0.2 });
-      gsap.from(contentRef.current, {
-        y: 20,
-        autoAlpha: 0,
-        scale: 0.95,
-        duration: 0.3,
-        ease: "back.out(1.7)",
-        delay: 0.05,
-      });
-    },
-    { dependencies: [isOpen] },
-  );
+  useModalFocus({ isOpen, containerRef: contentRef, onClose });
 
   if (!isOpen) return null;
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) onClose();
-  };
-
   return (
-    <div
-      ref={backdropRef}
-      className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={handleBackdropClick}
-    >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label="Close settings"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm motion-reduce:backdrop-blur-none"
+      />
       <div
         ref={contentRef}
-        className="bg-[#0D0D0D] border border-border w-full max-w-lg rounded-xl shadow-2xl flex flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-modal-title"
+        tabIndex={-1}
+        className="relative z-10 bg-[#0D0D0D] border border-border w-full max-w-lg max-h-[calc(100dvh-2rem)] rounded-xl shadow-2xl flex flex-col overflow-hidden motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border bg-[#151515]">
@@ -64,13 +48,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <Icons.Settings2 size={18} />
             </div>
             <div>
-              <h2 className="text-sm font-black text-gray-100 uppercase tracking-widest">
+              <h2
+                id="settings-modal-title"
+                className="text-sm font-black text-gray-100 uppercase tracking-widest"
+              >
                 Global Settings
               </h2>
               <p className="text-[10px] text-gray-500">Performance, Export & Quality</p>
             </div>
           </div>
           <button
+            type="button"
+            aria-label="Close settings"
             onClick={onClose}
             className="p-2 hover:bg-white/10 rounded-lg text-gray-500 hover:text-white transition-colors"
           >
@@ -93,9 +82,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <Label label="Resolution" description="Size of the generated texture." />
                   <span className="text-[10px] font-mono text-gray-400">{state.resolution}px</span>
                 </div>
-                <div className="flex gap-2 mb-2">
+                <div role="group" aria-label="Texture resolution" className="flex gap-2 mb-2">
                   {[256, 512, 1024, 2048, 4096].map((res) => (
                     <button
+                      type="button"
+                      aria-pressed={state.resolution === res}
                       key={res}
                       onClick={() => updateState({ resolution: res })}
                       className={`flex-1 py-1.5 rounded text-[10px] font-bold transition-all ${state.resolution === res ? "bg-accent-primary text-black shadow-lg" : "bg-surface border border-white/10 text-gray-400 hover:bg-white/5"}`}
@@ -116,9 +107,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   label="Pixel Ratio (DPR)"
                   description="Screen pixel density. Native = Sharpest."
                 />
-                <div className="flex gap-2 mb-2">
+                <div role="group" aria-label="Renderer pixel ratio" className="flex gap-2 mb-2">
                   {[0, 1, 1.5, 2].map((dpr) => (
                     <button
+                      type="button"
+                      aria-pressed={state.settings.renderDpr === dpr}
                       key={dpr}
                       onClick={() => updateSettings({ renderDpr: dpr })}
                       className={`flex-1 py-1.5 rounded text-[10px] font-bold transition-all ${state.settings.renderDpr === dpr ? "bg-blue-500 text-white shadow-lg" : "bg-surface border border-white/10 text-gray-400 hover:bg-white/5"}`}
@@ -154,9 +147,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="p-4 bg-black/30 rounded-lg border border-white/5 space-y-4">
               <div>
                 <Label label="File Format" />
-                <div className="grid grid-cols-3 gap-2">
+                <div
+                  role="group"
+                  aria-label="Default export format"
+                  className="grid grid-cols-3 gap-2"
+                >
                   {(["png", "jpeg", "webp"] as const).map((fmt) => (
                     <button
+                      type="button"
+                      aria-pressed={state.settings.exportFormat === fmt}
                       key={fmt}
                       onClick={() => updateSettings({ exportFormat: fmt })}
                       className={`py-1.5 rounded text-[10px] font-bold uppercase transition-all ${state.settings.exportFormat === fmt ? "bg-purple-500 text-white shadow-lg" : "bg-surface border border-white/10 text-gray-400 hover:bg-white/5"}`}
@@ -172,6 +171,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         <div className="p-5 border-t border-border bg-[#151515] flex justify-end">
           <button
+            type="button"
             onClick={onClose}
             className="px-6 py-2 bg-white text-black font-bold text-xs uppercase rounded hover:bg-gray-200 transition-colors"
           >

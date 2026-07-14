@@ -1,13 +1,9 @@
-import React, { useState, useEffect, memo, useRef } from "react";
+import React, { useState, useEffect, memo, useId, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import * as Icons from "lucide-react";
 import { LucideIcon } from "lucide-react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
 import { AnimationConfig, WaveType } from "../../core/types/types";
 import { calculateAnimatedValue } from "../../shared/utils/animationUtils";
-
-gsap.registerPlugin(useGSAP);
 
 const blurInputOnEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
   if (event.key === "Enter") {
@@ -98,15 +94,23 @@ const DEFAULT_ANIM_CONFIG: AnimationConfig = {
 };
 
 export const Slider: React.FC<SliderProps> = memo(
-  ({ value, min, max, step = 0.1, onChange, onCommit, animConfig, onAnimChange }) => {
+  ({ label, value, min, max, step = 0.1, onChange, onCommit, animConfig, onAnimChange }) => {
     const [inputValue, setInputValue] = useState<string>(value.toString());
     const [isFocused, setIsFocused] = useState(false);
     const [showAnimPanel, setShowAnimPanel] = useState(false);
     const [popoverPos, setPopoverPos] = useState<{ top: number; left: number } | null>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
+    const rootRef = useRef<HTMLDivElement>(null);
     const progressRef = useRef<HTMLDivElement>(null);
     const knobRef = useRef<HTMLDivElement>(null);
     const rafRef = useRef<number>(0);
+    const [inferredLabel, setInferredLabel] = useState<string>();
+
+    useLayoutEffect(() => {
+      if (label) return;
+      const siblingText = rootRef.current?.previousElementSibling?.textContent?.trim();
+      if (siblingText) setInferredLabel(siblingText);
+    }, [label]);
 
     useEffect(() => {
       if (!isFocused) {
@@ -207,9 +211,10 @@ export const Slider: React.FC<SliderProps> = memo(
 
     const percentage = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
     const isAnimated = animConfig?.enabled;
+    const accessibleLabel = label ?? inferredLabel ?? "Parameter value";
 
     return (
-      <div className="relative">
+      <div ref={rootRef} className="relative">
         <div className="flex items-center gap-3 h-8 group/slider">
           {/* Haptic Slider Track */}
           <div
@@ -228,7 +233,7 @@ export const Slider: React.FC<SliderProps> = memo(
               onTouchEnd={onCommit}
               disabled={!!isAnimated}
               className={`w-full relative z-10 opacity-0 h-full ${isAnimated ? "cursor-not-allowed" : "cursor-pointer"}`}
-              aria-label="Slider"
+              aria-label={accessibleLabel}
             />
 
             {/* Track Base */}
@@ -259,6 +264,8 @@ export const Slider: React.FC<SliderProps> = memo(
           {/* Numeric Input - Inset Style */}
           <input
             type="text"
+            inputMode="decimal"
+            aria-label={`${accessibleLabel}, precise value`}
             disabled={!!isAnimated}
             className={`w-12 h-6 text-[10px] text-right font-mono px-1.5 rounded bg-[#0a0a0a] shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)] border border-white/5 text-gray-300 focus:text-white focus:border-white/20 focus:outline-none transition-colors ${isAnimated ? "text-purple-400 border-purple-500/30" : ""}`}
             value={isAnimated ? "~" : inputValue}
@@ -284,6 +291,8 @@ export const Slider: React.FC<SliderProps> = memo(
                         : "bg-[#1a1a1a] text-gray-500 hover:text-white hover:bg-[#252525] border border-white/5 shadow-tactile hover:shadow-tactile-hover"
                     }`}
               title="Animate Parameter"
+              aria-label={`Animate ${accessibleLabel}`}
+              aria-expanded={showAnimPanel}
             >
               <Icons.Activity size={10} />
               {isAnimated && (
@@ -299,7 +308,13 @@ export const Slider: React.FC<SliderProps> = memo(
           popoverPos &&
           createPortal(
             <>
-              <div className="fixed inset-0 z-[9998]" onClick={() => setShowAnimPanel(false)} />
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label="Close animation controls"
+                className="fixed inset-0 z-[9998]"
+                onClick={() => setShowAnimPanel(false)}
+              />
               <div
                 className="fixed z-[9999] w-48 bg-[#121212] border border-[#2a2a2a] shadow-2xl rounded-xl p-3 animate-in fade-in zoom-in-95 duration-150 origin-top-right backdrop-blur-xl bg-opacity-95"
                 style={{ top: popoverPos.top, left: popoverPos.left }}
@@ -336,6 +351,8 @@ export const Slider: React.FC<SliderProps> = memo(
                             onClick={() => updateAnim({ type: t })}
                             className={`flex-1 h-6 rounded flex items-center justify-center transition-all ${animConfig.type === t ? "bg-purple-600 text-white shadow-lg" : "text-gray-500 hover:text-gray-300 hover:bg-white/5"}`}
                             title={t}
+                            aria-label={`${t} waveform`}
+                            aria-pressed={animConfig.type === t}
                           >
                             {t === WaveType.SINE && <Icons.Activity size={10} />}
                             {t === WaveType.COSINE && (
@@ -360,6 +377,7 @@ export const Slider: React.FC<SliderProps> = memo(
                       </div>
                       <input
                         type="range"
+                        aria-label="Animation frequency"
                         min={0.1}
                         max={5}
                         step={0.1}
@@ -376,6 +394,7 @@ export const Slider: React.FC<SliderProps> = memo(
                         </span>
                         <input
                           type="number"
+                          aria-label="Animation minimum"
                           value={animConfig.min}
                           onChange={(e) => updateAnim({ min: parseFloat(e.target.value) })}
                           className="w-full bg-[#0a0a0a] border border-white/10 rounded px-1 py-1 text-[10px] text-gray-300 font-mono focus:border-purple-500 outline-none shadow-inner"
@@ -387,6 +406,7 @@ export const Slider: React.FC<SliderProps> = memo(
                         </span>
                         <input
                           type="number"
+                          aria-label="Animation maximum"
                           value={animConfig.max}
                           onChange={(e) => updateAnim({ max: parseFloat(e.target.value) })}
                           className="w-full bg-[#0a0a0a] border border-white/10 rounded px-1 py-1 text-[10px] text-gray-300 font-mono focus:border-purple-500 outline-none shadow-inner"
@@ -421,6 +441,7 @@ export const Toggle: React.FC<{
       className="w-full flex items-center justify-between py-1.5 cursor-pointer group select-none text-left focus:outline-none"
       onClick={handleClick}
       aria-pressed={checked}
+      aria-label={label || "Enable parameter animation"}
     >
       {label && (
         <span className="text-[11px] font-bold text-gray-400 group-hover:text-gray-200 transition-colors tracking-wide">
@@ -481,22 +502,31 @@ export const Select: React.FC<{
   value: string;
   options: { label: string; value: string }[];
   onChange: (v: string) => void;
-}> = memo(({ label, value, options, onChange }) => (
-  <div className="flex flex-col gap-1.5 mb-2">
-    <Label label={label} />
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full bg-[#0a0a0a] border border-white/10 rounded px-2 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-accent-primary appearance-none cursor-pointer"
-    >
-      {options.map((opt) => (
-        <option key={opt.value} value={opt.value}>
-          {opt.label}
-        </option>
-      ))}
-    </select>
-  </div>
-));
+}> = memo(({ label, value, options, onChange }) => {
+  const selectId = useId();
+  return (
+    <div className="flex flex-col gap-1.5 mb-2">
+      <label
+        htmlFor={selectId}
+        className="text-[11px] font-bold text-gray-400 font-sans tracking-wide"
+      >
+        {label}
+      </label>
+      <select
+        id={selectId}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-[#0a0a0a] border border-white/10 rounded px-2 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-accent-primary appearance-none cursor-pointer"
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+});
 
 export const ControlSection: React.FC<{
   title: string;
@@ -506,32 +536,15 @@ export const ControlSection: React.FC<{
   defaultOpen?: boolean;
 }> = memo(({ title, icon: Icon, color, children, defaultOpen = false }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useGSAP(() => {
-    if (!contentRef.current) return;
-    if (isOpen) {
-      gsap.to(contentRef.current, {
-        height: "auto",
-        opacity: 1,
-        duration: 0.4,
-        ease: "power3.out",
-      });
-    } else {
-      gsap.to(contentRef.current, {
-        height: 0,
-        opacity: 0,
-        duration: 0.3,
-        ease: "power3.inOut",
-      });
-    }
-  }, [isOpen]);
+  const contentId = useId();
 
   return (
     <div className="border border-white/5 rounded-lg overflow-hidden bg-[#0a0a0a] shadow-sm mb-3 transition-all duration-300">
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-controls={contentId}
         className="w-full flex items-center justify-between py-3 px-3 bg-gradient-to-b from-[#151515] to-[#0a0a0a] hover:from-[#1a1a1a] hover:to-[#101010] transition-all group select-none border-b border-black/20"
       >
         <div className="flex items-center gap-2.5">
@@ -555,16 +568,11 @@ export const ControlSection: React.FC<{
           <Icons.ChevronDown size={14} />
         </div>
       </button>
-      <div
-        ref={contentRef}
-        style={{
-          height: defaultOpen ? "auto" : 0,
-          opacity: defaultOpen ? 1 : 0,
-          overflow: "hidden",
-        }}
-      >
-        <div className="p-3 border-t border-white/5 bg-[#050505] shadow-inner">{children}</div>
-      </div>
+      {isOpen && (
+        <div id={contentId}>
+          <div className="p-3 border-t border-white/5 bg-[#050505] shadow-inner">{children}</div>
+        </div>
+      )}
     </div>
   );
 });

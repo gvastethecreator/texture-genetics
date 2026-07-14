@@ -15,6 +15,8 @@ describe("Header", () => {
         onShowCode={vi.fn()}
         toggleLeftPanel={vi.fn()}
         toggleRightPanel={vi.fn()}
+        leftPanelOpen={false}
+        rightPanelOpen={false}
       />,
     );
     // Header should contain some recognizable text or element
@@ -34,16 +36,12 @@ describe("Header", () => {
         onShowCode={vi.fn()}
         toggleLeftPanel={toggleLeft}
         toggleRightPanel={vi.fn()}
+        leftPanelOpen={false}
+        rightPanelOpen={false}
       />,
     );
-    // Find the sidebar toggle button (typically first or with panel icon)
-    const buttons = screen.getAllByRole("button");
-    // The first button usually controls left panel
-    if (buttons.length > 0) {
-      fireEvent.click(buttons[0]);
-    }
-    // We just verify no crash happened
-    expect(buttons.length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "Open texture tools" }));
+    expect(toggleLeft).toHaveBeenCalledOnce();
   });
 
   it("calls randomize when randomize button is clicked", () => {
@@ -57,6 +55,8 @@ describe("Header", () => {
         onShowCode={vi.fn()}
         toggleLeftPanel={vi.fn()}
         toggleRightPanel={vi.fn()}
+        leftPanelOpen={false}
+        rightPanelOpen={false}
       />,
     );
     // Look for a button with dice/random-related content

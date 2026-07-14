@@ -24,6 +24,8 @@ interface HeaderProps {
   onShowCode: () => void;
   toggleLeftPanel: () => void;
   toggleRightPanel: () => void;
+  leftPanelOpen: boolean;
+  rightPanelOpen: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = memo(
@@ -35,6 +37,8 @@ export const Header: React.FC<HeaderProps> = memo(
     onShowCode: _onShowCode,
     toggleLeftPanel,
     toggleRightPanel,
+    leftPanelOpen,
+    rightPanelOpen,
   }) => {
     const [selectedPresetId, setSelectedPresetId] = React.useState<string>("");
 
@@ -96,20 +100,27 @@ export const Header: React.FC<HeaderProps> = memo(
     const isUserPresetSelected = userPresets.some((p) => p.id === selectedPresetId);
 
     const btnClass =
-      "h-8 w-8 flex items-center justify-center rounded-lg bg-[#151515] border border-white/5 text-gray-400 shadow-tactile hover:bg-[#202020] hover:text-white hover:shadow-tactile-hover active:shadow-tactile-active active:translate-y-px transition-all";
+      "h-8 w-8 flex items-center justify-center rounded-lg bg-[#151515] border border-white/5 text-gray-400 shadow-tactile hover:bg-[#202020] hover:text-white hover:shadow-tactile-hover active:shadow-tactile-active active:translate-y-px transition-[color,background-color,box-shadow,transform] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 disabled:cursor-not-allowed disabled:opacity-35";
 
     return (
-      <div className="h-14 bg-bg/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 select-none relative z-30 shadow-lg">
+      <header className="relative z-50 grid h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center border-b border-white/5 bg-bg/95 px-2 shadow-lg select-none sm:px-4 supports-[backdrop-filter]:bg-bg/80 supports-[backdrop-filter]:backdrop-blur-md">
         {/* LEFT: Branding & History */}
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 items-center gap-1 sm:gap-3">
           <button
+            type="button"
             onClick={toggleLeftPanel}
-            className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 md:hidden"
+            aria-label={leftPanelOpen ? "Close texture tools" : "Open texture tools"}
+            aria-controls="texture-tools-panel"
+            aria-expanded={leftPanelOpen}
+            className="flex h-9 items-center gap-1.5 rounded-lg px-2 text-gray-300 hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 xl:hidden"
           >
             <Icons.Menu size={20} />
+            <span className="hidden text-[10px] font-bold uppercase tracking-wider md:inline">
+              Tools
+            </span>
           </button>
 
-          <div className="flex items-center gap-3 mr-2 group cursor-default">
+          <div className="mr-1 hidden items-center gap-3 sm:flex sm:mr-2 group cursor-default">
             <div className="w-8 h-8 bg-linear-to-br from-white to-gray-400 rounded-lg flex items-center justify-center shadow-glow-sm group-hover:shadow-glow-md transition-shadow">
               <Icons.Layers size={18} className="text-black" />
             </div>
@@ -121,29 +132,35 @@ export const Header: React.FC<HeaderProps> = memo(
             </div>
           </div>
 
-          <div className="h-8 w-px bg-white/10 mx-2 hidden md:block" />
+          <div className="mx-1 hidden h-8 w-px bg-white/10 lg:block" />
 
-          <div className="flex gap-2">
+          <div className="flex gap-1 sm:gap-2">
             <button
+              type="button"
               onClick={history.undo}
               disabled={!history.canUndo}
               className={btnClass}
               title="Undo (Ctrl+Z)"
+              aria-label="Undo"
             >
               <Icons.Undo2 size={16} />
             </button>
             <button
+              type="button"
               onClick={history.redo}
               disabled={!history.canRedo}
               className={btnClass}
               title="Redo (Ctrl+Y)"
+              aria-label="Redo"
             >
               <Icons.Redo2 size={16} />
             </button>
             <button
+              type="button"
               onClick={actions.resetState}
-              className={`${btnClass} hover:text-red-400`}
+              className={`${btnClass} hidden hover:text-red-400 sm:flex`}
               title="Reset All"
+              aria-label="Reset all settings"
             >
               <Icons.RotateCcw size={16} />
             </button>
@@ -151,16 +168,19 @@ export const Header: React.FC<HeaderProps> = memo(
         </div>
 
         {/* CENTER: Presets & Randomizer */}
-        <div className="flex items-center gap-2 flex-1 max-w-lg mx-6 bg-[#0a0a0a] p-1.5 rounded-xl border border-white/5 shadow-inner">
+        <div className="mx-1 flex min-w-0 items-center gap-1 rounded-xl border border-white/5 bg-[#0a0a0a] p-1 shadow-inner sm:mx-3 sm:gap-2 sm:p-1.5 lg:mx-6">
           <button
+            type="button"
             onClick={() => navigatePreset("prev")}
-            className="p-1.5 rounded-md text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
+            className="hidden rounded-md p-1.5 text-gray-500 transition-colors hover:bg-white/5 hover:text-white sm:block"
+            aria-label="Previous preset"
           >
             <Icons.ChevronLeft size={16} />
           </button>
 
           <div className="relative flex-1 group">
             <select
+              aria-label="Preset"
               onChange={(e) => handleApplyPreset(e.target.value)}
               className="w-full bg-[#121212] border border-black text-gray-300 text-[11px] font-bold h-8 pl-3 pr-8 rounded-lg appearance-none focus:outline-none focus:border-white/20 transition-all cursor-pointer hover:bg-[#181818] shadow-inner"
               value={selectedPresetId || ""}
@@ -195,25 +215,30 @@ export const Header: React.FC<HeaderProps> = memo(
 
           {isUserPresetSelected && (
             <button
+              type="button"
               onClick={handleDeletePreset}
               className="h-8 w-8 flex items-center justify-center text-red-500 hover:bg-red-900/20 rounded-lg transition-colors"
+              aria-label="Delete selected preset"
             >
               <Icons.Trash2 size={14} />
             </button>
           )}
 
           <button
+            type="button"
             onClick={() => navigatePreset("next")}
-            className="p-1.5 rounded-md text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
+            className="hidden rounded-md p-1.5 text-gray-500 transition-colors hover:bg-white/5 hover:text-white sm:block"
+            aria-label="Next preset"
           >
             <Icons.ChevronRight size={16} />
           </button>
 
-          <div className="w-px h-6 bg-white/10 mx-1" />
+          <div className="mx-1 hidden h-6 w-px bg-white/10 sm:block" />
 
           <button
+            type="button"
             onClick={actions.randomize}
-            className="h-8 px-4 bg-metal-gradient border border-black/60 rounded-lg flex items-center gap-2 text-gray-200 hover:text-white hover:shadow-tactile-hover shadow-tactile active:shadow-tactile-active active:translate-y-px transition-all group"
+            className="group hidden h-8 items-center gap-2 rounded-lg border border-black/60 bg-metal-gradient px-2 text-gray-200 shadow-tactile transition-[color,box-shadow,transform] hover:text-white hover:shadow-tactile-hover active:translate-y-px active:shadow-tactile-active sm:flex lg:px-4"
             title="Smart Randomize (R)"
           >
             <Icons.Shuffle
@@ -224,58 +249,75 @@ export const Header: React.FC<HeaderProps> = memo(
           </button>
 
           <button
+            type="button"
             onClick={() => actions.saveUserPreset("New Preset")}
-            className="h-8 w-8 flex items-center justify-center bg-[#151515] border border-white/5 rounded-lg text-gray-400 hover:text-green-400 shadow-tactile hover:shadow-tactile-hover active:translate-y-px transition-all"
+            className="hidden h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-[#151515] text-gray-400 shadow-tactile transition-[color,box-shadow,transform] hover:text-green-400 hover:shadow-tactile-hover active:translate-y-px sm:flex"
             title="Save Preset"
+            aria-label="Save preset"
           >
             <Icons.Save size={14} />
           </button>
         </div>
 
         {/* RIGHT: Global Settings */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
           <button
+            type="button"
             onClick={() => actions.updateState({ gridOverlay: !state.gridOverlay })}
-            className={`hidden md:flex h-9 px-3 rounded-lg items-center gap-2 border transition-all active:translate-y-px ${state.gridOverlay ? "bg-linear-to-b from-gray-200 to-gray-400 text-black border-white shadow-glow-sm" : "bg-[#151515] border-white/5 text-gray-500 hover:text-gray-200 shadow-tactile"}`}
+            className={`hidden h-9 items-center gap-2 rounded-lg border px-3 transition-[color,background-color,box-shadow,transform] active:translate-y-px xl:flex ${state.gridOverlay ? "bg-linear-to-b from-gray-200 to-gray-400 text-black border-white shadow-glow-sm" : "bg-[#151515] border-white/5 text-gray-500 hover:text-gray-200 shadow-tactile"}`}
+            aria-pressed={state.gridOverlay}
           >
             <Icons.Grid3X3 size={14} />
             <span className="text-[10px] font-bold">GRID</span>
           </button>
 
-          <div className="h-8 w-px bg-white/10 mx-1 hidden md:block" />
+          <div className="mx-1 hidden h-8 w-px bg-white/10 lg:block" />
 
           <button
+            type="button"
             onClick={() => actions.updateState({ isShortcutsOpen: true })}
-            className={btnClass}
+            className={`${btnClass} hidden lg:flex`}
             title="Keyboard Shortcuts"
+            aria-label="Keyboard shortcuts"
           >
             <Icons.Keyboard size={16} />
           </button>
 
           <button
+            type="button"
             onClick={() => actions.updateState({ isCodeOpen: true })}
-            className={btnClass}
+            className={`${btnClass} hidden lg:flex`}
             title="Legacy HTML Export Preview"
+            aria-label="Legacy HTML export preview"
           >
             <Icons.FileCode2 size={16} />
           </button>
 
           <button
+            type="button"
             onClick={() => actions.updateState({ isSettingsOpen: true })}
             className={btnClass}
             title="Global Settings"
+            aria-label="Global settings"
           >
             <Icons.Settings2 size={16} />
           </button>
 
           <button
+            type="button"
             onClick={toggleRightPanel}
-            className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 md:hidden ml-1"
+            aria-label={rightPanelOpen ? "Close output inspector" : "Open output inspector"}
+            aria-controls="output-inspector-panel"
+            aria-expanded={rightPanelOpen}
+            className="ml-1 flex h-9 items-center gap-1.5 rounded-lg px-2 text-gray-300 hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 xl:hidden"
           >
             <Icons.PanelRight size={20} />
+            <span className="hidden text-[10px] font-bold uppercase tracking-wider md:inline">
+              Output
+            </span>
           </button>
         </div>
-      </div>
+      </header>
     );
   },
 );

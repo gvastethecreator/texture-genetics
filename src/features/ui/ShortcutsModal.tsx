@@ -1,9 +1,6 @@
 import React, { useRef } from "react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
 import * as Icons from "lucide-react";
-
-gsap.registerPlugin(useGSAP);
+import { useModalFocus } from "../../shared/hooks/useModalFocus";
 
 interface ShortcutsModalProps {
   isOpen: boolean;
@@ -11,24 +8,8 @@ interface ShortcutsModalProps {
 }
 
 export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose }) => {
-  const backdropRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  useGSAP(
-    () => {
-      if (!isOpen) return;
-      gsap.from(backdropRef.current, { autoAlpha: 0, duration: 0.2 });
-      gsap.from(contentRef.current, {
-        y: 20,
-        autoAlpha: 0,
-        scale: 0.95,
-        duration: 0.3,
-        ease: "back.out(1.7)",
-        delay: 0.05,
-      });
-    },
-    { dependencies: [isOpen] },
-  );
+  useModalFocus({ isOpen, containerRef: contentRef, onClose });
 
   if (!isOpen) return null;
 
@@ -44,32 +25,44 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
   ];
 
   return (
-    <div
-      ref={backdropRef}
-      className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label="Close keyboard shortcuts"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm motion-reduce:backdrop-blur-none"
+      />
       <div
         ref={contentRef}
-        className="bg-[#0D0D0D] border border-border w-full max-w-md rounded-xl shadow-2xl flex flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shortcuts-modal-title"
+        tabIndex={-1}
+        className="relative z-10 bg-[#0D0D0D] border border-border w-full max-w-md max-h-[calc(100dvh-2rem)] rounded-xl shadow-2xl flex flex-col overflow-hidden motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95"
       >
         <div className="flex items-center justify-between p-5 border-b border-border bg-[#151515]">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-white/10 text-white flex items-center justify-center">
               <Icons.Keyboard size={18} />
             </div>
-            <h2 className="text-sm font-black text-gray-100 uppercase tracking-widest">
+            <h2
+              id="shortcuts-modal-title"
+              className="text-sm font-black text-gray-100 uppercase tracking-widest"
+            >
               Keyboard Shortcuts
             </h2>
           </div>
           <button
+            type="button"
+            aria-label="Close keyboard shortcuts"
             onClick={onClose}
             className="p-2 hover:bg-white/10 rounded-lg text-gray-500 hover:text-white transition-colors"
           >
             <Icons.X size={18} />
           </button>
         </div>
-        <div className="p-2">
+        <div className="p-2 overflow-y-auto custom-scrollbar">
           <div className="grid divide-y divide-white/5">
             {shortcuts.map((s, i) => (
               <div

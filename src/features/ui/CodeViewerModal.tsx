@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
 import * as Icons from "lucide-react";
 import { AppState } from "../../core/types/types";
+import { useModalFocus } from "../../shared/hooks/useModalFocus";
 import { copyToClipboard } from "../../shared/utils/clipboard";
 import { generateLegacyStandaloneHtml } from "../export/legacy/standaloneHtml";
-
-gsap.registerPlugin(useGSAP);
 
 interface CodeViewerModalProps {
   isOpen: boolean;
@@ -18,8 +15,8 @@ interface CodeViewerModalProps {
 export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClose, state }) => {
   const [code, setCode] = useState("");
   const [copied, setCopied] = useState(false);
-  const backdropRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  useModalFocus({ isOpen, containerRef: contentRef, onClose });
 
   useEffect(() => {
     if (isOpen) {
@@ -27,34 +24,11 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
     }
   }, [isOpen, state]);
 
-  useGSAP(
-    () => {
-      if (!isOpen) {
-        return;
-      }
-
-      gsap.from(backdropRef.current, { autoAlpha: 0, duration: 0.2 });
-      gsap.from(contentRef.current, {
-        y: 20,
-        autoAlpha: 0,
-        scale: 0.95,
-        duration: 0.3,
-        ease: "back.out(1.7)",
-        delay: 0.05,
-      });
-    },
-    { dependencies: [isOpen] },
-  );
-
   const handleCopy = async () => {
     await copyToClipboard(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  if (!isOpen) {
-    return null;
-  }
 
   // HTML/JS syntax highlighting for the legacy standalone export
   const highlightCode = useCallback((src: string) => {
@@ -168,15 +142,26 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
     });
   }, []);
 
+  if (!isOpen) {
+    return null;
+  }
+
   return (
-    <div
-      ref={backdropRef}
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
+    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label="Close code viewer"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm motion-reduce:backdrop-blur-none"
+      />
       <div
         ref={contentRef}
-        className="bg-[#0D0D0D] border border-border w-full max-w-4xl h-[80vh] rounded-xl shadow-2xl flex flex-col overflow-hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="code-viewer-modal-title"
+        tabIndex={-1}
+        className="relative z-10 bg-[#0D0D0D] border border-border w-full max-w-4xl h-[min(80vh,calc(100dvh-2rem))] rounded-xl shadow-2xl flex flex-col overflow-hidden motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border bg-[#151515]">
@@ -185,7 +170,10 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
               <Icons.FileCode2 size={18} />
             </div>
             <div>
-              <h2 className="text-sm font-black uppercase tracking-widest text-gray-100">
+              <h2
+                id="code-viewer-modal-title"
+                className="text-sm font-black uppercase tracking-widest text-gray-100"
+              >
                 Legacy HTML Export
               </h2>
               <p className="text-[10px] text-gray-500">
@@ -195,6 +183,7 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
           </div>
           <div className="flex gap-2">
             <button
+              type="button"
               onClick={handleCopy}
               className={`flex items-center gap-2 rounded px-3 py-1.5 text-xs font-bold transition-all ${
                 copied
@@ -206,6 +195,8 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
               {copied ? "COPIED" : "COPY LEGACY HTML"}
             </button>
             <button
+              type="button"
+              aria-label="Close code viewer"
               onClick={onClose}
               className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-white/10 hover:text-white"
             >

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, memo, useCallback } from "react";
+import React, { useState, useRef, useEffect, memo, useCallback, useId } from "react";
 import { createPortal } from "react-dom";
 import { HexColorPicker } from "react-colorful";
 
@@ -13,6 +13,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = memo(
   ({ label, color, onChange, onCommit }) => {
     const [showPicker, setShowPicker] = useState(false);
     const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
+    const pickerId = useId();
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Internal state for smooth drag, decoupled from heavy parent updates
@@ -63,6 +64,12 @@ export const ColorPicker: React.FC<ColorPickerProps> = memo(
       if (onCommit) onCommit();
     }, [onChange, onCommit, internalColor]);
 
+    useEffect(() => {
+      if (!showPicker) return;
+      document.addEventListener("pointerup", handleCommit);
+      return () => document.removeEventListener("pointerup", handleCommit);
+    }, [handleCommit, showPicker]);
+
     return (
       <div className="flex flex-col gap-1.5 relative" ref={containerRef}>
         <span className="text-[11px] font-medium text-gray-400 font-sans tracking-wide select-none">
@@ -70,7 +77,11 @@ export const ColorPicker: React.FC<ColorPickerProps> = memo(
         </span>
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={handleToggle}
+            aria-label={`${label}: ${internalColor}`}
+            aria-expanded={showPicker}
+            aria-controls={pickerId}
             className="w-full h-8 rounded border border-border shadow-sm flex items-center justify-between px-2 transition-all hover:border-gray-500 group"
             style={{ backgroundColor: internalColor }}
           >
@@ -83,7 +94,10 @@ export const ColorPicker: React.FC<ColorPickerProps> = memo(
         {showPicker &&
           createPortal(
             <>
-              <div
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label={`Close ${label} color picker`}
                 className="fixed inset-0 z-[9998]"
                 onClick={() => {
                   setShowPicker(false);
@@ -91,13 +105,20 @@ export const ColorPicker: React.FC<ColorPickerProps> = memo(
                 }}
               />
               <div
+                id={pickerId}
+                role="dialog"
+                aria-label={`${label} color picker`}
                 className="fixed z-[9999] shadow-2xl animate-in fade-in zoom-in-95 origin-top-left"
                 style={{ top: pickerPos.top, left: pickerPos.left }}
-                onMouseDown={(e) => e.stopPropagation()}
-                onMouseUp={handleCommit}
-                onTouchEnd={handleCommit}
               >
                 <HexColorPicker color={internalColor} onChange={handleChange} />
+                <input
+                  type="color"
+                  aria-label={`${label} native color input`}
+                  value={internalColor}
+                  onChange={(event) => handleChange(event.target.value)}
+                  className="mt-2 h-8 w-full cursor-pointer rounded border border-white/10 bg-[#121212]"
+                />
               </div>
             </>,
             document.body,
