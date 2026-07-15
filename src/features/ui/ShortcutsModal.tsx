@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import * as Icons from "lucide-react";
+import { APP_SHORTCUTS } from "../../core/commands";
 import { useModalFocus } from "../../shared/hooks/useModalFocus";
 
 interface ShortcutsModalProps {
@@ -13,12 +14,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
 
   if (!isOpen) return null;
 
-  const shortcuts = [
-    { key: "Space", desc: "Pause / Play Animation" },
-    { key: "R", desc: "Smart Randomize Parameters" },
-    { key: "Ctrl + Z", desc: "Undo" },
-    { key: "Ctrl + Y", desc: "Redo" },
-    { key: "H", desc: "Toggle Panels (Hide UI)" },
+  const interactionTips = [
     { key: "Drag & Drop", desc: "Import Preset (.json) or Texture (.png/.jpg)" },
     { key: "Double Click Slider", desc: "Reset Value to Default" },
     { key: "Click Value Input", desc: "Type Precise Number" },
@@ -64,9 +60,15 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         </div>
         <div className="p-2 overflow-y-auto custom-scrollbar">
           <div className="grid divide-y divide-white/5">
-            {shortcuts.map((s, i) => (
+            {[
+              ...APP_SHORTCUTS.map((shortcut) => ({
+                key: shortcut.displayKey,
+                desc: shortcut.description,
+              })),
+              ...interactionTips,
+            ].map((s) => (
               <div
-                key={i}
+                key={`${s.key}-${s.desc}`}
                 className="flex justify-between items-center p-3 hover:bg-white/5 transition-colors rounded-lg group"
               >
                 <span className="text-xs text-gray-400 group-hover:text-gray-200 transition-colors">
@@ -80,7 +82,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
           </div>
         </div>
         <div className="p-4 bg-black/30 border-t border-border text-[10px] text-gray-500 text-center">
-          EffectTextureGen v3.5 &bull; Professional Edition
+          EffectTextureGen v{__APP_VERSION__} &bull; Professional Edition
         </div>
       </div>
     </div>

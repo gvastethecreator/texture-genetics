@@ -163,7 +163,7 @@ describe("useStorage", () => {
 
     expect(idbMocks.set).toHaveBeenCalledTimes(1);
     const [bundleKey, bundle] = idbMocks.set.mock.calls[0];
-    expect(bundleKey).toMatch(/^effect_gen_v3_assets_/);
+    expect(bundleKey).toMatch(/^effect_gen_v4_assets_/);
     expect(bundle).toMatchObject({
       version: 1,
       assets: {
@@ -173,13 +173,13 @@ describe("useStorage", () => {
       },
     });
 
-    const persisted = JSON.parse(localStorage.getItem("effect_gen_v3_release") ?? "{}");
+    const persisted = JSON.parse(localStorage.getItem("effect_gen_v4_release") ?? "{}");
     expect(persisted.baseTexture.texture).toBeNull();
     expect(persisted.sticker.texture).toBeNull();
     expect(persisted.customModel).toBeNull();
     expect(persisted.svg.url).toBeNull();
-    expect(persisted["_version"]).toBe(3);
-    expect(bundleKey).toBe(`effect_gen_v3_assets_${persisted["_assetRevision"]}`);
+    expect(persisted["_version"]).toBe(4);
+    expect(bundleKey).toBe(`effect_gen_v4_assets_${persisted["_assetRevision"]}`);
   });
 
   it("does not commit lightweight state when an asset transaction fails", async () => {
@@ -195,7 +195,7 @@ describe("useStorage", () => {
       );
     });
 
-    expect(localStorage.getItem("effect_gen_v3_release")).toBeNull();
+    expect(localStorage.getItem("effect_gen_v4_release")).toBeNull();
   });
 
   it("persists blob URLs as durable Blob values and rehydrates them on load", async () => {
@@ -217,7 +217,7 @@ describe("useStorage", () => {
     expect(savedBundle.assets.asset_custom_model).toBe(modelBlob);
 
     firstHook.unmount();
-    const persisted = JSON.parse(localStorage.getItem("effect_gen_v3_release") ?? "{}");
+    const persisted = JSON.parse(localStorage.getItem("effect_gen_v4_release") ?? "{}");
     idbMocks.get
       .mockReset()
       .mockImplementation(async (key: string) => (key === bundleKey ? savedBundle : undefined));
@@ -225,8 +225,33 @@ describe("useStorage", () => {
     renderHook(() => useStorage(mockAppState(), onLoaded));
     await waitFor(() => expect(onLoaded).toHaveBeenCalledTimes(1));
 
-    expect(persisted._assetRevision).toBe(bundleKey.replace("effect_gen_v3_assets_", ""));
+    expect(persisted._assetRevision).toBe(bundleKey.replace("effect_gen_v4_assets_", ""));
     expect(onLoaded.mock.calls[0][0].customModel).toBe("blob:rehydrated-asset");
     expect(URL.createObjectURL).toHaveBeenCalledWith(modelBlob);
+  });
+
+  it("migrates a v3 state and asset revision only after a successful v4 save", async () => {
+    const legacyRevision = "legacy-revision";
+    localStorage.setItem(
+      "effect_gen_v3_release",
+      JSON.stringify({ animate: false, _version: 3, _assetRevision: legacyRevision }),
+    );
+    idbMocks.get.mockImplementation(async (key: string) =>
+      key === `effect_gen_v3_assets_${legacyRevision}` ? { version: 1, assets: {} } : undefined,
+    );
+    const onLoaded = vi.fn();
+    const { result } = renderHook(() => useStorage(mockAppState(), onLoaded));
+    await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+    expect(onLoaded.mock.calls[0][0].animate).toBe(false);
+    expect(localStorage.getItem("effect_gen_v4_release")).toBeNull();
+
+    await act(async () => {
+      expect(await result.current.saveState(onLoaded.mock.calls[0][0])).toBe(true);
+    });
+
+    expect(localStorage.getItem("effect_gen_v4_release")).not.toBeNull();
+    expect(localStorage.getItem("effect_gen_v3_release")).toBeNull();
+    expect(idbMocks.del).toHaveBeenCalledWith(`effect_gen_v3_assets_${legacyRevision}`);
   });
 });

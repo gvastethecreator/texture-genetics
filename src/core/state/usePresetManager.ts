@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { get, set } from "idb-keyval";
+import { del, get, set } from "idb-keyval";
 import { AppState, UserPreset } from "../types/types";
 import { readTextFile } from "../../shared/utils/fileLoaders";
 import {
@@ -9,7 +9,8 @@ import {
   recoverStoredPresetCollection,
 } from "./presetFile";
 
-const PRESETS_STORAGE_KEY = "effect_gen_v3_user_presets";
+const PRESETS_STORAGE_KEY = "effect_gen_v4_user_presets";
+const LEGACY_PRESETS_STORAGE_KEY = "effect_gen_v3_user_presets";
 const MAX_PRESET_FILE_BYTES = 10 * 1024 * 1024;
 const MAX_PRESET_NAME_LENGTH = 120;
 
@@ -39,8 +40,11 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
   useEffect(() => {
     const load = async () => {
       try {
-        const savedPresets = await get<unknown>(PRESETS_STORAGE_KEY);
-        if (savedPresets) {
+        const currentPresets = await get<unknown>(PRESETS_STORAGE_KEY);
+        const legacyPresets =
+          currentPresets == null ? await get<unknown>(LEGACY_PRESETS_STORAGE_KEY) : undefined;
+        const savedPresets = currentPresets ?? legacyPresets;
+        if (savedPresets != null) {
           const recovered = recoverStoredPresetCollection(savedPresets);
           userPresetsRef.current = recovered.presets;
           setUserPresets(recovered.presets);
@@ -51,6 +55,15 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
               "error",
               `Loaded ${loadedLabel}; skipped ${skippedLabel}. Original storage was left unchanged.`,
             );
+          }
+          if (legacyPresets != null && recovered.rejectedCount === 0) {
+            try {
+              await set(PRESETS_STORAGE_KEY, recovered.presets);
+              await del(LEGACY_PRESETS_STORAGE_KEY);
+            } catch (migrationError) {
+              console.warn("Preset storage migration deferred", migrationError);
+              addToast("info", "Saved presets loaded; storage migration will retry later");
+            }
           }
         }
       } catch (e) {

@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { AppState } from "../types/types";
 import { get, set, del } from "idb-keyval";
 
-const STORAGE_KEY = "effect_gen_v3_release";
+const STORAGE_KEY = "effect_gen_v4_release";
+const LEGACY_STORAGE_KEY = "effect_gen_v3_release";
 // Version for future state migrations. Increment when state format changes
 // and add migration logic in the load path to handle older saves
-const STATE_VERSION = 3;
+const STATE_VERSION = 4;
 const ASSET_BUNDLE_VERSION = 1;
-const ASSET_BUNDLE_PREFIX = "effect_gen_v3_assets_";
+const ASSET_BUNDLE_PREFIX = "effect_gen_v4_assets_";
+const LEGACY_ASSET_BUNDLE_PREFIX = "effect_gen_v3_assets_";
 
 // Keys of properties that contain heavy base64 strings
 type HeavyAssetDescriptor = {
@@ -148,7 +150,12 @@ export const useStorage = (
     const load = async () => {
       let mergedState = { ...initialState };
       let metadata: PersistedStateMetadata = {};
-      const savedState = localStorage.getItem(STORAGE_KEY);
+      const currentSavedState = localStorage.getItem(STORAGE_KEY);
+      const legacySavedState = currentSavedState ? null : localStorage.getItem(LEGACY_STORAGE_KEY);
+      const savedState = currentSavedState ?? legacySavedState;
+      const sourceAssetPrefix = currentSavedState
+        ? ASSET_BUNDLE_PREFIX
+        : LEGACY_ASSET_BUNDLE_PREFIX;
 
       if (savedState) {
         try {
@@ -181,7 +188,7 @@ export const useStorage = (
 
       try {
         if (metadata._assetRevision) {
-          const storedBundle = await get(`${ASSET_BUNDLE_PREFIX}${metadata._assetRevision}`);
+          const storedBundle = await get(`${sourceAssetPrefix}${metadata._assetRevision}`);
           if (!isAssetBundle(storedBundle)) throw new Error("asset bundle is missing or invalid");
           HEAVY_ASSETS.forEach((asset) => {
             const value = storedBundle.assets[asset.key];
@@ -238,7 +245,14 @@ export const useStorage = (
           if (value) assets[asset.key] = await serializeAsset(value);
         }
 
-        const previousState = localStorage.getItem(STORAGE_KEY);
+        const currentPreviousState = localStorage.getItem(STORAGE_KEY);
+        const legacyPreviousState = currentPreviousState
+          ? null
+          : localStorage.getItem(LEGACY_STORAGE_KEY);
+        const previousState = currentPreviousState ?? legacyPreviousState;
+        const previousAssetPrefix = currentPreviousState
+          ? ASSET_BUNDLE_PREFIX
+          : LEGACY_ASSET_BUNDLE_PREFIX;
         let previousRevision: string | undefined;
         if (previousState) {
           try {
@@ -263,13 +277,14 @@ export const useStorage = (
 
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave, safeReplacer()));
+          localStorage.removeItem(LEGACY_STORAGE_KEY);
         } catch (error) {
           await del(bundleKey).catch(() => undefined);
           throw error;
         }
 
         if (previousRevision && previousRevision !== revision) {
-          await del(`${ASSET_BUNDLE_PREFIX}${previousRevision}`).catch((error) => {
+          await del(`${previousAssetPrefix}${previousRevision}`).catch((error) => {
             console.warn("Failed to remove superseded asset bundle", error);
           });
         }

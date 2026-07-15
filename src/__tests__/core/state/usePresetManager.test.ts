@@ -6,6 +6,7 @@ import { mockAppState } from "@/__tests__/helpers";
 const idbMocks = vi.hoisted(() => ({
   get: vi.fn(),
   set: vi.fn(),
+  del: vi.fn(),
 }));
 
 const deferred = () => {
@@ -19,6 +20,7 @@ const deferred = () => {
 vi.mock("idb-keyval", () => ({
   get: idbMocks.get,
   set: idbMocks.set,
+  del: idbMocks.del,
 }));
 
 describe("usePresetManager", () => {
@@ -26,6 +28,37 @@ describe("usePresetManager", () => {
     vi.clearAllMocks();
     idbMocks.get.mockResolvedValue([]);
     idbMocks.set.mockResolvedValue(undefined);
+    idbMocks.del.mockResolvedValue(undefined);
+  });
+
+  it("migrates valid v3 presets to the v4 key without dropping the legacy copy first", async () => {
+    const legacyPreset = {
+      id: "legacy",
+      name: "Legacy",
+      date: 1,
+      state: { animate: false },
+    };
+    idbMocks.get.mockImplementation(async (key: string) =>
+      key === "effect_gen_v3_user_presets" ? [legacyPreset] : undefined,
+    );
+    const { result } = renderHook(() =>
+      usePresetManager({
+        initialState: mockAppState(),
+        onLoadPreset: vi.fn(),
+        addToast: vi.fn(),
+      }),
+    );
+
+    await waitFor(() => expect(result.current.userPresets).toHaveLength(1));
+
+    expect(idbMocks.set).toHaveBeenCalledWith(
+      "effect_gen_v4_user_presets",
+      expect.arrayContaining([expect.objectContaining({ id: "legacy" })]),
+    );
+    expect(idbMocks.del).toHaveBeenCalledWith("effect_gen_v3_user_presets");
+    expect(idbMocks.set.mock.invocationCallOrder[0]).toBeLessThan(
+      idbMocks.del.mock.invocationCallOrder[0],
+    );
   });
 
   it("does not mutate memory or IndexedDB when an imported preset fails schema validation", async () => {

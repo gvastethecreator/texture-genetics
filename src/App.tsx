@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect, lazy, Suspense, useCallback } from 
 // Validate and register the complete cross-renderer pattern catalog at startup.
 import "./data/patternManifest";
 import { GeometryType } from "./core/types/types";
+import { createShortcutKeyMap } from "./core/commands";
 import { useTextureEditor } from "./core/state/useTextureEditor";
 import { useExportManager } from "./features/export/useExportManager";
 import { useHotkeys } from "./shared/hooks/useHotkeys";
@@ -96,6 +97,16 @@ export default function App() {
     if (isCompactWorkbench) setShowLeft(false);
   }, [isCompactWorkbench]);
 
+  const toggleWorkbenchPanels = useCallback(() => {
+    if (showLeft || showRight) {
+      setShowLeft(false);
+      setShowRight(false);
+      return;
+    }
+    setShowLeft(true);
+    setShowRight(!isCompactWorkbench);
+  }, [isCompactWorkbench, showLeft, showRight]);
+
   useModalFocus({
     isOpen: isCompactWorkbench && showLeft,
     containerRef: leftPanelRef,
@@ -108,17 +119,23 @@ export default function App() {
   });
 
   // Hotkeys
-  useHotkeys({
-    "mod+z": history.undo,
-    "mod+y": history.redo,
-    "mod+shift+z": history.redo,
-    space: () => {
-      if (!state.isSettingsOpen && !state.isCodeOpen)
-        actions.updateState({ animate: !state.animate });
-    },
-    r: actions.randomize,
-    h: toggleLeftPanel,
-  });
+  useHotkeys(
+    createShortcutKeyMap({
+      undo: history.undo,
+      redo: history.redo,
+      "toggle-animation": () => {
+        if (!state.isSettingsOpen && !state.isCodeOpen && !state.isShortcutsOpen) {
+          actions.updateState({ animate: !state.animate });
+        }
+      },
+      randomize: actions.randomize,
+      "toggle-panels": toggleWorkbenchPanels,
+      "show-shortcuts": () => actions.updateState({ isShortcutsOpen: true }),
+      "exit-fullscreen": state.isFullscreen
+        ? () => actions.updateState({ isFullscreen: false })
+        : undefined,
+    }),
+  );
 
   // Drag & Drop
   const handleDropJson = (file: File) => actions.importPresets(file);

@@ -128,7 +128,9 @@ export const Header: React.FC<HeaderProps> = memo(
               <span className="hidden md:block text-sm font-black text-transparent bg-clip-text bg-linear-to-r from-white to-gray-400 tracking-widest uppercase">
                 EffectGen
               </span>
-              <span className="text-[9px] font-mono text-gray-500 tracking-wide">v3.6 PRO</span>
+              <span className="text-[9px] font-mono text-gray-500 tracking-wide">
+                v{__APP_VERSION__} PRO
+              </span>
             </div>
           </div>
 

@@ -1,5 +1,4 @@
 import { encode } from "modern-gif";
-// @ts-ignore — Vite ?url import for Web Worker
 import workerUrl from "modern-gif/worker?url";
 import { AppState } from "../../../core/types/types";
 import { setupOffscreenScene } from "../core/offscreen";
