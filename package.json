@@ -28,12 +28,14 @@
     "game-dev"
   ],
   "overrides": {
+    "postprocessing": "^6.39.1",
     "undici": "^7.28.0",
     "vite": "^8.0.16"
   },
   "scripts": {
     "dev": "vite",
-    "build": "node ./scripts/run-with-log.mjs build.log vite build",
+    "build": "node ./scripts/run-with-log.mjs build.log --shell \"vite build && node ./scripts/check-build-budget.mjs\"",
+    "build:budget": "node ./scripts/check-build-budget.mjs",
     "preview": "vite preview",
     "lint": "node ./scripts/run-with-log.mjs lint.log oxlint src/ --tsconfig tsconfig.json",
     "lint:fix": "node ./scripts/run-with-log.mjs lint-fix.log oxlint src/ --tsconfig tsconfig.json --fix",

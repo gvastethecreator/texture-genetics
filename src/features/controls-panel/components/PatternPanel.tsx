@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from "react";
 import * as Icons from "lucide-react";
 import { AppState, AnimationConfig } from "../../../core/types/types";
-import { SHADER_LABELS } from "../../../data/textureData";
+import { PATTERN_MANIFEST_BY_TYPE } from "../../../data/patternManifest";
 import { ControlSection, Label, Slider } from "../../../shared/ui/Elements";
 import { DEFAULTS } from "../../../core/constants";
 
@@ -14,9 +14,27 @@ interface PatternPanelProps {
   onRandom: () => void;
 }
 
+const DYNAMIC_PARAMETER_KEYS = [
+  "p1",
+  "p2",
+  "p3",
+  "p4",
+  "p5",
+  "p6",
+  "p7",
+  "p8",
+  "p9",
+  "p10",
+  "p11",
+  "p12",
+  "p13",
+  "p14",
+  "p15",
+] as const;
+
 export const PatternPanel: React.FC<PatternPanelProps> = memo(
   ({ state, onChangeParams, onChangeState, onCommit, onUpdateAnim, onRandom }) => {
-    const definitions = SHADER_LABELS[state.textureType];
+    const definitions = PATTERN_MANIFEST_BY_TYPE[state.textureType].definition;
     const labels = definitions.labels;
     const ranges = definitions.ranges || {};
 
@@ -28,12 +46,9 @@ export const PatternPanel: React.FC<PatternPanelProps> = memo(
     // Helper to render dynamic params loop
     const dynamicParams = useMemo(() => {
       const params: React.ReactNode[] = [];
-      // Loop 1 to 15
-      for (let i = 1; i <= 15; i++) {
-        const key = `p${i}` as keyof typeof labels;
+      for (const key of DYNAMIC_PARAMETER_KEYS) {
         const label = labels[key];
         if (label) {
-          // @ts-ignore - dynamic key access safe here due to explicit loop range
           const range = ranges[key];
           const description = `Controls the ${label.toLowerCase()} of the pattern.`;
 
@@ -44,7 +59,6 @@ export const PatternPanel: React.FC<PatternPanelProps> = memo(
                 min={range?.min ?? 0}
                 max={range?.max ?? 1}
                 step={range?.step ?? 0.01}
-                // @ts-ignore
                 value={state.params[key]}
                 onChange={(v) => onChangeParams({ [key]: v })}
                 onCommit={onCommit}

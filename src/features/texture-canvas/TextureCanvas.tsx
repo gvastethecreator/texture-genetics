@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback, Suspense } from "react";
+import React, { useRef, useEffect, useState, useCallback, Suspense, lazy } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { Hud, OrthographicCamera } from "@react-three/drei";
 import * as THREE from "three";
@@ -26,6 +26,7 @@ import {
   Image,
 } from "lucide-react";
 import { useContainerDimensions } from "../../shared/hooks/useContainerDimensions";
+import { hasActiveSceneEffects, requiresContinuousRendering } from "./renderPolicy";
 
 // Modular Components
 import { SceneLighting } from "./components/SceneLighting";
@@ -36,7 +37,10 @@ import { StickerGizmo } from "./components/StickerGizmo";
 import { StageFloor } from "./components/StageFloor";
 import { ParticleSystem } from "./components/ParticleSystem";
 import { SmokeSystem } from "./components/SmokeSystem";
-import { SceneEffects } from "./components/SceneEffects";
+
+const SceneEffects = lazy(() =>
+  import("./components/SceneEffects").then((module) => ({ default: module.SceneEffects })),
+);
 
 const handleCanvasContextLost = (event: Event) => {
   event.preventDefault();
@@ -67,7 +71,7 @@ const SceneComposition: React.FC<SceneCompositionProps> = ({
   orbitEnabled,
   setOrbitEnabled,
 }) => {
-  const { size, scene, gl } = useThree();
+  const { size, scene, gl, invalidate } = useThree();
   const isBackgroundGeometry = appState.geometry === GeometryType.BACKGROUND;
 
   const supportsAdvancedWebGlTargets = React.useMemo(() => {
@@ -94,6 +98,7 @@ const SceneComposition: React.FC<SceneCompositionProps> = ({
         scene.background = null;
       }
     }
+    invalidate();
   }, [
     appState.environment.fogEnabled,
     appState.environment.fogDensity,
@@ -101,6 +106,7 @@ const SceneComposition: React.FC<SceneCompositionProps> = ({
     appState.environment.bgEnabled,
     appState.environment.bgColor,
     appState.environment.envBackground,
+    invalidate,
     scene,
   ]);
 
@@ -138,9 +144,11 @@ const SceneComposition: React.FC<SceneCompositionProps> = ({
 
       {appState.environment.smokeEnabled && <SmokeSystem appState={appState} />}
 
-      <Suspense fallback={null}>
-        <SceneEffects appState={appState} />
-      </Suspense>
+      {hasActiveSceneEffects(appState) && (
+        <Suspense fallback={null}>
+          <SceneEffects appState={appState} />
+        </Suspense>
+      )}
 
       <StickerGizmo
         state={appState}
@@ -194,9 +202,9 @@ export const TextureCanvas: React.FC<{
   const { ref: containerRef, dimensions } = useContainerDimensions();
   const isReady = dimensions.width > 0 && dimensions.height > 0;
 
-  useEffect(() => {
-    stateRef.current = appState;
-  }, [appState]);
+  // The render loop must observe the same snapshot being committed to child
+  // effects; parent effects run after child effects and would otherwise lag once.
+  stateRef.current = appState;
 
   useEffect(() => {
     setOrbitEnabled(appState.geometry !== GeometryType.BACKGROUND);
@@ -272,7 +280,7 @@ export const TextureCanvas: React.FC<{
         <Canvas
           onCreated={onCreated}
           className="w-full h-full block"
-          frameloop="always"
+          frameloop={requiresContinuousRendering(appState) ? "always" : "demand"}
           gl={async (props: any) => {
             try {
               const renderer = await initializeRenderer({

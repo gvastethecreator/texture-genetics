@@ -1,5 +1,10 @@
 import * as THREE from "three";
 import { AppState, TextureType, BaseEffectType } from "../../core/types/types";
+import {
+  applyRendererUniformProjection,
+  projectFogColor,
+  projectRendererUniforms,
+} from "../rendering/stateProjection";
 
 // GLOBAL EMPTY TEXTURE (Prevent WebGL warnings/crashes on null textures)
 // Explicitly configured for compatibility
@@ -10,25 +15,7 @@ emptyTexture.minFilter = THREE.NearestFilter;
 emptyTexture.magFilter = THREE.NearestFilter;
 emptyTexture.needsUpdate = true;
 
-// CACHED FOG COLORS (Flyweight Pattern) to prevent allocation loop
-const FOG_COLORS = {
-  0: new THREE.Color("#111111"), // Studio
-  1: new THREE.Color("#331a1a"), // Sunset
-  2: new THREE.Color("#020205"), // Midnight
-  3: new THREE.Color("#4a4036"), // Dawn
-};
-
-// Helper to retrieve cached color
-const getFogColor = (state: AppState): THREE.Color => {
-  // If manual fog color is set (implicit via UI update logic later), we could use it.
-  // For now, we stick to the EnvType presets but cached.
-  // If we want manual fog color override, we would parse state.environment.fogColor here.
-
-  // Current Logic: Use Cached Preset based on EnvType
-  // This fixes the `new THREE.Color()` leak in useFrame
-  const type = state.environment.envType as 0 | 1 | 2 | 3;
-  return FOG_COLORS[type] || FOG_COLORS[0];
-};
+const getFogColor = (state: AppState): THREE.Color => new THREE.Color(projectFogColor(state));
 
 // --- INITIALIZATION HELPERS ---
 
@@ -209,6 +196,8 @@ export const createUniformsFromState = (
     u_distortion: { value: state.params.distortion },
     u_detail: { value: state.params.detail },
     u_seed: { value: state.params.seed },
+    u_color1: { value: new THREE.Color(state.params.color1) },
+    u_color2: { value: new THREE.Color(state.params.color2) },
     u_palette: { value: paletteUniformValue },
     u_paletteCount: { value: activeColors.length },
 
@@ -549,6 +538,7 @@ export const updateUniformsFromState = (
   updateMaterialUniforms(uniforms, state);
   updateColorBalanceUniforms(uniforms, state);
   updateEnvironmentUniforms(uniforms, state);
+  applyRendererUniformProjection(uniforms, projectRendererUniforms(state));
   updateTextureUniforms(uniforms, state, maskTexture, baseTexture, stickerTexture);
   updateMouseUniforms(uniforms, state);
 };

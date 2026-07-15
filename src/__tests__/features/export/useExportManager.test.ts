@@ -37,7 +37,7 @@ describe("useExportManager", () => {
     });
     await second;
 
-    expect(mocks.generateGif).toHaveBeenCalledOnce();
+    await vi.waitFor(() => expect(mocks.generateGif).toHaveBeenCalledOnce());
     expect(onError).toHaveBeenCalledWith("An export is already in progress");
 
     finish(new Blob(["gif"], { type: "image/gif" }));

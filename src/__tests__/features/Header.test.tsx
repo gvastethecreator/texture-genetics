@@ -59,8 +59,7 @@ describe("Header", () => {
         rightPanelOpen={false}
       />,
     );
-    // Look for a button with dice/random-related content
-    const buttons = screen.getAllByRole("button");
-    expect(buttons.length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "Randomize texture" }));
+    expect(actions.randomize).toHaveBeenCalledOnce();
   });
 });

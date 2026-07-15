@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, lazy, Suspense, useCallback } from "react";
 
-// Register all TSL patterns at startup (side-effect)
-import "./lib/tsl/registerPatterns";
+// Validate and register the complete cross-renderer pattern catalog at startup.
+import "./data/patternManifest";
 import { GeometryType } from "./core/types/types";
 import { useTextureEditor } from "./core/state/useTextureEditor";
 import { useExportManager } from "./features/export/useExportManager";

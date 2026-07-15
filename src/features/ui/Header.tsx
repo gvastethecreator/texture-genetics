@@ -240,6 +240,7 @@ export const Header: React.FC<HeaderProps> = memo(
             onClick={actions.randomize}
             className="group hidden h-8 items-center gap-2 rounded-lg border border-black/60 bg-metal-gradient px-2 text-gray-200 shadow-tactile transition-[color,box-shadow,transform] hover:text-white hover:shadow-tactile-hover active:translate-y-px active:shadow-tactile-active sm:flex lg:px-4"
             title="Smart Randomize (R)"
+            aria-label="Randomize texture"
           >
             <Icons.Shuffle
               size={14}

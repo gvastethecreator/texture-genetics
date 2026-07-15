@@ -7,7 +7,7 @@ import {
   BaseEffectType,
   AnimationConfig,
 } from "../../../core/types/types";
-import { TEXTURE_CATEGORIES } from "../../../data/textureData";
+import { PATTERN_MANIFEST } from "../../../data/patternManifest";
 import { ControlSection, Label, Slider, Toggle, ActionButton } from "../../../shared/ui/Elements";
 import { loadImageFromSource, readFileAsDataUrl } from "../../../shared/utils/fileLoaders";
 
@@ -76,9 +76,7 @@ const processImageUpload = async (file: File): Promise<string> => {
 
 export const LayersPanel: React.FC<LayersPanelProps> = memo(
   ({ state, updateStateGroup, onCommit, onUpdateAnim }) => {
-    const allTextures = Object.values(TEXTURE_CATEGORIES)
-      .flatMap((c) => c.types)
-      .toSorted();
+    const allTextures = PATTERN_MANIFEST.map((pattern) => pattern.type).toSorted();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const updateAnimation = onUpdateAnim ?? (() => {});
 

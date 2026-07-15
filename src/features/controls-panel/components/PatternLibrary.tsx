@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import * as Icons from "lucide-react";
 import { TextureType } from "../../../core/types/types";
-import { TEXTURE_CATEGORIES } from "../../../data/textureData";
+import { PATTERN_CATEGORIES } from "../../../data/patternManifest";
 
 interface PatternLibraryProps {
   currentType: TextureType;
@@ -26,7 +26,8 @@ export const PatternLibrary: React.FC<PatternLibraryProps> = memo(
             <Icons.Shuffle size={12} />
           </button>
         </div>
-        {Object.entries(TEXTURE_CATEGORIES).map(([catName, data]) => {
+        {PATTERN_CATEGORIES.map((data) => {
+          const catName = data.name;
           const Icon = data.icon;
           const isActiveCategory = data.types.includes(currentType);
 

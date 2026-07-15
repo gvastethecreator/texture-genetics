@@ -1,12 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { AppState, ViewMode } from "../../core/types/types";
 import { setupOffscreenScene } from "./core/offscreen";
-import { generateGif } from "./strategies/gifStrategy";
-import { generateSpriteSheet } from "./strategies/spriteStrategy";
-import { generateVideo } from "./strategies/videoStrategy";
-import { generateTexturePack } from "./strategies/zipStrategy";
-import { generateHtml } from "./strategies/htmlStrategy";
-import { generateGlb } from "./strategies/glbStrategy";
 import { canvasToBlob, downloadBlob } from "./core/browserFiles";
 
 interface UseExportManagerProps {
@@ -16,6 +10,18 @@ interface UseExportManagerProps {
 
 const getErrorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
+
+type ExportTask = (state: AppState, onProgress: (progress: number) => void) => Promise<Blob>;
+type ExportTaskLoader = () => Promise<ExportTask>;
+
+const exportTaskLoaders = {
+  sprite: () => import("./strategies/spriteStrategy").then((module) => module.generateSpriteSheet),
+  gif: () => import("./strategies/gifStrategy").then((module) => module.generateGif),
+  video: () => import("./strategies/videoStrategy").then((module) => module.generateVideo),
+  zip: () => import("./strategies/zipStrategy").then((module) => module.generateTexturePack),
+  html: () => import("./strategies/htmlStrategy").then((module) => module.generateHtml),
+  glb: () => import("./strategies/glbStrategy").then((module) => module.generateGlb),
+} satisfies Record<string, ExportTaskLoader>;
 
 export function useExportManager(
   state: AppState,
@@ -76,11 +82,7 @@ export function useExportManager(
 
   // --- Complex Exports Wrapper ---
   const runExportTask = useCallback(
-    async (
-      taskName: string,
-      filename: string,
-      taskFn: (s: AppState, cb: (p: number) => void) => Promise<Blob>,
-    ) => {
+    async (taskName: string, filename: string, loadTask: ExportTaskLoader) => {
       if (activeTaskRef.current) {
         onError?.("An export is already in progress");
         return;
@@ -90,6 +92,7 @@ export function useExportManager(
       setProgress(0);
 
       try {
+        const taskFn = await loadTask();
         const blob = await taskFn(state, setProgress);
         if (blob.size === 0) throw new Error(`${taskName} generated an empty file`);
         downloadBlob(blob, filename);
@@ -111,39 +114,43 @@ export function useExportManager(
     runExportTask(
       "Sprite Sheet",
       `spritesheet_${state.textureType.toLowerCase().replace(/\s/g, "_")}.png`,
-      generateSpriteSheet,
+      exportTaskLoaders.sprite,
     );
 
   const runGif = () =>
     runExportTask(
       "GIF",
       `anim_${state.textureType.toLowerCase().replace(/\s/g, "_")}.gif`,
-      generateGif,
+      exportTaskLoaders.gif,
     );
 
   const runVideo = () =>
     runExportTask(
       "Video",
       `video_${state.textureType.toLowerCase().replace(/\s/g, "_")}.webm`,
-      generateVideo,
+      exportTaskLoaders.video,
     );
 
   const runZip = () =>
     runExportTask(
       "Texture Pack",
       `TexturePack_${state.textureType.replace(/\s/g, "_")}.zip`,
-      generateTexturePack,
+      exportTaskLoaders.zip,
     );
 
   const runHtml = () =>
     runExportTask(
       "Legacy HTML",
       `legacy_shader_${state.textureType.replace(/\s/g, "_")}.html`,
-      generateHtml,
+      exportTaskLoaders.html,
     );
 
   const runGlb = () =>
-    runExportTask("GLB", `model_${state.textureType.replace(/\s/g, "_")}.glb`, generateGlb);
+    runExportTask(
+      "GLB",
+      `model_${state.textureType.replace(/\s/g, "_")}.glb`,
+      exportTaskLoaders.glb,
+    );
 
   return {
     isGenerating,

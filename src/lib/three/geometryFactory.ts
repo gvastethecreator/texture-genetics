@@ -1,9 +1,40 @@
 import * as THREE from "three";
 import { GeometryType, GeometryConfig } from "../../core/types/types";
 
-// GLOBAL GEOMETRY CACHE (Singleton Pattern)
-// Prevents regenerating expensive geometries (like ExtrudeGeometry) on every render cycle.
+export const MAX_GEOMETRY_CACHE_SIZE = 24;
+
+// Bounded LRU cache. Geometry sliders are quantized before keying so a long
+// editing session cannot retain one GPU allocation for every pointer event.
 const geometryCache = new Map<string, THREE.BufferGeometry>();
+
+const quantize = (value: number, step: number): number => Math.round(value / step) * step;
+
+export const normalizeGeometryConfig = (config: GeometryConfig): GeometryConfig => ({
+  bevelEnabled: config.bevelEnabled,
+  bevelThickness: quantize(config.bevelThickness, 0.005),
+  bevelSize: quantize(config.bevelSize, 0.005),
+  bevelSegments: Math.max(1, Math.min(12, Math.round(config.bevelSegments))),
+  rounding: quantize(config.rounding, 0.005),
+  smoothness: Math.max(4, Math.min(128, Math.round(config.smoothness / 4) * 4)),
+});
+
+const readCachedGeometry = (key: string): THREE.BufferGeometry | undefined => {
+  const geometry = geometryCache.get(key);
+  if (!geometry) return undefined;
+  geometryCache.delete(key);
+  geometryCache.set(key, geometry);
+  return geometry;
+};
+
+const cacheGeometry = (key: string, geometry: THREE.BufferGeometry): void => {
+  while (geometryCache.size >= MAX_GEOMETRY_CACHE_SIZE) {
+    const oldestKey = geometryCache.keys().next().value as string | undefined;
+    if (!oldestKey) break;
+    geometryCache.get(oldestKey)?.dispose();
+    geometryCache.delete(oldestKey);
+  }
+  geometryCache.set(key, geometry);
+};
 
 const createCardGeometry = (config?: GeometryConfig): THREE.BufferGeometry => {
   const width = 1.3;
@@ -135,23 +166,22 @@ export const getGeometryForType = (
   type: GeometryType,
   config?: GeometryConfig,
 ): THREE.BufferGeometry => {
-  const cacheKey = config ? `${type}-${JSON.stringify(config)}` : type;
+  const normalizedConfig = config ? normalizeGeometryConfig(config) : undefined;
+  const cacheKey = normalizedConfig ? `${type}-${JSON.stringify(normalizedConfig)}` : type;
 
-  // Check Cache First
-  if (geometryCache.has(cacheKey)) {
-    return geometryCache.get(cacheKey)!;
-  }
+  const cachedGeometry = readCachedGeometry(cacheKey);
+  if (cachedGeometry) return cachedGeometry;
 
   let geo: THREE.BufferGeometry;
-  const smoothness = config?.smoothness ?? 64;
+  const smoothness = normalizedConfig?.smoothness ?? 64;
 
   switch (type) {
     case GeometryType.BACKGROUND:
       geo = new THREE.PlaneGeometry(2, 2, 1, 1);
       break;
     case GeometryType.CUBE:
-      if (config && (config.rounding > 0 || config.bevelEnabled)) {
-        geo = createRoundedBoxGeometry(1.5, 1.5, 1.5, config);
+      if (normalizedConfig && (normalizedConfig.rounding > 0 || normalizedConfig.bevelEnabled)) {
+        geo = createRoundedBoxGeometry(1.5, 1.5, 1.5, normalizedConfig);
       } else {
         geo = new THREE.BoxGeometry(
           1.5,
@@ -170,7 +200,7 @@ export const getGeometryForType = (
       geo = new THREE.CylinderGeometry(0.8, 0.8, 2, smoothness, 1, false, 0, Math.PI * 2);
       break;
     case GeometryType.CARD:
-      geo = createCardGeometry(config);
+      geo = createCardGeometry(normalizedConfig);
       break;
     case GeometryType.PLANE:
     default:
@@ -186,8 +216,7 @@ export const getGeometryForType = (
   // Optimization for InstancedMesh Culling
   geo.computeBoundingSphere();
 
-  // Cache it
-  geometryCache.set(cacheKey, geo);
+  cacheGeometry(cacheKey, geo);
 
   return geo;
 };
@@ -197,3 +226,8 @@ export const clearGeometryCache = () => {
   geometryCache.forEach((geo) => geo.dispose());
   geometryCache.clear();
 };
+
+export const getGeometryCacheStats = () => ({
+  size: geometryCache.size,
+  limit: MAX_GEOMETRY_CACHE_SIZE,
+});

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import * as Icons from "lucide-react";
 import { AppState } from "../../core/types/types";
-import { TEXTURE_CATEGORIES } from "../../data/textureData";
+import { PATTERN_MANIFEST_BY_TYPE } from "../../data/patternManifest";
 import type { CanvasRenderer } from "../../lib/three/rendererFactory";
 import { getRendererBackendLabel } from "../../lib/three/rendererCapabilities";
 import { PortalTooltip } from "../../shared/ui/Elements";
@@ -53,10 +53,10 @@ const Arrow = () => (
 
 export const StatusBar: React.FC<StatusBarProps> = ({ state, renderer }) => {
   const categoryInfo = useMemo(() => {
-    const entry = Object.values(TEXTURE_CATEGORIES).find((cat) =>
-      cat.types.includes(state.textureType),
-    );
-    return entry ? { color: entry.color, icon: entry.icon } : { color: "#E0E0E0", icon: Icons.Box };
+    const entry = PATTERN_MANIFEST_BY_TYPE[state.textureType];
+    return entry
+      ? { color: entry.categoryColor, icon: entry.categoryIcon }
+      : { color: "#E0E0E0", icon: Icons.Box };
   }, [state.textureType]);
 
   const recipeNodes = useMemo(() => {

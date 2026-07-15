@@ -1,5 +1,13 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import React, { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import * as THREE from "three";
 import droidSansFontUrl from "three/examples/fonts/droid/droid_sans_regular.typeface.json?url";
 import droidSerifFontUrl from "three/examples/fonts/droid/droid_serif_regular.typeface.json?url";
@@ -18,7 +26,7 @@ import {
 import { getGeometryForType } from "../../../lib/three/geometryFactory";
 import { loadModelGeometry, ModelLoadError } from "../../../lib/three/modelLoader";
 import { createTslMaterial } from "../../../lib/tsl/tslBuilder";
-import { TslUniforms, updateTslUniforms } from "../../../lib/tsl/uniforms";
+import { TslUniforms, type TslUniformDomain, updateTslUniforms } from "../../../lib/tsl/uniforms";
 import { useTextureResource } from "../../../shared/hooks/useTextureResource";
 import { calculateAnimatedValue } from "../../../shared/utils/animationUtils";
 
@@ -39,7 +47,7 @@ interface MainMeshProps {
 
 export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
   const { appState, stateRef, onLoadingChange, onAssetError } = props;
-  const { size, viewport } = useThree();
+  const { size, viewport, invalidate } = useThree();
   const meshRef = useRef<THREE.Mesh>(null);
   const instanceRef = useRef<THREE.InstancedMesh>(null);
   const tempObject = useMemo(() => new THREE.Object3D(), []);
@@ -296,14 +304,50 @@ export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
     };
   }, [material]);
 
-  // --- EVENT DRIVEN UPDATES (TSL) ---
-  // Only update expensive uniforms when React State changes (User Input)
-  useEffect(() => {
-    const u = tslUniformsRef.current;
-    if (u) {
-      updateTslUniforms(u, appState);
-    }
-  }, [appState, material]);
+  const updateUniformDomain = useCallback(
+    (domain: TslUniformDomain) => {
+      const u = tslUniformsRef.current;
+      if (u) {
+        updateTslUniforms(u, stateRef.current, [domain]);
+        invalidate();
+      }
+    },
+    [invalidate, stateRef],
+  );
+
+  // Renderer-facing domains update independently, so camera/settings/UI edits do no shader work.
+  useEffect(
+    () => updateUniformDomain("pattern"),
+    [appState.params, appState.blending, material, updateUniformDomain],
+  );
+  useEffect(
+    () => updateUniformDomain("transform"),
+    [appState.transform, appState.symmetry, appState.tiling, material, updateUniformDomain],
+  );
+  useEffect(
+    () => updateUniformDomain("post-process"),
+    [appState.postProcess, material, updateUniformDomain],
+  );
+  useEffect(
+    () => updateUniformDomain("material"),
+    [appState.normalMap, appState.displacement, appState.ao, material, updateUniformDomain],
+  );
+  useEffect(
+    () => updateUniformDomain("color"),
+    [appState.colorBalance, material, updateUniformDomain],
+  );
+  useEffect(
+    () => updateUniformDomain("interaction"),
+    [appState.imageAlpha, appState.mouse, material, updateUniformDomain],
+  );
+  useEffect(
+    () => updateUniformDomain("environment"),
+    [appState.environment, material, updateUniformDomain],
+  );
+  useEffect(
+    () => updateUniformDomain("core"),
+    [appState.textureType, appState.viewMode, material, updateUniformDomain],
+  );
 
   // --- RENDER LOOP (TSL) ---
   // Only update smooth animations and time
@@ -434,6 +478,7 @@ export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
         frustumCulled={false}
         castShadow
         receiveShadow
+        dispose={null}
       />
     );
   }
@@ -450,6 +495,7 @@ export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
       frustumCulled={false}
       castShadow={!isBackgroundGeometry}
       receiveShadow={!isBackgroundGeometry}
+      dispose={null}
     />
   );
 });

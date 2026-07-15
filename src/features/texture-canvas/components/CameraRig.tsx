@@ -137,6 +137,7 @@ export const CameraRig: React.FC<CameraRigProps> = ({
     controls.update();
 
     const handleChange = () => {
+      invalidate();
       const dist = camera.position.distanceTo(controls.target);
 
       if (initialDistanceRef.current === null || initialDistanceRef.current === 0) {
@@ -167,7 +168,7 @@ export const CameraRig: React.FC<CameraRigProps> = ({
       controls.removeEventListener("end", handleEnd);
       controls.dispose();
     };
-  }, [camera, gl.domElement, onZoomChange, updateState]);
+  }, [camera, gl.domElement, invalidate, onZoomChange, updateState]);
 
   // Sync Enabled Prop
   useEffect(() => {
