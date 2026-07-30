@@ -20,8 +20,7 @@ type UFloat = UniformNode<"float", number>;
 type UVec2 = UniformNode<"vec2", THREE.Vector2>;
 type UVec3 = UniformNode<"vec3", THREE.Vector3> | UniformNode<"color", THREE.Color>;
 type UColor = UniformNode<"color", THREE.Color>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type UPalette = UniformArrayNode<any>;
+type UPalette = UniformArrayNode<"color">;
 
 /** All TSL uniform nodes for one material instance */
 export interface TslUniforms {
