@@ -9,11 +9,6 @@ import React, {
   useState,
 } from "react";
 import * as THREE from "three";
-import droidSansFontUrl from "three/examples/fonts/droid/droid_sans_regular.typeface.json?url";
-import droidSerifFontUrl from "three/examples/fonts/droid/droid_serif_regular.typeface.json?url";
-import gentilisFontUrl from "three/examples/fonts/gentilis_regular.typeface.json?url";
-import helvetikerFontUrl from "three/examples/fonts/helvetiker_regular.typeface.json?url";
-import optimerFontUrl from "three/examples/fonts/optimer_regular.typeface.json?url";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
@@ -30,12 +25,13 @@ import { TslUniforms, type TslUniformDomain, updateTslUniforms } from "../../../
 import { useTextureResource } from "../../../shared/hooks/useTextureResource";
 import { calculateAnimatedValue } from "../../../shared/utils/animationUtils";
 
+const FONT_BASE_URL = `${import.meta.env.BASE_URL}fonts/three/`;
 const FONT_URLS: Record<string, string> = {
-  "droid/droid_sans": droidSansFontUrl,
-  "droid/droid_serif": droidSerifFontUrl,
-  gentilis: gentilisFontUrl,
-  helvetiker: helvetikerFontUrl,
-  optimer: optimerFontUrl,
+  "droid/droid_sans": `${FONT_BASE_URL}droid/droid_sans_regular.typeface.json`,
+  "droid/droid_serif": `${FONT_BASE_URL}droid/droid_serif_regular.typeface.json`,
+  gentilis: `${FONT_BASE_URL}gentilis_regular.typeface.json`,
+  helvetiker: `${FONT_BASE_URL}helvetiker_regular.typeface.json`,
+  optimer: `${FONT_BASE_URL}optimer_regular.typeface.json`,
 };
 
 interface MainMeshProps {
@@ -201,7 +197,7 @@ export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
       const loadText = async () => {
         try {
           const loader = new FontLoader();
-          const fontUrl = FONT_URLS[appState.text.font] ?? helvetikerFontUrl;
+          const fontUrl = FONT_URLS[appState.text.font] ?? FONT_URLS.helvetiker;
           const font = await loader.loadAsync(fontUrl);
 
           const geom = new TextGeometry(appState.text.text || " ", {
