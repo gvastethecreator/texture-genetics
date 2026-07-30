@@ -5,27 +5,17 @@
       "label": "🚀 Dev",
       "type": "shell",
       "command": "bun run dev",
-      "group": "build",
       "isBackground": true,
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
+      "presentation": { "reveal": "always", "panel": "dedicated" }
     },
     {
       "label": "🏗️ Build",
       "type": "shell",
       "command": "bun run build",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "problemMatcher": ["$tsc"],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
       "label": "✅ Check",
@@ -33,43 +23,31 @@
       "command": "bun run check",
       "group": "test",
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
-      "label": "🧠 Typecheck",
+      "label": "🧠 Types",
       "type": "shell",
       "command": "bun run typecheck",
       "group": "test",
       "problemMatcher": ["$tsc"],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
-      "label": "🧹 Lint",
+      "label": "🔍 Lint",
       "type": "shell",
       "command": "bun run lint",
       "group": "test",
-      "problemMatcher": ["$eslint-stylish"],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
-      "label": "🔧 Lint Fix",
+      "label": "🛠️ Lint fix",
       "type": "shell",
       "command": "bun run lint:fix",
       "group": "test",
-      "problemMatcher": ["$eslint-stylish"],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
       "label": "✨ Format",
@@ -77,47 +55,31 @@
       "command": "bun run fmt",
       "group": "test",
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
-      "label": "✅ Format Check",
+      "label": "🎯 Format check",
       "type": "shell",
       "command": "bun run fmt:check",
       "group": "test",
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
       "label": "🧪 Test",
       "type": "shell",
       "command": "bun run test",
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      },
+      "group": { "kind": "test", "isDefault": true },
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
-      "label": "👀 Test Watch",
+      "label": "👀 Watch",
       "type": "shell",
       "command": "bun run test:watch",
-      "group": "test",
       "isBackground": true,
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
+      "presentation": { "reveal": "always", "panel": "dedicated" }
     },
     {
       "label": "📊 Coverage",
@@ -125,42 +87,29 @@
       "command": "bun run test:coverage",
       "group": "test",
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
-      "label": "👁️ Preview",
+      "label": "🔎 Preview",
       "type": "shell",
       "command": "bun run preview",
-      "group": "build",
       "isBackground": true,
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated"
-      }
-    },
-    {
-      "label": "🗑️ Clean",
-      "type": "shell",
-      "command": "bun run clean",
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "dedicated" }
     },
     {
       "label": "📥 Install",
       "type": "shell",
-      "command": "bun install",
+      "command": "bun install --frozen-lockfile",
       "problemMatcher": [],
-      "presentation": {
-        "reveal": "always",
-        "panel": "shared"
-      }
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "🧹 Clean",
+      "type": "shell",
+      "command": "bun run clean",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
     }
   ]
 }

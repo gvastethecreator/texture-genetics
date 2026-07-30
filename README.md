@@ -1,67 +1,67 @@
 # EffectTextureGen
 
-Browser-based procedural texture generation workstation.
+Browser workstation for procedural textures, animated materials, and PBR-ready exports.
 
-> **Live demo:** [gvastethecreator.github.io/texture-genetics](https://gvastethecreator.github.io/texture-genetics/)
+> [Live demo](https://gvastethecreator.github.io/texture-genetics/)
 
-EffectTextureGen is a workstation for technical artists, game developers, and
-UI designers who need PBR-ready procedural textures, normal maps, and animated
-materials without leaving the browser. It runs on Three.js (TSL + GLSL) inside
-a React 19 + Vite 8 app and exports to PNG/JPG/WEBP, GLB, animated GIF, WebM,
-sprite sheets, standalone HTML, and ZIP.
+EffectTextureGen runs a hybrid TSL/GLSL pipeline in React and Three.js. It targets
+technical artists, game developers, and UI designers who need to build and export
+textures without a desktop DCC tool.
 
-## Features
+## What it does
 
-- Hybrid TSL/GLSL shader engine with a modular chunk system
-- Real-time PBR preview (GGX lighting, normal maps, displacement)
-- Pattern library: abstract, fire, gradients, nature, noise, SDF, shapes (7 categories)
-- Layered compositing with masks, base textures, and stickers
-- Undo/redo, presets, and IndexedDB persistence
-- Strategy-pattern export pipeline: image, sprite sheet, video, GIF, GLB, HTML, ZIP
-- Lazy-loaded modals and chunk-split bundles for fast first paint
+- Real-time WebGPU/WebGL preview with procedural TSL and GLSL patterns
+- PBR material controls, normal maps, displacement, masks, and layered stickers
+- Built-in geometry, text, SVG, OBJ, glTF, and GLB preview
+- Presets, undo/redo, IndexedDB persistence, and responsive editor panels
+- PNG, JPG, WebP, GIF, WebM, sprite sheet, GLB, HTML, and ZIP exports
+- Lazy-loaded exporters with build-size and coverage gates
 
-## Quick Start
+## Start
+
+Requirements: [Bun](https://bun.sh/) 1.3 or newer and Git.
 
 ```bash
-# Requires Bun >= 1.2 (https://bun.sh)
-git clone <repo-url>
+git clone https://github.com/gvastethecreator/texture-genetics.git
 cd texture-genetics
-bun install
+bun install --frozen-lockfile
 bun run dev
 ```
 
-Open `http://localhost:3000` and start generating.
+Open `http://localhost:3000`.
 
-## Quick Controls
+## Main commands
 
-| Action                | Shortcut            |
-| --------------------- | ------------------- |
-| Pause / resume        | `Space`             |
-| Randomize             | `R`                 |
-| Undo / redo           | `Ctrl+Z` / `Ctrl+Y` |
-| Toggle side panels    | `H`                 |
+```bash
+bun run dev           # Development server
+bun run check         # Lint, format check, and typecheck
+bun run test          # Test suite
+bun run test:coverage # Tests plus coverage thresholds
+bun run build         # Production build plus bundle budgets
+bun run clean         # Remove generated output and logs
+```
 
-The full shortcut list is in the in-app `?` modal.
+VS Code exposes the same commands through short emoji tasks in
+[`.vscode/tasks.json`](.vscode/tasks.json).
 
 ## Documentation
 
-- Setup, scripts, and Pages deploy: [`docs/SETUP.md`](docs/SETUP.md)
-- Architecture: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
-- Component map: [`docs/COMPONENT_MAP.md`](docs/COMPONENT_MAP.md)
-- Reference (stack, shortcuts, logs): [`docs/REFERENCE.md`](docs/REFERENCE.md)
-- Technical debt: [`docs/TECHNICAL_DEBT.md`](docs/TECHNICAL_DEBT.md)
-- Changelog: [`docs/TASKS_COMPLETED.md`](docs/TASKS_COMPLETED.md)
-- Agent instructions: [`AGENTS.md`](AGENTS.md)
+- [Setup and deployment](docs/SETUP.md)
+- [Development workflow](docs/DEVELOPMENT.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Component map](docs/COMPONENT_MAP.md)
+- [Technical reference](docs/REFERENCE.md)
+- [Technical debt](docs/TECHNICAL_DEBT.md)
+- [v4 migration history](docs/TASKS_COMPLETED.md)
+- [Security policy](.github/SECURITY.md)
 
-## Status
+## Project status
 
-- v4.0 runtime is TSL-first; a GLSL fallback remains for the legacy HTML export.
-- WebGL 2 / WebGPU preview. Some post-processing paths degrade gracefully when
-  WebGPU is unavailable.
-- Test coverage is partial (~16%). The shared hooks, pattern registry, and
-  primitives are tested. Shader and export paths need additional test infra.
-- Browser support targets evergreen Chromium, Firefox, and Safari.
+- React 19, Three.js 0.185, Vite 8, Tailwind CSS 4, and Bun 1.3
+- TypeScript 6.0 remains pinned while the TypeScript 7 native compiler issue is tracked
+- CI validates formatting, lint, types, coverage thresholds, and production build
+- Browser target: current Chromium, Firefox, and Safari with WebGL 2 or WebGPU
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT. See [LICENSE](LICENSE).

@@ -1,41 +1,46 @@
-# ============================================================
-# EffectTextureGen — .gitignore
-# ============================================================
-
-# ── Dependencies ────────────────────────────────────────────
+# Dependencies
 node_modules/
 .pnp
 .pnp.js
 
-# ── Build output ────────────────────────────────────────────
+# Build output
 dist/
 dist-ssr/
-*.local
 
-# ── Logs ────────────────────────────────────────────────────
+# Logs and process state
 logs/*.log
 logs/**/*.log
 *.log
+*.pid
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 bun-debug.log*
 
-# ── Test & Coverage ─────────────────────────────────────────
+# Test output
 coverage/
 *.lcov
+test-results/
+playwright-report/
+blob-report/
 
-# ── Cache ───────────────────────────────────────────────────
+# Caches
 .vite/
 .cache/
 .turbo/
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+vite.config.*.timestamp-*
+
+# Local workspace and agent state
+.local/
+.scratch/
 .playwright-mcp/
 .agents/
-*.tsbuildinfo
-skills/
 
-# ── Editor / IDE ────────────────────────────────────────────
+# Editors
 .vscode/*
 !.vscode/tasks.json
 !.vscode/extensions.json
@@ -47,23 +52,25 @@ skills/
 *.sln
 *.sw?
 
-# ── OS files ────────────────────────────────────────────────
+# OS files
 .DS_Store
 Thumbs.db
 Desktop.ini
 
-# ── Environment variables ───────────────────────────────────
+# Environment variables
 .env
 .env.*
 !.env.example
 
-# ── Temporary / backup files ────────────────────────────────
+# Temporary and backup files
 *.tmp
 *.temp
 *.bak
 *.orig
+*~
 
-# ── Package manager locks (Bun is canonical) ────────────────
+# Non-canonical package manager locks (Bun uses bun.lock)
+bun.lockb
 package-lock.json
 yarn.lock
 pnpm-lock.yaml

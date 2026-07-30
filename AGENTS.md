@@ -6,12 +6,11 @@ EffectTextureGen is a browser-based procedural texture generation workstation. B
 
 ## Tech Stack
 
-- **Runtime/Package Manager:** Bun >= 1.2
+- **Runtime/Package Manager:** Bun >= 1.3
 - **Framework:** React 19 + TypeScript 6.0
 - **Build:** Vite 8 (Rolldown bundler)
 - **Styling:** Tailwind CSS v4 (CSS-first config in `src/index.css`)
-- **3D:** Three.js 0.184 + React Three Fiber + React Three Drei + Postprocessing
-- **Animation:** GSAP 3.15
+- **3D:** Three.js 0.185 + React Three Fiber + React Three Drei + Postprocessing
 - **Lint/Format:** oxlint + oxfmt (OXC toolchain)
 - **Testing:** Vitest 4.1 + Testing Library + jsdom
 
