@@ -1,0 +1,1227 @@
+{
+  "generated_at": "2026-08-08T11:55:40Z",
+  "generated_from_commit": "d49b8e85bf2d44ab6e8e75380dac6c4f2cb70aeb",
+  "scope": [
+    "."
+  ],
+  "nodes": [
+    {
+      "id": "external-dependencies",
+      "path": "index.tsx",
+      "role": "Represents external packages referenced by tracked source files.",
+      "type": "external",
+      "boundary": "External",
+      "entrypoints": [
+        "index.tsx:react"
+      ],
+      "tests": [],
+      "constraints": [
+        "Only dependencies with literal tracked-source references appear here."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "index.tsx",
+            "symbol": "react"
+          }
+        ]
+      }
+    },
+    {
+      "id": "index",
+      "path": "index.html",
+      "role": "Owns the tracked files for the index module.",
+      "type": "module",
+      "boundary": "Index",
+      "entrypoints": [
+        "index.html:EffectTextureGen"
+      ],
+      "tests": [],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "index.html",
+            "symbol": "EffectTextureGen"
+          }
+        ]
+      }
+    },
+    {
+      "id": "plans",
+      "path": "plans",
+      "role": "Owns the tracked files for the plans module.",
+      "type": "module",
+      "boundary": "Plans",
+      "entrypoints": [
+        "plans/texture-genetics-audit/index.html:Auditoría integral · EffectTextureGen"
+      ],
+      "tests": [],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "plans/texture-genetics-audit/index.html",
+            "symbol": "Auditoría integral · EffectTextureGen"
+          }
+        ]
+      }
+    },
+    {
+      "id": "public",
+      "path": "public",
+      "role": "Owns the tracked files for the public module.",
+      "type": "module",
+      "boundary": "Public",
+      "entrypoints": [
+        "public/fonts/three/README.md:Three.js TextGeometry fonts"
+      ],
+      "tests": [],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "public/fonts/three/README.md",
+            "symbol": "Three.js TextGeometry fonts"
+          }
+        ]
+      }
+    },
+    {
+      "id": "repository",
+      "path": "README.md",
+      "role": "Owns the tracked files for the repository module.",
+      "type": "module",
+      "boundary": "Repository",
+      "entrypoints": [
+        "README.md:EffectTextureGen"
+      ],
+      "tests": [],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "README.md",
+            "symbol": "EffectTextureGen"
+          }
+        ]
+      }
+    },
+    {
+      "id": "scripts",
+      "path": "scripts",
+      "role": "Owns the tracked files for the scripts module.",
+      "type": "service",
+      "boundary": "Scripts",
+      "entrypoints": [
+        "scripts/check-build-budget.mjs:distDir"
+      ],
+      "tests": [],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "scripts/check-build-budget.mjs",
+            "symbol": "distDir"
+          }
+        ]
+      }
+    },
+    {
+      "id": "src",
+      "path": "src",
+      "role": "Owns the tracked files for the src module.",
+      "type": "module",
+      "boundary": "Src",
+      "entrypoints": [
+        "src/App.tsx:SettingsModal"
+      ],
+      "tests": [],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/App.tsx",
+            "symbol": "SettingsModal"
+          }
+        ]
+      }
+    },
+    {
+      "id": "src-core",
+      "path": "src/core",
+      "role": "Owns the tracked files for the src / core module.",
+      "type": "service",
+      "boundary": "Src",
+      "entrypoints": [
+        "src/core/commands.ts:ShortcutCommandId"
+      ],
+      "tests": [
+        "src/__tests__/core/commands.test.ts",
+        "src/__tests__/core/constants.test.ts",
+        "src/__tests__/core/state/presetFile.test.ts",
+        "src/__tests__/core/state/usePresetManager.test.ts",
+        "src/__tests__/core/state/useStorage.test.ts"
+      ],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/core/commands.ts",
+            "symbol": "ShortcutCommandId"
+          }
+        ]
+      }
+    },
+    {
+      "id": "src-data",
+      "path": "src/data",
+      "role": "Owns the tracked files for the src / data module.",
+      "type": "module",
+      "boundary": "Src",
+      "entrypoints": [
+        "src/data/patternManifest.ts:buildPatternManifest"
+      ],
+      "tests": [
+        "src/__tests__/data/patternManifest.test.ts",
+        "src/__tests__/lib/patternRegistry.test.ts"
+      ],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/data/patternManifest.ts",
+            "symbol": "buildPatternManifest"
+          }
+        ]
+      }
+    },
+    {
+      "id": "src-features",
+      "path": "src/features",
+      "role": "Owns the tracked files for the src / features module.",
+      "type": "module",
+      "boundary": "Src",
+      "entrypoints": [
+        "src/features/controls-panel/Controls.tsx:LeftControlsProps"
+      ],
+      "tests": [
+        "src/__tests__/features/Header.test.tsx",
+        "src/__tests__/features/StatusBar.test.tsx",
+        "src/__tests__/features/export/browserFiles.test.ts",
+        "src/__tests__/features/export/exportAssets.test.ts",
+        "src/__tests__/features/export/finalization.test.ts"
+      ],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/features/controls-panel/Controls.tsx",
+            "symbol": "LeftControlsProps"
+          }
+        ]
+      }
+    },
+    {
+      "id": "src-lib",
+      "path": "src/lib",
+      "role": "Owns the tracked files for the src / lib module.",
+      "type": "module",
+      "boundary": "Src",
+      "entrypoints": [
+        "src/lib/glsl/glslChunks.ts:HEADER"
+      ],
+      "tests": [
+        "src/__tests__/data/patternManifest.test.ts",
+        "src/__tests__/lib/patternRegistry.test.ts",
+        "src/__tests__/lib/rendering/stateProjection.test.ts",
+        "src/__tests__/lib/three/geometryFactory.test.ts",
+        "src/__tests__/lib/three/modelLoader.test.ts"
+      ],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/lib/glsl/glslChunks.ts",
+            "symbol": "HEADER"
+          }
+        ]
+      }
+    },
+    {
+      "id": "src-shared",
+      "path": "src/shared",
+      "role": "Owns the tracked files for the src / shared module.",
+      "type": "module",
+      "boundary": "Src",
+      "entrypoints": [
+        "src/shared/components/ErrorBoundary.tsx:ErrorBoundary"
+      ],
+      "tests": [
+        "src/__tests__/shared/ErrorBoundary.test.tsx",
+        "src/__tests__/shared/animationUtils.test.ts",
+        "src/__tests__/shared/hooks/useModalFocus.test.tsx",
+        "src/__tests__/shared/hooks/useTextureResource.test.ts",
+        "src/__tests__/shared/ui/ElementsAccessibility.test.tsx"
+      ],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/shared/components/ErrorBoundary.tsx",
+            "symbol": "ErrorBoundary"
+          }
+        ]
+      }
+    },
+    {
+      "id": "src-types",
+      "path": "src/types",
+      "role": "Owns the tracked files for the src / types module.",
+      "type": "module",
+      "boundary": "Src",
+      "entrypoints": [
+        "src/types/version.d.ts:declare const __APP_VERSION__: string;"
+      ],
+      "tests": [],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/types/version.d.ts",
+            "symbol": "declare const __APP_VERSION__: string;"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vite-config",
+      "path": "vite.config.ts",
+      "role": "Owns the tracked files for the vite.config module.",
+      "type": "module",
+      "boundary": "Vite.Config",
+      "entrypoints": [
+        "vite.config.ts:__dirname"
+      ],
+      "tests": [],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "vite.config.ts",
+            "symbol": "__dirname"
+          }
+        ]
+      }
+    },
+    {
+      "id": "vitest-config",
+      "path": "vitest.config.ts",
+      "role": "Owns the tracked files for the vitest.config module.",
+      "type": "module",
+      "boundary": "Vitest.Config",
+      "entrypoints": [
+        "vitest.config.ts:import { defineConfig, mergeConfig } from \"vitest/config\";"
+      ],
+      "tests": [],
+      "constraints": [
+        "This baseline uses tracked source and explicit dependency references only."
+      ],
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "vitest.config.ts",
+            "symbol": "import { defineConfig, mergeConfig } from \"vitest/config\";"
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "index",
+      "to": "external-dependencies",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "index.tsx",
+            "symbol": "react"
+          },
+          {
+            "path": "index.tsx",
+            "symbol": "react-dom/client"
+          }
+        ]
+      }
+    },
+    {
+      "from": "index",
+      "to": "src",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "index.tsx",
+            "symbol": "./src/App"
+          },
+          {
+            "path": "index.tsx",
+            "symbol": "./src/index.css"
+          }
+        ]
+      }
+    },
+    {
+      "from": "plans",
+      "to": "external-dependencies",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "plans/texture-genetics-audit/evidence/gltf-loader-probe.mjs",
+            "symbol": "three/examples/jsm/loaders/OBJLoader.js"
+          }
+        ]
+      }
+    },
+    {
+      "from": "plans",
+      "to": "index",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "plans/texture-genetics-audit/implementation-status.html",
+            "symbol": "index.html"
+          }
+        ]
+      }
+    },
+    {
+      "from": "plans",
+      "to": "index",
+      "type": "reads",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "plans/texture-genetics-audit/findings.md",
+            "symbol": "index.html"
+          }
+        ]
+      }
+    },
+    {
+      "from": "plans",
+      "to": "src-data",
+      "type": "reads",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "plans/texture-genetics-audit/findings.md",
+            "symbol": "src/data/textureData.ts"
+          }
+        ]
+      }
+    },
+    {
+      "from": "repository",
+      "to": "scripts",
+      "type": "calls",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "package.json",
+            "symbol": "./scripts/run-with-log.mjs"
+          },
+          {
+            "path": "package.json",
+            "symbol": "./scripts/check-build-budget.mjs"
+          },
+          {
+            "path": "package.json",
+            "symbol": "./scripts/clean.mjs"
+          }
+        ]
+      }
+    },
+    {
+      "from": "repository",
+      "to": "src",
+      "type": "reads",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "AGENTS.md",
+            "symbol": "src/index.css"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src",
+      "to": "external-dependencies",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/App.tsx",
+            "symbol": "react"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src",
+      "to": "src-core",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/App.tsx",
+            "symbol": "./core/types/types"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./core/commands"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./core/state/useTextureEditor"
+          },
+          {
+            "path": "src/presets.ts",
+            "symbol": "./core/types/types"
+          },
+          {
+            "path": "src/presets.ts",
+            "symbol": "./core/constants"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src",
+      "to": "src-features",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/App.tsx",
+            "symbol": "./features/export/useExportManager"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./features/ui/Header"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./features/controls-panel/Controls"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./features/controls-panel/RightControls"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./features/texture-canvas/TextureCanvas"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./features/status-bar/StatusBar"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./features/settings-modal/SettingsModal"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./features/ui/CodeViewerModal"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src",
+      "to": "src-lib",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/App.tsx",
+            "symbol": "./lib/three/rendererFactory"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src",
+      "to": "src-shared",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/App.tsx",
+            "symbol": "./shared/hooks/useHotkeys"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./shared/hooks/useMediaQuery"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./shared/hooks/useModalFocus"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./shared/ui/DragDropOverlay"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./shared/ui/Toast"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./shared/components/ErrorBoundary"
+          },
+          {
+            "path": "src/App.tsx",
+            "symbol": "./shared/utils/objectUrls"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-core",
+      "to": "external-dependencies",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/core/logic/randomizer.ts",
+            "symbol": "three"
+          },
+          {
+            "path": "src/core/state/useAppState.ts",
+            "symbol": "react"
+          },
+          {
+            "path": "src/core/state/useHistoryStack.ts",
+            "symbol": "react"
+          },
+          {
+            "path": "src/core/state/usePresetManager.ts",
+            "symbol": "react"
+          },
+          {
+            "path": "src/core/state/usePresetManager.ts",
+            "symbol": "idb-keyval"
+          },
+          {
+            "path": "src/core/state/useStorage.ts",
+            "symbol": "react"
+          },
+          {
+            "path": "src/core/state/useStorage.ts",
+            "symbol": "idb-keyval"
+          },
+          {
+            "path": "src/core/state/useTextureEditor.ts",
+            "symbol": "react"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-core",
+      "to": "src-shared",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/core/state/usePresetManager.ts",
+            "symbol": "../../shared/utils/fileLoaders"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-data",
+      "to": "external-dependencies",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/data/patternManifest.ts",
+            "symbol": "lucide-react"
+          },
+          {
+            "path": "src/data/textureData.ts",
+            "symbol": "lucide-react"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-data",
+      "to": "src-core",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/data/patternManifest.ts",
+            "symbol": "../core/types/types"
+          },
+          {
+            "path": "src/data/textureData.ts",
+            "symbol": "../core/types/types"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-data",
+      "to": "src-lib",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/data/patternManifest.ts",
+            "symbol": "../lib/tsl/tslBuilder"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-features",
+      "to": "external-dependencies",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/features/controls-panel/Controls.tsx",
+            "symbol": "react"
+          },
+          {
+            "path": "src/features/controls-panel/RightControls.tsx",
+            "symbol": "react"
+          },
+          {
+            "path": "src/features/controls-panel/RightControls.tsx",
+            "symbol": "lucide-react"
+          },
+          {
+            "path": "src/features/controls-panel/components/ColorPanel.tsx",
+            "symbol": "react"
+          },
+          {
+            "path": "src/features/controls-panel/components/ColorPanel.tsx",
+            "symbol": "lucide-react"
+          },
+          {
+            "path": "src/features/controls-panel/components/ColorPanel.tsx",
+            "symbol": "react-colorful"
+          },
+          {
+            "path": "src/features/controls-panel/components/EnvironmentPanel.tsx",
+            "symbol": "react"
+          },
+          {
+            "path": "src/features/controls-panel/components/EnvironmentPanel.tsx",
+            "symbol": "lucide-react"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-features",
+      "to": "src",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/features/ui/Header.tsx",
+            "symbol": "../../presets"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-features",
+      "to": "src-core",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/features/controls-panel/Controls.tsx",
+            "symbol": "../../core/types/types"
+          },
+          {
+            "path": "src/features/controls-panel/RightControls.tsx",
+            "symbol": "../../core/types/types"
+          },
+          {
+            "path": "src/features/controls-panel/components/ColorPanel.tsx",
+            "symbol": "../../../core/types/types"
+          },
+          {
+            "path": "src/features/controls-panel/components/EnvironmentPanel.tsx",
+            "symbol": "../../../core/types/types"
+          },
+          {
+            "path": "src/features/controls-panel/components/ExportPanel.tsx",
+            "symbol": "../../../core/types/types"
+          },
+          {
+            "path": "src/features/controls-panel/components/GeometryPanel.tsx",
+            "symbol": "../../../core/types/types"
+          },
+          {
+            "path": "src/features/controls-panel/components/InteractivePanel.tsx",
+            "symbol": "../../../core/types/types"
+          },
+          {
+            "path": "src/features/controls-panel/components/LayersPanel.tsx",
+            "symbol": "../../../core/types/types"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-features",
+      "to": "src-data",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/features/controls-panel/components/LayersPanel.tsx",
+            "symbol": "../../../data/patternManifest"
+          },
+          {
+            "path": "src/features/controls-panel/components/PatternLibrary.tsx",
+            "symbol": "../../../data/patternManifest"
+          },
+          {
+            "path": "src/features/controls-panel/components/PatternPanel.tsx",
+            "symbol": "../../../data/patternManifest"
+          },
+          {
+            "path": "src/features/status-bar/StatusBar.tsx",
+            "symbol": "../../data/patternManifest"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-features",
+      "to": "src-lib",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/features/export/core/offscreen.ts",
+            "symbol": "../../../lib/three/cleanup"
+          },
+          {
+            "path": "src/features/export/core/offscreen.ts",
+            "symbol": "../../../lib/tsl/tslBuilder"
+          },
+          {
+            "path": "src/features/export/core/offscreen.ts",
+            "symbol": "../../../lib/tsl/uniforms"
+          },
+          {
+            "path": "src/features/export/legacy/offscreenLegacy.ts",
+            "symbol": "../../../lib/glsl/shaderBuilder"
+          },
+          {
+            "path": "src/features/export/legacy/offscreenLegacy.ts",
+            "symbol": "../../../lib/three/uniforms"
+          },
+          {
+            "path": "src/features/export/legacy/offscreenLegacy.ts",
+            "symbol": "../../../lib/three/cleanup"
+          },
+          {
+            "path": "src/features/export/legacy/standaloneHtml.ts",
+            "symbol": "../../../lib/glsl/shaderBuilder"
+          },
+          {
+            "path": "src/features/status-bar/StatusBar.tsx",
+            "symbol": "../../lib/three/rendererFactory"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-features",
+      "to": "src-shared",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/features/controls-panel/components/ColorPanel.tsx",
+            "symbol": "../../../shared/ui/Elements"
+          },
+          {
+            "path": "src/features/controls-panel/components/ColorPanel.tsx",
+            "symbol": "../../../shared/ui/ColorPicker"
+          },
+          {
+            "path": "src/features/controls-panel/components/ColorPanel.tsx",
+            "symbol": "../../../shared/utils/fileLoaders"
+          },
+          {
+            "path": "src/features/controls-panel/components/EnvironmentPanel.tsx",
+            "symbol": "../../../shared/ui/Elements"
+          },
+          {
+            "path": "src/features/controls-panel/components/EnvironmentPanel.tsx",
+            "symbol": "../../../shared/ui/ColorPicker"
+          },
+          {
+            "path": "src/features/controls-panel/components/ExportPanel.tsx",
+            "symbol": "../../../shared/ui/Elements"
+          },
+          {
+            "path": "src/features/controls-panel/components/ExportPanel.tsx",
+            "symbol": "../../../shared/utils/clipboard"
+          },
+          {
+            "path": "src/features/controls-panel/components/GeometryPanel.tsx",
+            "symbol": "../../../shared/ui/Elements"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-lib",
+      "to": "external-dependencies",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/lib/glsl/shaderBuilder.ts",
+            "symbol": "three"
+          },
+          {
+            "path": "src/lib/rendering/stateProjection.ts",
+            "symbol": "three"
+          },
+          {
+            "path": "src/lib/three/cleanup.ts",
+            "symbol": "three"
+          },
+          {
+            "path": "src/lib/three/geometryFactory.ts",
+            "symbol": "three"
+          },
+          {
+            "path": "src/lib/three/modelLoader.ts",
+            "symbol": "three"
+          },
+          {
+            "path": "src/lib/three/modelLoader.ts",
+            "symbol": "three/examples/jsm/loaders/GLTFLoader.js"
+          },
+          {
+            "path": "src/lib/three/modelLoader.ts",
+            "symbol": "three/examples/jsm/loaders/OBJLoader.js"
+          },
+          {
+            "path": "src/lib/three/rendererFactory.ts",
+            "symbol": "three"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-lib",
+      "to": "src-core",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/lib/glsl/patternMap.ts",
+            "symbol": "../../core/types/types"
+          },
+          {
+            "path": "src/lib/glsl/patterns/abstract.ts",
+            "symbol": "../../../core/types/types"
+          },
+          {
+            "path": "src/lib/glsl/patterns/fire.ts",
+            "symbol": "../../../core/types/types"
+          },
+          {
+            "path": "src/lib/glsl/patterns/gradients.ts",
+            "symbol": "../../../core/types/types"
+          },
+          {
+            "path": "src/lib/glsl/patterns/nature.ts",
+            "symbol": "../../../core/types/types"
+          },
+          {
+            "path": "src/lib/glsl/patterns/noise.ts",
+            "symbol": "../../../core/types/types"
+          },
+          {
+            "path": "src/lib/glsl/patterns/sdf.ts",
+            "symbol": "../../../core/types/types"
+          },
+          {
+            "path": "src/lib/glsl/patterns/shapes.ts",
+            "symbol": "../../../core/types/types"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-shared",
+      "to": "external-dependencies",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/shared/components/ErrorBoundary.tsx",
+            "symbol": "react"
+          },
+          {
+            "path": "src/shared/components/ErrorBoundary.tsx",
+            "symbol": "lucide-react"
+          },
+          {
+            "path": "src/shared/hooks/useContainerDimensions.ts",
+            "symbol": "react"
+          },
+          {
+            "path": "src/shared/hooks/useHotkeys.ts",
+            "symbol": "react"
+          },
+          {
+            "path": "src/shared/hooks/useMediaQuery.ts",
+            "symbol": "react"
+          },
+          {
+            "path": "src/shared/hooks/useModalFocus.ts",
+            "symbol": "react"
+          },
+          {
+            "path": "src/shared/hooks/useTextureResource.ts",
+            "symbol": "react"
+          },
+          {
+            "path": "src/shared/hooks/useTextureResource.ts",
+            "symbol": "three"
+          }
+        ]
+      }
+    },
+    {
+      "from": "src-shared",
+      "to": "src-core",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "src/shared/ui/Elements.tsx",
+            "symbol": "../../core/types/types"
+          },
+          {
+            "path": "src/shared/ui/Toast.tsx",
+            "symbol": "../../core/types/types"
+          },
+          {
+            "path": "src/shared/utils/animationUtils.ts",
+            "symbol": "../../core/types/types"
+          },
+          {
+            "path": "src/shared/utils/objectUrls.ts",
+            "symbol": "../../core/types/types"
+          }
+        ]
+      }
+    },
+    {
+      "from": "vite-config",
+      "to": "external-dependencies",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "vite.config.ts",
+            "symbol": "@tailwindcss/vite"
+          },
+          {
+            "path": "vite.config.ts",
+            "symbol": "@vitejs/plugin-react"
+          },
+          {
+            "path": "vite.config.ts",
+            "symbol": "vite"
+          }
+        ]
+      }
+    },
+    {
+      "from": "vitest-config",
+      "to": "external-dependencies",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "vitest.config.ts",
+            "symbol": "vitest/config"
+          }
+        ]
+      }
+    },
+    {
+      "from": "vitest-config",
+      "to": "vite-config",
+      "type": "imports",
+      "evidence": {
+        "status": "verified",
+        "locations": [
+          {
+            "path": "vitest.config.ts",
+            "symbol": "./vite.config.ts"
+          }
+        ]
+      }
+    }
+  ],
+  "flows": [
+    {
+      "trigger": "Tracked reference index.tsx:./src/App",
+      "steps": [
+        "index",
+        "src",
+        "src-features",
+        "src-core",
+        "src-shared",
+        "external-dependencies"
+      ],
+      "outcome": "The verified dependency path reaches external-dependencies through 5 step(s)."
+    },
+    {
+      "trigger": "Tracked reference index.tsx:./src/App to external-dependencies",
+      "steps": [
+        "index",
+        "src",
+        "src-features",
+        "src-data",
+        "src-core",
+        "external-dependencies"
+      ],
+      "outcome": "The verified dependency path reaches external-dependencies through 5 step(s)."
+    },
+    {
+      "trigger": "Tracked reference index.tsx:./src/App to src-shared",
+      "steps": [
+        "index",
+        "src",
+        "src-features",
+        "src-data",
+        "src-core",
+        "src-shared"
+      ],
+      "outcome": "The verified dependency path reaches src-shared through 5 step(s)."
+    },
+    {
+      "trigger": "Tracked reference index.tsx:./src/App to src-core",
+      "steps": [
+        "index",
+        "src",
+        "src-features",
+        "src-data",
+        "src-lib",
+        "src-core"
+      ],
+      "outcome": "The verified dependency path reaches src-core through 5 step(s)."
+    },
+    {
+      "trigger": "Tracked reference plans/texture-genetics-audit/implementation-status.html:index.html",
+      "steps": [
+        "plans",
+        "index",
+        "src",
+        "src-core",
+        "src-shared",
+        "external-dependencies"
+      ],
+      "outcome": "The verified dependency path reaches external-dependencies through 5 step(s)."
+    }
+  ]
+}

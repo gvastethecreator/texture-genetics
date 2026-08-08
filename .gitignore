@@ -69,8 +69,8 @@ Desktop.ini
 *.orig
 *~
 
-# Non-canonical package manager locks (Bun uses bun.lock)
+# Non-canonical package manager locks (pnpm uses pnpm-lock.yaml)
+bun.lock
 bun.lockb
 package-lock.json
 yarn.lock
-pnpm-lock.yaml

@@ -2,33 +2,34 @@
 
 ## Requirements
 
-- [Bun](https://bun.sh/) 1.3 or newer
+- Node.js 22 or newer
+- pnpm 11.20 or newer
 - Git
 - A current browser with WebGL 2 or WebGPU
 
-Node.js is useful for editor tooling but is not required for the normal Bun workflow.
+Node.js is the runtime used by the project scripts and Vite toolchain.
 
 ## Install
 
 ```bash
 git clone https://github.com/gvastethecreator/texture-genetics.git
 cd texture-genetics
-bun install --frozen-lockfile
-bun run dev
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
 Development server: `http://localhost:3000`.
 
-Use `bun install` without `--frozen-lockfile` only when intentionally changing
-dependencies. Commit `package.json` and `bun.lock` together.
+Use `pnpm install --no-frozen-lockfile` only when intentionally changing
+dependencies. Commit `package.json` and `pnpm-lock.yaml` together.
 
 ## Local production check
 
 ```bash
-bun run check
-bun run test:coverage
-bun run build
-bun run preview
+pnpm run check
+pnpm run test:coverage
+pnpm run build
+pnpm run preview
 ```
 
 `build` writes `dist/`, validates entry/Three.js/initial JavaScript budgets, and
@@ -48,7 +49,7 @@ These paths are local and ignored:
 Remove generated output with:
 
 ```bash
-bun run clean
+pnpm run clean
 ```
 
 ## GitHub Pages
@@ -58,8 +59,8 @@ The app is a static SPA. `.github/workflows/deploy-pages.yml` builds and publish
 
 Pipeline:
 
-1. `bun install --frozen-lockfile`
-2. `bun run build`
+1. `pnpm install --frozen-lockfile`
+2. `pnpm run build`
 3. Upload `dist/` as the Pages artifact
 4. Deploy to the `github-pages` environment
 

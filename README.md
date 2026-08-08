@@ -19,13 +19,13 @@ textures without a desktop DCC tool.
 
 ## Start
 
-Requirements: [Bun](https://bun.sh/) 1.3 or newer and Git.
+Requirements: Node.js 22 or newer, pnpm 11.20 or newer, and Git.
 
 ```bash
 git clone https://github.com/gvastethecreator/texture-genetics.git
 cd texture-genetics
-bun install --frozen-lockfile
-bun run dev
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
 Open `http://localhost:3000`.
@@ -33,12 +33,12 @@ Open `http://localhost:3000`.
 ## Main commands
 
 ```bash
-bun run dev           # Development server
-bun run check         # Lint, format check, and typecheck
-bun run test          # Test suite
-bun run test:coverage # Tests plus coverage thresholds
-bun run build         # Production build plus bundle budgets
-bun run clean         # Remove generated output and logs
+pnpm run dev           # Development server
+pnpm run check         # Lint, format check, and typecheck
+pnpm run test          # Test suite
+pnpm run test:coverage # Tests plus coverage thresholds
+pnpm run build         # Production build plus bundle budgets
+pnpm run clean         # Remove generated output and logs
 ```
 
 VS Code exposes the same commands through short emoji tasks in
@@ -57,7 +57,7 @@ VS Code exposes the same commands through short emoji tasks in
 
 ## Project status
 
-- React 19, Three.js 0.185, Vite 8, Tailwind CSS 4, and Bun 1.3
+- React 19, Three.js 0.185, Vite 8, Tailwind CSS 4, Node.js 22, and pnpm 11.20
 - TypeScript 6.0 remains pinned while the TypeScript 7 native compiler issue is tracked
 - CI validates formatting, lint, types, coverage thresholds, and production build
 - Browser target: current Chromium, Firefox, and Safari with WebGL 2 or WebGPU

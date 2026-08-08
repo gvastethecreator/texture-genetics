@@ -2,11 +2,12 @@
 
 ## Project Overview
 
-EffectTextureGen is a browser-based procedural texture generation workstation. Built with React 19, Three.js (R3F), and TypeScript. Uses Bun as the package manager and runtime.
+EffectTextureGen is a browser-based procedural texture generation workstation. Built with React 19, Three.js (R3F), and TypeScript. Uses Node.js as the runtime and pnpm as the package manager.
 
 ## Tech Stack
 
-- **Runtime/Package Manager:** Bun >= 1.3
+- **Runtime:** Node.js >= 22
+- **Package Manager:** pnpm >= 11.20
 - **Framework:** React 19 + TypeScript 6.0
 - **Build:** Vite 8 (Rolldown bundler)
 - **Styling:** Tailwind CSS v4 (CSS-first config in `src/index.css`)
@@ -17,18 +18,18 @@ EffectTextureGen is a browser-based procedural texture generation workstation. B
 ## Commands
 
 ```bash
-bun run dev           # Start dev server (localhost:3000)
-bun run build         # Production build
-bun run lint          # Lint with oxlint
-bun run lint:fix      # Lint and auto-fix
-bun run fmt           # Format with oxfmt
-bun run fmt:check     # Check formatting
-bun run typecheck     # TypeScript type checking
-bun run check         # Combined: lint + fmt:check + typecheck
-bun run test          # Run tests once
-bun run test:watch    # Run tests in watch mode
-bun run test:coverage # Run tests with coverage
-bun run clean         # Remove dist, coverage, caches, logs
+pnpm run dev           # Start dev server (localhost:3000)
+pnpm run build         # Production build
+pnpm run lint          # Lint with oxlint
+pnpm run lint:fix      # Lint and auto-fix
+pnpm run fmt           # Format with oxfmt
+pnpm run fmt:check     # Check formatting
+pnpm run typecheck     # TypeScript type checking
+pnpm run check         # Combined: lint + fmt:check + typecheck
+pnpm run test          # Run tests once
+pnpm run test:watch    # Run tests in watch mode
+pnpm run test:coverage # Run tests with coverage
+pnpm run clean         # Remove dist, coverage, caches, logs
 ```
 
 ## Project Structure

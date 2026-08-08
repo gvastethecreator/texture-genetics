@@ -1,0 +1,4 @@
+overrides:
+  postprocessing: ^6.39.4
+  undici: ^8.9.0
+  vite: ^8.2.0

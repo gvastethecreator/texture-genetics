@@ -32,10 +32,18 @@ logStream.write(header);
 const shellMode = rawArgs[0] === "--shell";
 const command = shellMode ? rawArgs.slice(1).join(" ") : rawArgs[0];
 const commandArgs = shellMode ? [] : rawArgs.slice(1);
+const windowsShimMode = process.platform === "win32" && !shellMode;
+const spawnCommand = windowsShimMode
+  ? (process.env.ComSpec ?? process.env.COMSPEC ?? "cmd.exe")
+  : command;
+const spawnArgs = windowsShimMode
+  ? ["/d", "/s", "/c", command, ...commandArgs]
+  : commandArgs;
 
-const child = spawn(command, commandArgs, {
+const child = spawn(spawnCommand, spawnArgs, {
   cwd: process.cwd(),
   env: process.env,
+  // cmd.exe resolves pnpm's local .cmd shims without falling through to global tools.
   shell: shellMode,
   stdio: ["inherit", "pipe", "pipe"],
 });

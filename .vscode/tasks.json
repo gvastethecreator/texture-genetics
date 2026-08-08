@@ -4,7 +4,7 @@
     {
       "label": "🚀 Dev",
       "type": "shell",
-      "command": "bun run dev",
+      "command": "pnpm run dev",
       "isBackground": true,
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" }
@@ -12,7 +12,7 @@
     {
       "label": "🏗️ Build",
       "type": "shell",
-      "command": "bun run build",
+      "command": "pnpm run build",
       "group": { "kind": "build", "isDefault": true },
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
@@ -20,7 +20,7 @@
     {
       "label": "✅ Check",
       "type": "shell",
-      "command": "bun run check",
+      "command": "pnpm run check",
       "group": "test",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
@@ -28,7 +28,7 @@
     {
       "label": "🧠 Types",
       "type": "shell",
-      "command": "bun run typecheck",
+      "command": "pnpm run typecheck",
       "group": "test",
       "problemMatcher": ["$tsc"],
       "presentation": { "reveal": "always", "panel": "shared" }
@@ -36,7 +36,7 @@
     {
       "label": "🔍 Lint",
       "type": "shell",
-      "command": "bun run lint",
+      "command": "pnpm run lint",
       "group": "test",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
@@ -44,7 +44,7 @@
     {
       "label": "🛠️ Lint fix",
       "type": "shell",
-      "command": "bun run lint:fix",
+      "command": "pnpm run lint:fix",
       "group": "test",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
@@ -52,7 +52,7 @@
     {
       "label": "✨ Format",
       "type": "shell",
-      "command": "bun run fmt",
+      "command": "pnpm run fmt",
       "group": "test",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
@@ -60,7 +60,7 @@
     {
       "label": "🎯 Format check",
       "type": "shell",
-      "command": "bun run fmt:check",
+      "command": "pnpm run fmt:check",
       "group": "test",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
@@ -68,7 +68,7 @@
     {
       "label": "🧪 Test",
       "type": "shell",
-      "command": "bun run test",
+      "command": "pnpm run test",
       "group": { "kind": "test", "isDefault": true },
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
@@ -76,7 +76,7 @@
     {
       "label": "👀 Watch",
       "type": "shell",
-      "command": "bun run test:watch",
+      "command": "pnpm run test:watch",
       "isBackground": true,
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" }
@@ -84,7 +84,7 @@
     {
       "label": "📊 Coverage",
       "type": "shell",
-      "command": "bun run test:coverage",
+      "command": "pnpm run test:coverage",
       "group": "test",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
@@ -92,7 +92,7 @@
     {
       "label": "🔎 Preview",
       "type": "shell",
-      "command": "bun run preview",
+      "command": "pnpm run preview",
       "isBackground": true,
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "dedicated" }
@@ -100,14 +100,14 @@
     {
       "label": "📥 Install",
       "type": "shell",
-      "command": "bun install --frozen-lockfile",
+      "command": "pnpm install --frozen-lockfile",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
       "label": "🧹 Clean",
       "type": "shell",
-      "command": "bun run clean",
+      "command": "pnpm run clean",
       "problemMatcher": [],
       "presentation": { "reveal": "always", "panel": "shared" }
     }
