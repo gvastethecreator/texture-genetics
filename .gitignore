@@ -8,8 +8,7 @@ dist/
 dist-ssr/
 
 # Logs and process state
-logs/*.log
-logs/**/*.log
+logs/
 *.log
 *.pid
 npm-debug.log*
@@ -27,7 +26,10 @@ blob-report/
 
 # Caches
 .vite/
+.vitest/
+.nyc_output/
 .cache/
+.pnpm-store/
 .turbo/
 *.tsbuildinfo
 .eslintcache
@@ -67,6 +69,7 @@ Desktop.ini
 *.temp
 *.bak
 *.orig
+*.tgz
 *~
 
 # Non-canonical package manager locks (pnpm uses pnpm-lock.yaml)

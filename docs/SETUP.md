@@ -37,20 +37,22 @@ confirms heavy exporters remain deferred. `preview` serves the built app on port
 
 ## Generated files
 
-These paths are local and ignored:
+The cleanup command removes these generated paths:
 
 - `node_modules/`
 - `dist/`
 - `coverage/`
 - `logs/*.log`
 - `.vite/`
-- `.local/`, `.scratch/`, `.agents/`, and `.playwright-mcp/`
 
 Remove generated output with:
 
 ```bash
 pnpm run clean
 ```
+
+Local tool state under `.local/`, `.scratch/`, `.agents/`, and `.playwright-mcp/`
+is ignored. Remove stale tool output only after you make sure that no active task uses it.
 
 ## GitHub Pages
 

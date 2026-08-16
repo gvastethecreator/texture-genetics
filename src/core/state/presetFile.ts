@@ -13,8 +13,9 @@ import {
 } from "../types/types";
 import { DEFAULT_APP_STATE } from "./defaultState";
 
-export const PRESET_DOCUMENT_FORMAT = "effecttexturegen-presets";
-export const PRESET_DOCUMENT_VERSION = 1;
+const PRESET_DOCUMENT_FORMAT = "texture-genetics-presets";
+const LEGACY_PRESET_DOCUMENT_FORMATS = new Set(["effecttexturegen-presets"]);
+const PRESET_DOCUMENT_VERSION = 1;
 
 const MAX_PRESETS_PER_DOCUMENT = 500;
 const MAX_ID_LENGTH = 128;
@@ -315,7 +316,12 @@ const readPresetEntries = (value: unknown): unknown[] => {
   }
 
   if (!isPlainRecord(value)) fail("document", "must be an object or legacy preset array");
-  if (value.format !== PRESET_DOCUMENT_FORMAT) fail("document.format", "is not supported");
+  if (
+    value.format !== PRESET_DOCUMENT_FORMAT &&
+    !LEGACY_PRESET_DOCUMENT_FORMATS.has(String(value.format))
+  ) {
+    fail("document.format", "is not supported");
+  }
   if (value.version !== PRESET_DOCUMENT_VERSION) fail("document.version", "is not supported");
   return readPresetArray(value.presets);
 };

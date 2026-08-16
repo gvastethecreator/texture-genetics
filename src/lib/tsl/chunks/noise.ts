@@ -43,15 +43,8 @@ export const random2d = /*@__PURE__*/ Fn(([st_in, seed_in]: [any, any]) => {
   return fract(sin(dot(st.add(vec2(seed, seed)), vec2(12.9898, 78.233))).mul(43758.5453123));
 });
 
-/** Pseudo-random float from float + seed */
-export const random1d = /*@__PURE__*/ Fn(([n_in, seed_in]: [any, any]) => {
-  const n = float(n_in);
-  const seed = float(seed_in);
-  return fract(sin(n.add(seed)).mul(43758.5453123));
-});
-
 /** Pseudo-random float from vec3 + seed */
-export const random3d = /*@__PURE__*/ Fn(([p_in, seed_in]: [any, any]) => {
+const random3d = /*@__PURE__*/ Fn(([p_in, seed_in]: [any, any]) => {
   const p = vec3(p_in);
   const seed = float(seed_in);
   return fract(
@@ -71,16 +64,8 @@ export const hash22 = /*@__PURE__*/ Fn(([p_in]: [any]) => {
   return fract(p3.xx.add(p3.yz).mul(p3.zy));
 });
 
-/** vec2 → float hash */
-export const hash12 = /*@__PURE__*/ Fn(([p_in]: [any]) => {
-  const p = vec2(p_in);
-  const p3 = fract(vec3(p.x, p.y, p.x).mul(0.1031)).toVar();
-  p3.addAssign(dot(p3, p3.yzx.add(19.19)));
-  return fract(p3.x.add(p3.y).mul(p3.z));
-});
-
 /** vec3 → vec3 hash */
-export const hash33 = /*@__PURE__*/ Fn(([p_in]: [any]) => {
+const hash33 = /*@__PURE__*/ Fn(([p_in]: [any]) => {
   const p = fract(vec3(p_in).mul(vec3(0.1031, 0.103, 0.0973))).toVar();
   p.addAssign(dot(p, p.yxz.add(33.33)));
   return fract(p.xxy.add(p.yxx).mul(p.zyx));
@@ -269,15 +254,6 @@ export const noise2d = /*@__PURE__*/ Fn(([st_in, seed_in]: [any, any]) => {
   return mix(a, b, u.x)
     .add(c.sub(a).mul(u.y).mul(float(1).sub(u.x)))
     .add(d.sub(b).mul(u.x).mul(u.y));
-});
-
-/** 1D Classic noise */
-export const noise1d = /*@__PURE__*/ Fn(([p_in, seed_in]: [any, any]) => {
-  const p = float(p_in);
-  const seed = float(seed_in);
-  const i = floor(p);
-  const f = fract(p);
-  return mix(random1d(i, seed), random1d(i.add(1), seed), f.mul(f).mul(float(3).sub(f.mul(2))));
 });
 
 /** 3D Value noise */

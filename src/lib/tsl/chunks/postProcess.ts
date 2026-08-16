@@ -25,7 +25,7 @@ import {
   sqrt,
   If,
 } from "three/tsl";
-import { rotate2d, toPolar, rgb2hsv, hsv2rgb, applyBlendModeVec3 } from "./math";
+import { rotate2d, toPolar, rgb2hsv, hsv2rgb } from "./math";
 import { random2d } from "../chunks/noise";
 
 // ─── UV Transforms ───
@@ -296,5 +296,3 @@ export const applyPostProcess = Fn(
 
 // ─── Sticker (placeholder – requires texture sampler nodes) ───
 // Sticker composition will be handled in the builder when texture support is wired.
-
-export { applyBlendModeVec3 };

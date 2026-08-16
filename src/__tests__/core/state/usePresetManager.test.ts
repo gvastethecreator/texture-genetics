@@ -52,7 +52,7 @@ describe("usePresetManager", () => {
     await waitFor(() => expect(result.current.userPresets).toHaveLength(1));
 
     expect(idbMocks.set).toHaveBeenCalledWith(
-      "effect_gen_v4_user_presets",
+      "texture_genetics_v4_user_presets",
       expect.arrayContaining([expect.objectContaining({ id: "legacy" })]),
     );
     expect(idbMocks.del).toHaveBeenCalledWith("effect_gen_v3_user_presets");

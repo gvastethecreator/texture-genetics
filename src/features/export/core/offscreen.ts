@@ -21,13 +21,6 @@ export interface OffscreenSceneSetup {
 
 let sharedTslRenderer: WebGPURenderer | null = null;
 
-export const disposeSharedTslRenderer = () => {
-  if (sharedTslRenderer) {
-    sharedTslRenderer.dispose();
-    sharedTslRenderer = null;
-  }
-};
-
 const getSharedTslRenderer = async (antialias: boolean): Promise<WebGPURenderer> => {
   if (!sharedTslRenderer) {
     const canvas = document.createElement("canvas");

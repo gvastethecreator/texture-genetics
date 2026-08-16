@@ -8,8 +8,6 @@ import { ABSTRACT } from "./patterns/abstract";
 import { GRADIENTS } from "./patterns/gradients";
 
 // Re-export for direct access if needed
-export { SHAPES, NOISE, SDF_PATTERNS, FIRE_LIGHT, NATURE, ABSTRACT, GRADIENTS };
-
 // Aggregated Map for Shader Construction
 export const PATTERN_MAP: Record<TextureType, PatternDefinition> = {
   ...SHAPES,

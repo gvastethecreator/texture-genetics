@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { parsePresetDocument } from "@/core/state/presetFile";
+import { createPresetDocument, parsePresetDocument } from "@/core/state/presetFile";
 
 describe("parsePresetDocument", () => {
+  it("writes the Texture Genetics format and accepts legacy exports", () => {
+    const presets = [{ id: "legacy", name: "Legacy", date: 1, state: { animate: false } }];
+
+    expect(createPresetDocument(parsePresetDocument(presets)).format).toBe(
+      "texture-genetics-presets",
+    );
+    expect(
+      parsePresetDocument({ format: "effecttexturegen-presets", version: 1, presets }),
+    ).toHaveLength(1);
+  });
+
   it("rejects a preset whose state contains a wrong runtime type", () => {
     const document = [
       {

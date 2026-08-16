@@ -34,13 +34,7 @@ const PI = float(Math.PI);
 
 // ─── Holographic hashing (self-contained) ───
 
-export const holoHash2 = Fn(([p_in]: [any]) => {
-  const p = vec2(p_in);
-  const q = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
-  return fract(sin(q).mul(43758.5453));
-});
-
-export const holoHash4 = Fn(([p_in]: [any]) => {
+const holoHash4 = Fn(([p_in]: [any]) => {
   const p = vec2(p_in);
   const q = vec4(
     dot(p, vec2(127.1, 311.7)),
@@ -74,7 +68,7 @@ export const holoVoronoi = Fn(([p_in]: [any]) => {
   return mz;
 });
 
-export const spectralGems = Fn(([w_in]: [any]) => {
+const spectralGems = Fn(([w_in]: [any]) => {
   const w = float(w_in);
   return vec3(
     max(float(0.0), float(1.0).sub(pow(float(4.0).mul(w.sub(0.75)), float(2.0)))),
@@ -199,7 +193,7 @@ export const getAO = Fn(([_val_in, normal_in, enabled_in, strength_in]: any[]) =
 
 // ─── Environment Mapping ───
 
-export const getEnvironment = Fn(([dir_in, type_in, roughness_in]: any[]) => {
+const getEnvironment = Fn(([dir_in, type_in, roughness_in]: any[]) => {
   const dir = vec3(dir_in);
   const envType = int(type_in);
   const roughness = float(roughness_in);
@@ -240,7 +234,7 @@ export const getEnvironment = Fn(([dir_in, type_in, roughness_in]: any[]) => {
 
 // ─── PBR BRDF ───
 
-export const fresnelSchlick = Fn(([cosTheta_in, F0_in]: any[]) => {
+const fresnelSchlick = Fn(([cosTheta_in, F0_in]: any[]) => {
   const cosTheta = float(cosTheta_in);
   const F0 = vec3(F0_in);
   return F0.add(
@@ -250,7 +244,7 @@ export const fresnelSchlick = Fn(([cosTheta_in, F0_in]: any[]) => {
   );
 });
 
-export const distributionGGX = Fn(([N_in, H_in, roughness_in]: any[]) => {
+const distributionGGX = Fn(([N_in, H_in, roughness_in]: any[]) => {
   const N = vec3(N_in);
   const H = vec3(H_in);
   const roughness = float(roughness_in);
@@ -263,7 +257,7 @@ export const distributionGGX = Fn(([N_in, H_in, roughness_in]: any[]) => {
   return num.div(max(PI.mul(denom).mul(denom), float(0.0001)));
 });
 
-export const geometrySchlickGGX = Fn(([NdotV_in, roughness_in]: any[]) => {
+const geometrySchlickGGX = Fn(([NdotV_in, roughness_in]: any[]) => {
   const NdotV = float(NdotV_in);
   const roughness = float(roughness_in);
   const r = roughness.add(1.0);
@@ -271,7 +265,7 @@ export const geometrySchlickGGX = Fn(([NdotV_in, roughness_in]: any[]) => {
   return NdotV.div(max(NdotV.mul(float(1.0).sub(k)).add(k), float(0.0001)));
 });
 
-export const geometrySmith = Fn(([N_in, V_in, L_in, roughness_in]: any[]) => {
+const geometrySmith = Fn(([N_in, V_in, L_in, roughness_in]: any[]) => {
   const N = vec3(N_in);
   const V = vec3(V_in);
   const L = vec3(L_in);

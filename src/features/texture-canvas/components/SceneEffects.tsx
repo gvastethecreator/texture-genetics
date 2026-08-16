@@ -12,7 +12,7 @@ import {
   TiltShift,
   DotScreen,
 } from "@react-three/postprocessing";
-import { BlendFunction, GlitchMode } from "postprocessing";
+import { BlendFunction, GlitchMode, KernelSize } from "postprocessing";
 import { useThree } from "@react-three/fiber";
 import { AppState } from "../../../core/types/types";
 import type { CanvasRenderer } from "../../../lib/three/rendererFactory";
@@ -40,6 +40,12 @@ export const SceneEffects: React.FC<{ appState: AppState }> = ({ appState }) => 
   const supportsPostprocessing = React.useMemo(() => {
     return supportsAdvancedWebGLRenderTargets(gl as CanvasRenderer);
   }, [gl]);
+
+  const chromaticAberrationProps = {
+    offset: [env.sceneChromaticOffset, env.sceneChromaticOffset] as [number, number],
+    radialModulation: env.sceneChromaticRadial,
+    modulationOffset: 0.5,
+  };
 
   if (!hasAnySceneEffect || !supportsPostprocessing) {
     return null;
@@ -94,17 +100,15 @@ export const SceneEffects: React.FC<{ appState: AppState }> = ({ appState }) => 
         env.sceneTiltShift ? (
           <TiltShift
             key="tilt"
-            blur={env.sceneTiltShiftBlur}
-            taper={0.5}
+            kernelSize={KernelSize.MEDIUM}
+            resolutionScale={Math.max(0.1, Math.min(1, 1 - env.sceneTiltShiftBlur))}
             focusArea={env.sceneTiltShiftFocus}
           />
         ) : null,
         env.sceneChromatic ? (
           <ChromaticAberration
             key="chroma"
-            offset={[env.sceneChromaticOffset, env.sceneChromaticOffset]}
-            radialModulation={env.sceneChromaticRadial}
-            modulationOffset={0.5}
+            {...(chromaticAberrationProps as React.ComponentProps<typeof ChromaticAberration>)}
           />
         ) : null,
         env.sceneGlitch ? (
@@ -120,9 +124,7 @@ export const SceneEffects: React.FC<{ appState: AppState }> = ({ appState }) => 
         ) : null,
         env.sceneAscii ? <DotScreen key="ascii" angle={Math.PI * 0.25} scale={1.0} /> : null,
         env.sceneDither ? <DotScreen key="dither" angle={0} scale={0.5} /> : null,
-        env.sceneRuttEtra ? (
-          <Scanline key="rutt" density={0.8} opacity={0.5} scrollSpeed={0.05} />
-        ) : null,
+        env.sceneRuttEtra ? <Scanline key="rutt" density={0.8} opacity={0.5} /> : null,
         env.sceneScanlines && !env.sceneRuttEtra ? (
           <Scanline key="scanline" density={1.5} opacity={0.3} />
         ) : null,

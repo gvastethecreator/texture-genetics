@@ -1,5 +1,4 @@
 import { describe, it, expect, vi } from "vitest";
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Header } from "../../features/ui/Header";
 import { mockAppState, mockHistory, mockHeaderActions } from "../helpers";
@@ -19,10 +18,7 @@ describe("Header", () => {
         rightPanelOpen={false}
       />,
     );
-    // Header should contain some recognizable text or element
-    expect(
-      document.querySelector('header, nav, [role="banner"]') ?? document.body.firstChild,
-    ).toBeTruthy();
+    expect(screen.getByText("Texture Genetics")).toBeInTheDocument();
   });
 
   it("calls toggleLeftPanel when sidebar toggle clicked", () => {

@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import * as Icons from "lucide-react";
 import { APP_SHORTCUTS } from "../../core/commands";
+import { APP_NAME } from "../../core/constants";
 import { useModalFocus } from "../../shared/hooks/useModalFocus";
 
 interface ShortcutsModalProps {
@@ -82,7 +83,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
           </div>
         </div>
         <div className="p-4 bg-black/30 border-t border-border text-[10px] text-gray-500 text-center">
-          EffectTextureGen v{__APP_VERSION__} &bull; Professional Edition
+          {APP_NAME} v{__APP_VERSION__}
         </div>
       </div>
     </div>

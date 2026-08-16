@@ -2,13 +2,13 @@
 
 ## Project Overview
 
-EffectTextureGen is a browser-based procedural texture generation workstation. Built with React 19, Three.js (R3F), and TypeScript. Uses Node.js as the runtime and pnpm as the package manager.
+Texture Genetics is a browser-based procedural texture workstation. It uses React 19, Three.js, React Three Fiber, and TypeScript 7. Node.js is the runtime. pnpm is the package manager.
 
 ## Tech Stack
 
 - **Runtime:** Node.js >= 22
 - **Package Manager:** pnpm >= 11.20
-- **Framework:** React 19 + TypeScript 6.0
+- **Framework:** React 19 + TypeScript 7.0
 - **Build:** Vite 8 (Rolldown bundler)
 - **Styling:** Tailwind CSS v4 (CSS-first config in `src/index.css`)
 - **3D:** Three.js 0.185 + React Three Fiber + React Three Drei + Postprocessing

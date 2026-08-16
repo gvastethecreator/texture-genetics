@@ -71,11 +71,7 @@ export function registerTslPattern(type: TextureType, fn: TslPatternFn): void {
  * Build the complete fragment color node from state.
  * Returns { colorNode, opacityNode } ready to assign on a MeshBasicNodeMaterial.
  */
-export function buildFragmentGraph(
-  u: TslUniforms,
-  state: AppState,
-  textures: TslTextureInputs = {},
-) {
+function buildFragmentGraph(u: TslUniforms, state: AppState, textures: TslTextureInputs = {}) {
   const mainType = state.textureType;
   const mainFn = TSL_PATTERN_MAP[mainType];
   const maskTexture = textures.maskTexture ?? null;

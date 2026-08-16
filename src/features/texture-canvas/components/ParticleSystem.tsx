@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, memo } from "react";
+import { useEffect, useMemo, useRef, memo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { PointsNodeMaterial } from "three/webgpu";

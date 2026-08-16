@@ -1,6 +1,7 @@
 import React, { memo } from "react";
 import * as Icons from "lucide-react";
 import { AppState, UserPreset, TextureType } from "../../core/types/types";
+import { APP_NAME } from "../../core/constants";
 import { PRESETS, Preset } from "../../presets";
 
 interface HeaderProps {
@@ -126,10 +127,10 @@ export const Header: React.FC<HeaderProps> = memo(
             </div>
             <div className="flex flex-col">
               <span className="hidden md:block text-sm font-black text-transparent bg-clip-text bg-linear-to-r from-white to-gray-400 tracking-widest uppercase">
-                EffectGen
+                {APP_NAME}
               </span>
               <span className="text-[9px] font-mono text-gray-500 tracking-wide">
-                v{__APP_VERSION__} PRO
+                v{__APP_VERSION__}
               </span>
             </div>
           </div>

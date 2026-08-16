@@ -20,7 +20,7 @@ const startedAt = new Date();
 const stripAnsi = (value) => value.replace(/\u001b\[[0-9;]*m/g, "");
 
 const header = [
-  "# EffectTextureGen log",
+  "# Texture Genetics log",
   `start: ${startedAt.toISOString()}`,
   `cwd: ${process.cwd()}`,
   `command: ${rawArgs.join(" ")}`,

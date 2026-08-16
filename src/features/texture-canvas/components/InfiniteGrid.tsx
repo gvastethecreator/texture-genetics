@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { Grid } from "@react-three/drei";
 
 export const InfiniteGrid = memo(() => {

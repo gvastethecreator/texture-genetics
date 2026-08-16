@@ -11,11 +11,6 @@ export const sdBox = /*@__PURE__*/ Fn(([p_in, b_in]: [any, any]) => {
   return length(max(q, 0)).add(min(max(q.x, max(q.y, q.z)), 0));
 });
 
-/** Sphere SDF */
-export const sdSphere = /*@__PURE__*/ Fn(([p_in, s_in]: [any, any]) => {
-  return length(vec3(p_in)).sub(float(s_in));
-});
-
 /** 2D rotation (same as math rotate2d but used in SDF context) */
 export const rot2D = (a: any) => {
   const s = sin(a);

@@ -72,7 +72,7 @@ const geometryIsRenderable = (geometry: THREE.BufferGeometry): boolean => {
   return true;
 };
 
-export const extractRenderableGeometry = (root: THREE.Object3D): THREE.BufferGeometry => {
+const extractRenderableGeometry = (root: THREE.Object3D): THREE.BufferGeometry => {
   root.updateMatrixWorld(true);
   let result: THREE.BufferGeometry | null = null;
 

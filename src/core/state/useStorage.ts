@@ -2,14 +2,40 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { AppState } from "../types/types";
 import { get, set, del } from "idb-keyval";
 
-const STORAGE_KEY = "effect_gen_v4_release";
-const LEGACY_STORAGE_KEY = "effect_gen_v3_release";
+const STORAGE_KEY = "texture_genetics_v4_release";
 // Version for future state migrations. Increment when state format changes
 // and add migration logic in the load path to handle older saves
 const STATE_VERSION = 4;
 const ASSET_BUNDLE_VERSION = 1;
-const ASSET_BUNDLE_PREFIX = "effect_gen_v4_assets_";
-const LEGACY_ASSET_BUNDLE_PREFIX = "effect_gen_v3_assets_";
+const ASSET_BUNDLE_PREFIX = "texture_genetics_v4_assets_";
+const LEGACY_STORAGE_SOURCES = [
+  { stateKey: "effect_gen_v4_release", assetPrefix: "effect_gen_v4_assets_" },
+  { stateKey: "effect_gen_v3_release", assetPrefix: "effect_gen_v3_assets_" },
+] as const;
+
+type StoredStateSource = {
+  savedState: string;
+  stateKey: string;
+  assetPrefix: string;
+};
+
+const getStoredStateSource = (): StoredStateSource | null => {
+  const currentSavedState = localStorage.getItem(STORAGE_KEY);
+  if (currentSavedState) {
+    return {
+      savedState: currentSavedState,
+      stateKey: STORAGE_KEY,
+      assetPrefix: ASSET_BUNDLE_PREFIX,
+    };
+  }
+
+  for (const source of LEGACY_STORAGE_SOURCES) {
+    const savedState = localStorage.getItem(source.stateKey);
+    if (savedState) return { savedState, ...source };
+  }
+
+  return null;
+};
 
 // Keys of properties that contain heavy base64 strings
 type HeavyAssetDescriptor = {
@@ -150,12 +176,9 @@ export const useStorage = (
     const load = async () => {
       let mergedState = { ...initialState };
       let metadata: PersistedStateMetadata = {};
-      const currentSavedState = localStorage.getItem(STORAGE_KEY);
-      const legacySavedState = currentSavedState ? null : localStorage.getItem(LEGACY_STORAGE_KEY);
-      const savedState = currentSavedState ?? legacySavedState;
-      const sourceAssetPrefix = currentSavedState
-        ? ASSET_BUNDLE_PREFIX
-        : LEGACY_ASSET_BUNDLE_PREFIX;
+      const storedSource = getStoredStateSource();
+      const savedState = storedSource?.savedState;
+      const sourceAssetPrefix = storedSource?.assetPrefix ?? ASSET_BUNDLE_PREFIX;
 
       if (savedState) {
         try {
@@ -245,14 +268,9 @@ export const useStorage = (
           if (value) assets[asset.key] = await serializeAsset(value);
         }
 
-        const currentPreviousState = localStorage.getItem(STORAGE_KEY);
-        const legacyPreviousState = currentPreviousState
-          ? null
-          : localStorage.getItem(LEGACY_STORAGE_KEY);
-        const previousState = currentPreviousState ?? legacyPreviousState;
-        const previousAssetPrefix = currentPreviousState
-          ? ASSET_BUNDLE_PREFIX
-          : LEGACY_ASSET_BUNDLE_PREFIX;
+        const previousSource = getStoredStateSource();
+        const previousState = previousSource?.savedState;
+        const previousAssetPrefix = previousSource?.assetPrefix ?? ASSET_BUNDLE_PREFIX;
         let previousRevision: string | undefined;
         if (previousState) {
           try {
@@ -277,7 +295,7 @@ export const useStorage = (
 
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave, safeReplacer()));
-          localStorage.removeItem(LEGACY_STORAGE_KEY);
+          LEGACY_STORAGE_SOURCES.forEach(({ stateKey }) => localStorage.removeItem(stateKey));
         } catch (error) {
           await del(bundleKey).catch(() => undefined);
           throw error;

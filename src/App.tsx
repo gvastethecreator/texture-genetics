@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, lazy, Suspense, useCallback } from "react";
+import { useState, useRef, useEffect, lazy, Suspense, useCallback } from "react";
 
 // Validate and register the complete cross-renderer pattern catalog at startup.
 import "./data/patternManifest";

@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-EffectTextureGen tracks the latest minor on the `main` branch. Older minors do
+Texture Genetics tracks the latest minor on the `main` branch. Older minors do
 not receive security fixes.
 
 | Branch | Supported          |

@@ -1,6 +1,6 @@
 import type { CanvasRenderer } from "./rendererFactory";
 
-export type RendererBackendKind = "webgpu" | "webgl-via-webgpu" | "webgl" | "unknown";
+type RendererBackendKind = "webgpu" | "webgl-via-webgpu" | "webgl" | "unknown";
 
 type BackendInfo = {
   isWebGLBackend?: boolean;
@@ -22,9 +22,7 @@ const hasWebGLContext = (renderer: RendererLike): boolean => {
   }
 };
 
-export const getRendererBackendKind = (
-  renderer: RendererLike | null | undefined,
-): RendererBackendKind => {
+const getRendererBackendKind = (renderer: RendererLike | null | undefined): RendererBackendKind => {
   if (!renderer) return "unknown";
 
   if (renderer.backend?.isWebGPUBackend) {

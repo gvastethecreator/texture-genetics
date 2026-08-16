@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-08T11:55:40Z",
-  "generated_from_commit": "d49b8e85bf2d44ab6e8e75380dac6c4f2cb70aeb",
+  "generated_at": "2026-08-15T09:31:48Z",
+  "generated_from_commit": "ff719b2fb9f6f89ed3000625ca4112f51082a2e8",
   "scope": [
     "."
   ],
@@ -35,7 +35,7 @@
       "type": "module",
       "boundary": "Index",
       "entrypoints": [
-        "index.html:EffectTextureGen"
+        "index.html:Texture Genetics"
       ],
       "tests": [],
       "constraints": [
@@ -46,30 +46,7 @@
         "locations": [
           {
             "path": "index.html",
-            "symbol": "EffectTextureGen"
-          }
-        ]
-      }
-    },
-    {
-      "id": "plans",
-      "path": "plans",
-      "role": "Owns the tracked files for the plans module.",
-      "type": "module",
-      "boundary": "Plans",
-      "entrypoints": [
-        "plans/texture-genetics-audit/index.html:Auditoría integral · EffectTextureGen"
-      ],
-      "tests": [],
-      "constraints": [
-        "This baseline uses tracked source and explicit dependency references only."
-      ],
-      "evidence": {
-        "status": "verified",
-        "locations": [
-          {
-            "path": "plans/texture-genetics-audit/index.html",
-            "symbol": "Auditoría integral · EffectTextureGen"
+            "symbol": "Texture Genetics"
           }
         ]
       }
@@ -104,7 +81,7 @@
       "type": "module",
       "boundary": "Repository",
       "entrypoints": [
-        "README.md:EffectTextureGen"
+        "README.md:Product tour"
       ],
       "tests": [],
       "constraints": [
@@ -115,7 +92,7 @@
         "locations": [
           {
             "path": "README.md",
-            "symbol": "EffectTextureGen"
+            "symbol": "Product tour"
           }
         ]
       }
@@ -411,62 +388,6 @@
           {
             "path": "index.tsx",
             "symbol": "./src/index.css"
-          }
-        ]
-      }
-    },
-    {
-      "from": "plans",
-      "to": "external-dependencies",
-      "type": "imports",
-      "evidence": {
-        "status": "verified",
-        "locations": [
-          {
-            "path": "plans/texture-genetics-audit/evidence/gltf-loader-probe.mjs",
-            "symbol": "three/examples/jsm/loaders/OBJLoader.js"
-          }
-        ]
-      }
-    },
-    {
-      "from": "plans",
-      "to": "index",
-      "type": "imports",
-      "evidence": {
-        "status": "verified",
-        "locations": [
-          {
-            "path": "plans/texture-genetics-audit/implementation-status.html",
-            "symbol": "index.html"
-          }
-        ]
-      }
-    },
-    {
-      "from": "plans",
-      "to": "index",
-      "type": "reads",
-      "evidence": {
-        "status": "verified",
-        "locations": [
-          {
-            "path": "plans/texture-genetics-audit/findings.md",
-            "symbol": "index.html"
-          }
-        ]
-      }
-    },
-    {
-      "from": "plans",
-      "to": "src-data",
-      "type": "reads",
-      "evidence": {
-        "status": "verified",
-        "locations": [
-          {
-            "path": "plans/texture-genetics-audit/findings.md",
-            "symbol": "src/data/textureData.ts"
           }
         ]
       }
@@ -1212,11 +1133,11 @@
       "outcome": "The verified dependency path reaches src-core through 5 step(s)."
     },
     {
-      "trigger": "Tracked reference plans/texture-genetics-audit/implementation-status.html:index.html",
+      "trigger": "Tracked reference AGENTS.md:src/index.css",
       "steps": [
-        "plans",
-        "index",
+        "repository",
         "src",
+        "src-features",
         "src-core",
         "src-shared",
         "external-dependencies"

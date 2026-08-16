@@ -9,6 +9,8 @@ import {
   BaseEffectType,
 } from "./types/types";
 
+export const APP_NAME = "Texture Genetics";
+
 export const DEFAULTS = {
   RESOLUTION: 512,
   TEXTURE_TYPE: TextureType.PERLIN_NOISE,

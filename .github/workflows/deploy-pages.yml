@@ -12,27 +12,29 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          version: 11.20.0
+          persist-credentials: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
         with:
-          node-version: 22
+          version: 11.21.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24.18.0
           cache: pnpm
 
       - name: Install dependencies
@@ -41,8 +43,11 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Configure Pages
+        uses: actions/configure-pages@7a8fb91d3f352b8a94447eeec72e3d70e089aa10 # v5.0.0
+
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@d47a015d1674b8237153663e1c8841d31261cf09 # v4.0.0
         with:
           path: dist
 
@@ -51,10 +56,10 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build
 
     steps:
       - id: deployment
         name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@2a3c1173872a2c81519e9d5ec14e39d8c63b2f10 # v4.0.5

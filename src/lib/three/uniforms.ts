@@ -254,7 +254,7 @@ export const createUniformsFromState = (
 
 // --- UPDATE HELPERS (COMPOSABLE) ---
 
-export const updateCoreUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
+const updateCoreUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
   // Only update resolution if strictly necessary (usually overridden by useFrame for window resizing)
   // We keep this to ensure the state value is reflected if window matches state
   if (uniforms.u_resolution.value.x !== state.resolution) {
@@ -264,10 +264,7 @@ export const updateCoreUniforms = (uniforms: Record<string, THREE.IUniform>, sta
   uniforms.u_isUVDebug.value = state.textureType === TextureType.UV_DEBUG;
 };
 
-export const updatePatternUniforms = (
-  uniforms: Record<string, THREE.IUniform>,
-  state: AppState,
-) => {
+const updatePatternUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
   // Palette Update Logic
   const palette = state.params.palette || [
     { color: state.params.color1 || "#fff", enabled: true },
@@ -323,10 +320,7 @@ export const updatePatternUniforms = (
   uniforms.u_p15.value = state.params.p15;
 };
 
-export const updateBlendingUniforms = (
-  uniforms: Record<string, THREE.IUniform>,
-  state: AppState,
-) => {
+const updateBlendingUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
   uniforms.u_blendEnabled.value = state.blending.enabled;
   uniforms.u_blendMode.value = state.blending.mode;
   uniforms.u_blendOpacity.value = state.blending.opacity;
@@ -337,10 +331,7 @@ export const updateBlendingUniforms = (
   uniforms.u_blendSeed.value = state.params.seed + 100.0;
 };
 
-export const updateTransformUniforms = (
-  uniforms: Record<string, THREE.IUniform>,
-  state: AppState,
-) => {
+const updateTransformUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
   uniforms.u_angle.value = state.transform.angle * (Math.PI / 180);
   uniforms.u_offset.value.set(state.transform.offsetX, state.transform.offsetY);
   uniforms.u_symEnabled.value = state.symmetry.enabled;
@@ -356,10 +347,7 @@ export const updateTransformUniforms = (
   uniforms.u_tilingScale.value = Math.max(0.01, state.tiling.scale);
 };
 
-export const updatePostProcessUniforms = (
-  uniforms: Record<string, THREE.IUniform>,
-  state: AppState,
-) => {
+const updatePostProcessUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
   uniforms.u_applyToMap.value = state.postProcess.applyToMap;
   uniforms.u_polar.value = state.postProcess.polar;
   uniforms.u_toon.value = state.postProcess.toon;
@@ -397,10 +385,7 @@ export const updatePostProcessUniforms = (
   }
 };
 
-export const updateMaterialUniforms = (
-  uniforms: Record<string, THREE.IUniform>,
-  state: AppState,
-) => {
+const updateMaterialUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
   uniforms.u_normalEnabled.value = state.normalMap.enabled;
   uniforms.u_normalStrength.value = state.normalMap.strength;
   uniforms.u_normalInvert.value = state.normalMap.invert;
@@ -412,10 +397,7 @@ export const updateMaterialUniforms = (
   uniforms.u_aoRadius.value = state.ao.radius;
 };
 
-export const updateColorBalanceUniforms = (
-  uniforms: Record<string, THREE.IUniform>,
-  state: AppState,
-) => {
+const updateColorBalanceUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
   if (state.colorBalance) {
     if (state.colorBalance.shadows) {
       uniforms.u_shadows.value.set(
@@ -446,10 +428,7 @@ export const updateColorBalanceUniforms = (
   }
 };
 
-export const updateEnvironmentUniforms = (
-  uniforms: Record<string, THREE.IUniform>,
-  state: AppState,
-) => {
+const updateEnvironmentUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
   uniforms.u_lightDir.value.set(state.environment.lightX, state.environment.lightY, 1.0);
   uniforms.u_lightIntensity.value = state.environment.lightIntensity;
   uniforms.u_roughness.value = state.environment.roughness;
@@ -463,7 +442,7 @@ export const updateEnvironmentUniforms = (
   uniforms.u_fogColor.value.copy(getFogColor(state));
 };
 
-export const updateTextureUniforms = (
+const updateTextureUniforms = (
   uniforms: Record<string, THREE.IUniform>,
   state: AppState,
   maskTexture: THREE.Texture | null,
@@ -514,7 +493,7 @@ export const updateTextureUniforms = (
   uniforms.u_stickerUseColor.value = state.sticker.useColor;
 };
 
-export const updateMouseUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
+const updateMouseUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
   uniforms.u_mouseEnabled.value = state.mouse.enabled;
   uniforms.u_mouseType.value = state.mouse.type;
   uniforms.u_mouseStrength.value = state.mouse.strength;

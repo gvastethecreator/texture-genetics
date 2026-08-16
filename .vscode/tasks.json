@@ -105,6 +105,20 @@
       "presentation": { "reveal": "always", "panel": "shared" }
     },
     {
+      "label": "⬆️ Outdated",
+      "type": "shell",
+      "command": "pnpm outdated",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "🔒 Audit",
+      "type": "shell",
+      "command": "pnpm audit",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
       "label": "🧹 Clean",
       "type": "shell",
       "command": "pnpm run clean",

@@ -149,7 +149,7 @@ function getRequiredChunks(deps: string[]): string {
   return chunks + `\n#define HAS_NOISE\n`;
 }
 
-export const getFragmentShaderForParams = (state: AppState): string => {
+const getFragmentShaderForParams = (state: AppState): string => {
   try {
     const mainType = state.textureType;
     const blending = state.blending;

@@ -63,17 +63,3 @@ export const mockHeaderActions = () => ({
   deleteUserPreset: vi.fn(),
   resetState: vi.fn(),
 });
-
-export const mockFullActions = () => ({
-  ...mockHeaderActions(),
-  replaceState: vi.fn(),
-  updateParams: vi.fn(),
-  updateParamAnimation: vi.fn(),
-  randomizeParams: vi.fn(),
-  randomizePalette: vi.fn(),
-  randomizePatternSelection: vi.fn(),
-  importPresets: vi.fn(),
-  exportPresets: vi.fn(),
-  addToast: vi.fn(),
-  removeToast: vi.fn(),
-});

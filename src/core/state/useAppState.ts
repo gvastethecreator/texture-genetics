@@ -23,9 +23,6 @@ const CAMERA_ANIMATION_TYPES = ["TURNTABLE", "TUMBLE", "HOVER", "HEARTBEAT", "SH
 // --- INITIAL STATE DEFINITION ---
 const INITIAL_STATE: AppState = createDefaultAppState();
 
-// Re-export safeReplacer for other consumers (like PresetManager)
-export { safeReplacer } from "./useStorage";
-
 export const useAppState = (props: {
   onStateChangeForHistory: (s: AppState) => void;
   onStorageWarning?: (message: string) => void;

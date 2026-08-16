@@ -254,7 +254,7 @@ export interface PatternDefinition {
   deps?: string[];
 }
 
-export interface BlendingParams {
+interface BlendingParams {
   enabled: boolean;
   type: TextureType;
   mode: BlendMode;
@@ -264,7 +264,7 @@ export interface BlendingParams {
   intensity: number;
 }
 
-export interface BaseTextureParams {
+interface BaseTextureParams {
   enabled: boolean;
   texture: string | null;
   opacity: number;
@@ -274,7 +274,7 @@ export interface BaseTextureParams {
 }
 
 // New Interface for Sticker Layer
-export interface StickerParams {
+interface StickerParams {
   enabled: boolean;
   texture: string | null;
   opacity: number;
@@ -288,20 +288,20 @@ export interface StickerParams {
   gizmoVisible: boolean;
 }
 
-export interface TransformParams {
+interface TransformParams {
   angle: number;
   offsetX: number;
   offsetY: number;
 }
 
-export interface SymmetryParams {
+interface SymmetryParams {
   enabled: boolean;
   segments: number;
   rotation: number;
   zoom: number;
 }
 
-export interface TilingParams {
+interface TilingParams {
   enabled: boolean;
   mirror: boolean;
   repeatX: number;
@@ -312,26 +312,26 @@ export interface TilingParams {
   scale: number;
 }
 
-export interface NormalMapParams {
+interface NormalMapParams {
   enabled: boolean;
   strength: number;
   invert: boolean;
   smoothness: number;
 }
 
-export interface DisplacementParams {
+interface DisplacementParams {
   enabled: boolean;
   strength: number;
   bias: number;
 }
 
-export interface AmbientOcclusionParams {
+interface AmbientOcclusionParams {
   enabled: boolean;
   strength: number;
   radius: number;
 }
 
-export interface PostProcessParams {
+interface PostProcessParams {
   applyToMap: boolean; // NEW: Toggle baking FX
   polar: boolean;
   toon: boolean;
@@ -365,7 +365,7 @@ export interface PostProcessParams {
   edgeColor: string;
 }
 
-export interface ColorBalanceParams {
+interface ColorBalanceParams {
   shadows: { r: number; g: number; b: number };
   midtones: { r: number; g: number; b: number };
   highlights: { r: number; g: number; b: number };
@@ -376,7 +376,7 @@ export interface ColorBalanceParams {
   cycleSpeed: number;
 }
 
-export interface ImageAlphaParams {
+interface ImageAlphaParams {
   enabled: boolean;
   threshold: number;
   tolerance: number;
@@ -385,21 +385,21 @@ export interface ImageAlphaParams {
   maskEnabled: boolean;
 }
 
-export interface SpriteSheetParams {
+interface SpriteSheetParams {
   columns: number;
   rows: number;
   totalFrames: number;
   duration: number;
 }
 
-export interface MouseParams {
+interface MouseParams {
   enabled: boolean;
   type: MouseInteractionType;
   strength: number;
   radius: number;
 }
 
-export interface EnvironmentParams {
+interface EnvironmentParams {
   animation: PreviewAnimation;
   animationSpeed: number;
   lightIntensity: number;
@@ -491,27 +491,27 @@ export interface EnvironmentParams {
   sceneRuttEtra: boolean; // Scanline Displacement Simulation
 }
 
-export interface SettingsParams {
+interface SettingsParams {
   renderDpr: number; // 0 = Auto/Native (Best Quality), 1 = Low (Fast)
   exportFormat: "png" | "jpeg" | "webp";
   antialias: boolean;
   showFPS: boolean;
 }
 
-export interface CameraState {
+interface CameraState {
   position: [number, number, number];
   target: [number, number, number];
   fov: number;
 }
 
-export interface SvgParams {
+interface SvgParams {
   url: string | null;
   preset: string; // 'star', 'heart', 'custom'
   extrude: number;
   scale: number;
 }
 
-export interface TextParams {
+interface TextParams {
   text: string;
   font: string;
   extrude: number;

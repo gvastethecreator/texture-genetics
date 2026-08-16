@@ -1,4 +1,5 @@
 import { AppState, ShaderParams } from "../../../core/types/types";
+import { APP_NAME } from "../../../core/constants";
 import { getFragmentShader, VERTEX_SHADER } from "../../../lib/glsl/shaderBuilder";
 
 type DynamicShaderParamKey = Extract<keyof ShaderParams, `p${number}`>;
@@ -40,7 +41,7 @@ export const generateLegacyStandaloneHtml = (state: AppState): string => {
     paramsJS += `u_p${i}:{value:state.params.${key} ?? 0},\n        `;
   }
 
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>EffectTextureGen Legacy Export</title><style>body{margin:0;overflow:hidden;background:#000;}</style></head><body><script type="importmap">{"imports": {"three": "https://unpkg.com/three@0.183.2/build/three.module.js"}}</script><script type="module">
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${APP_NAME} Legacy Export</title><style>body{margin:0;overflow:hidden;background:#000;}</style></head><body><script type="importmap">{"imports": {"three": "https://unpkg.com/three@0.183.2/build/three.module.js"}}</script><script type="module">
     import * as THREE from 'three';
 
     const state=${serializedState};

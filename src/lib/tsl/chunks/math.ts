@@ -1,6 +1,6 @@
 /**
  * TSL Math Utilities
- * rotate2d, toPolar, aastep, color conversion, blending, palette.
+ * rotate2d, toPolar, color conversion, blending, palette.
  */
 import {
   Fn,
@@ -18,10 +18,8 @@ import {
   mix,
   step,
   clamp,
-  smoothstep,
   sqrt,
   min,
-  fwidth,
   If,
   select,
   int,
@@ -45,12 +43,6 @@ export const toPolar = /*@__PURE__*/ Fn(([st_in]: [any]) => {
   const a = atan(pos.y, pos.x);
   return vec2(a.div(Math.PI * 2).add(0.5), r);
 });
-
-/** Anti-aliased step using fwidth */
-export const aastep = (threshold: any, value: any) => {
-  const fw = fwidth(value).mul(0.5);
-  return smoothstep(float(threshold).sub(fw), float(threshold).add(fw), value);
-};
 
 // ========================
 // COLOR SPACE

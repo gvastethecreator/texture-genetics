@@ -74,19 +74,3 @@ export const disposeRoot = (node: THREE.Object3D | null) => {
     }
   });
 };
-
-/**
- * Forces WebGL Context Loss for heavy cleanup (Export operations).
- */
-export const forceContextLoss = (renderer: THREE.WebGLRenderer) => {
-  try {
-    renderer.dispose();
-    const gl = renderer.domElement.getContext("webgl2") || renderer.domElement.getContext("webgl");
-    if (gl) {
-      const ext = gl.getExtension("WEBGL_losing_context");
-      if (ext) ext.loseContext();
-    }
-  } catch (e) {
-    console.warn("Force context loss failed", e);
-  }
-};

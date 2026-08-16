@@ -9,8 +9,11 @@ import {
   recoverStoredPresetCollection,
 } from "./presetFile";
 
-const PRESETS_STORAGE_KEY = "effect_gen_v4_user_presets";
-const LEGACY_PRESETS_STORAGE_KEY = "effect_gen_v3_user_presets";
+const PRESETS_STORAGE_KEY = "texture_genetics_v4_user_presets";
+const LEGACY_PRESETS_STORAGE_KEYS = [
+  "effect_gen_v4_user_presets",
+  "effect_gen_v3_user_presets",
+] as const;
 const MAX_PRESET_FILE_BYTES = 10 * 1024 * 1024;
 const MAX_PRESET_NAME_LENGTH = 120;
 
@@ -41,9 +44,19 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
     const load = async () => {
       try {
         const currentPresets = await get<unknown>(PRESETS_STORAGE_KEY);
-        const legacyPresets =
-          currentPresets == null ? await get<unknown>(LEGACY_PRESETS_STORAGE_KEY) : undefined;
-        const savedPresets = currentPresets ?? legacyPresets;
+        let savedPresets = currentPresets;
+        let legacyStorageKey: (typeof LEGACY_PRESETS_STORAGE_KEYS)[number] | undefined;
+
+        if (savedPresets == null) {
+          for (const key of LEGACY_PRESETS_STORAGE_KEYS) {
+            const candidate = await get<unknown>(key);
+            if (candidate != null) {
+              savedPresets = candidate;
+              legacyStorageKey = key;
+              break;
+            }
+          }
+        }
         if (savedPresets != null) {
           const recovered = recoverStoredPresetCollection(savedPresets);
           userPresetsRef.current = recovered.presets;
@@ -56,10 +69,10 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
               `Loaded ${loadedLabel}; skipped ${skippedLabel}. Original storage was left unchanged.`,
             );
           }
-          if (legacyPresets != null && recovered.rejectedCount === 0) {
+          if (legacyStorageKey && recovered.rejectedCount === 0) {
             try {
               await set(PRESETS_STORAGE_KEY, recovered.presets);
-              await del(LEGACY_PRESETS_STORAGE_KEY);
+              await del(legacyStorageKey);
             } catch (migrationError) {
               console.warn("Preset storage migration deferred", migrationError);
               addToast("info", "Saved presets loaded; storage migration will retry later");
@@ -167,7 +180,7 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
         encodeURIComponent(JSON.stringify(presetDocument, null, 2));
       const downloadAnchorNode = document.createElement("a");
       downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", "effect_gen_presets.json");
+      downloadAnchorNode.setAttribute("download", "texture-genetics-presets.json");
       document.body.appendChild(downloadAnchorNode);
       downloadAnchorNode.click();
       downloadAnchorNode.remove();

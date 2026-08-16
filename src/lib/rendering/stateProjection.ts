@@ -11,13 +11,8 @@ export type RendererUniformDomain =
   | "interaction"
   | "environment";
 
-export type ProjectedUniformValue =
-  | number
-  | boolean
-  | string
-  | readonly number[]
-  | readonly string[];
-export type ProjectedUniformDomain = Record<string, ProjectedUniformValue>;
+type ProjectedUniformValue = number | boolean | string | readonly number[] | readonly string[];
+type ProjectedUniformDomain = Record<string, ProjectedUniformValue>;
 export type RendererUniformProjection = Record<RendererUniformDomain, ProjectedUniformDomain>;
 
 const FOG_COLORS = ["#111111", "#331a1a", "#020205", "#4a4036"] as const;

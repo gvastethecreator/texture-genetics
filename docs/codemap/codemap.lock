@@ -1,7 +1,7 @@
 {
-  "current_commit": "d49b8e85bf2d44ab6e8e75380dac6c4f2cb70aeb",
+  "source_commit": "ff719b2fb9f6f89ed3000625ca4112f51082a2e8",
   "working_tree_dirty": true,
-  "generated_at": "2026-08-08T11:55:40Z",
+  "generated_at": "2026-08-15T09:31:48Z",
   "scanned_scope": [
     "."
   ],
@@ -11,6 +11,8 @@
     ".hg",
     ".next",
     ".nuxt",
+    ".pytest_cache",
+    ".scratch",
     ".svn",
     ".turbo",
     ".venv",
@@ -31,56 +33,56 @@
     {
       "id": ".",
       "path": ".",
-      "file_count": 14,
-      "fingerprint": "ec611b560101f56c4f0a703764d302a21a80273421d6f48cf9a7f6f384a52b36"
+      "file_count": 15,
+      "fingerprint": "c8b579e1086b219aba3b1dbb796a45a389d2f6fe12b598dab50c0e2a163304bc"
     },
     {
       "id": ".github",
       "path": ".github",
       "file_count": 6,
-      "fingerprint": "20fed4432caa0992800e58357b79691bcf7753b8036914b5fa60170b847c49ef"
+      "fingerprint": "64274df544b5291feb758ef77c5008d588190cc341583bd841c08ce81abcafac"
     },
     {
       "id": ".vscode",
       "path": ".vscode",
       "file_count": 2,
-      "fingerprint": "f0bf8bdd840c667375244e6ab62b12ef40df6648bef134d04d9293630fdc83e9"
+      "fingerprint": "3af70a68fb1f90d301d8df3b3303b0addb61e4891fcec91577975810e2be1ac8"
     },
     {
       "id": "docs",
       "path": "docs",
       "file_count": 7,
-      "fingerprint": "060815abc1b05f6278e4f67cbce86d0f98d785c7cd840a0797b5becb4aa8a7c3"
+      "fingerprint": "ee1f9f344cd0d595e1dde25f00335803b6ec85dade97d0b9d27efefd756b3446"
     },
     {
       "id": "logs",
       "path": "logs",
       "file_count": 1,
-      "fingerprint": "def224f3cc3030475f7e6954504b3ae9a1615e893d9d0d3a2d782368586d21b1"
+      "fingerprint": "4f1fa48926641c53daea99794f62944fe9d490a821eef5ae40b04451649fa136"
     },
     {
       "id": "plans",
       "path": "plans",
       "file_count": 24,
-      "fingerprint": "f179605a6f76f6c87fc9f5883e0f375a22b794e74eb7f88bb71f6ac6b6d7d7f9"
+      "fingerprint": "6e46025da6dc666a07b15fdc3aeeec38b3a728f06158b03b280ce2907c6fa855"
     },
     {
       "id": "public",
       "path": "public",
       "file_count": 9,
-      "fingerprint": "bb980484b28970fa10d520e362c45f996d4e8049b0e064bf91bb7b66a71832ca"
+      "fingerprint": "71918a9f33f660c4aecfc201ee2eb4a22361c7a21c6c1a65b1b5b97e8b612024"
     },
     {
       "id": "scripts",
       "path": "scripts",
       "file_count": 3,
-      "fingerprint": "f956f488e359112e2ea06f6f70ebe4802039fcb8b3dc2e5d5c953b2c1b1bf9ba"
+      "fingerprint": "7da7d2503e04f4cdfc47546eee56a38533916a67d8cc3bb334c6b477d8310967"
     },
     {
       "id": "src",
       "path": "src",
       "file_count": 230,
-      "fingerprint": "6e1ee3db99823211a1e830711c17897ce84d36fa08529819b8c0a82aef5408f1"
+      "fingerprint": "7c23e53ae25efd946723cc072e17c71e71ff66276f10f6283b35d37ec8cf6082"
     }
   ]
 }
