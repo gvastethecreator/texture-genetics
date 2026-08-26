@@ -27,12 +27,15 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  handleCopyError = () => {
-    if (this.state.error) {
-      const stack = this.state.error.stack || "";
-      navigator.clipboard.writeText(this.state.error.toString() + "\n" + stack);
+  handleCopyError = async () => {
+    if (!this.state.error) return;
+    const stack = this.state.error.stack || "";
+    try {
+      await navigator.clipboard.writeText(this.state.error.toString() + "\n" + stack);
       this.setState({ copied: true });
       setTimeout(() => this.setState({ copied: false }), 2000);
+    } catch {
+      this.setState({ copied: false });
     }
   };
 

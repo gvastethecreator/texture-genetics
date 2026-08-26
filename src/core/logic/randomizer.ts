@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { AppState, TextureType, PaletteColor, ShaderParams } from "../types/types";
 import { DEFAULTS } from "../constants";
+import { PATTERN_MANIFEST } from "../../data/patternManifest";
 
 const randomRange = (min: number, max: number) => Math.random() * (max - min) + min;
 const randomBool = (chance = 0.5) => Math.random() < chance;
@@ -121,15 +122,10 @@ export const generateRandomParams = (): Partial<ShaderParams> => {
   };
 };
 
-const CAMERA_ANIMATION_TYPES = ["TURNTABLE", "TUMBLE", "HOVER", "HEARTBEAT", "SHAKE"];
-
-const isValidTextureType = (type: TextureType): boolean => {
-  return typeof type === "string" && !CAMERA_ANIMATION_TYPES.includes(type);
-};
+export const catalogTextureTypes = (): TextureType[] => PATTERN_MANIFEST.map((entry) => entry.type);
 
 export const generateSmartRandomState = (current: AppState): AppState => {
-  const allTypes = Object.values(TextureType);
-  const validTypes = allTypes.filter(isValidTextureType);
+  const validTypes = catalogTextureTypes();
   const textureType = validTypes[Math.floor(Math.random() * validTypes.length)];
   const blendType = validTypes[Math.floor(Math.random() * validTypes.length)];
 

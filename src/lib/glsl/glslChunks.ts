@@ -223,8 +223,6 @@ const HEADER = `
     #define TAU 6.28318530718
 `;
 
-const modernize = (code: string) => code;
-
 export const SHADER_CHUNKS = {
   HEADER,
   MATH_UTILS,
@@ -239,7 +237,7 @@ export const SHADER_CHUNKS = {
   SPECTRAL_LIB,
   SDF_LIB,
   MAIN_PROCESS: `
-        ${modernize(TRANSFORM_FUNCTIONS)}
+        ${TRANSFORM_FUNCTIONS}
         ${PROCESS_FUNCTIONS}
         ${LIGHTING_FUNCTIONS}
         

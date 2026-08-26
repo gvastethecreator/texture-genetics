@@ -25,7 +25,8 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
   }, [isOpen, state]);
 
   const handleCopy = async () => {
-    await copyToClipboard(code);
+    const success = await copyToClipboard(code);
+    if (!success) return;
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

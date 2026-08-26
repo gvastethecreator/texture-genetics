@@ -49,8 +49,9 @@ const deferredPrefixes = [
   "gifStrategy",
   "videoStrategy",
   "zipStrategy",
-  "htmlStrategy",
+  "standaloneHtml",
   "glbStrategy",
+  "imageStrategy",
 ];
 
 const initialEffectsChunk = initialAssets.find((name) =>

@@ -1,12 +1,18 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Upload, FileJson, Image as ImageIcon, Box } from "lucide-react";
+import { classifyUserFile } from "../utils/fileLoaders";
 
 interface DragDropOverlayProps {
   onDropJson: (file: File) => void;
   onDropImage: (file: File) => void;
+  onDropUnknown?: (file: File) => void;
 }
 
-export const DragDropOverlay: React.FC<DragDropOverlayProps> = ({ onDropJson, onDropImage }) => {
+export const DragDropOverlay: React.FC<DragDropOverlayProps> = ({
+  onDropJson,
+  onDropImage,
+  onDropUnknown,
+}) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragType, setDragType] = useState<"json" | "image" | "model" | "unknown">("unknown");
 
@@ -21,16 +27,11 @@ export const DragDropOverlay: React.FC<DragDropOverlayProps> = ({ onDropJson, on
     if (e.dataTransfer?.items && e.dataTransfer.items.length > 0) {
       setIsDragging(true);
       const item = e.dataTransfer.items[0];
-
-      // Heuristic detection of type
-      if (item.type.includes("json")) {
-        setDragType("json");
-      } else if (item.type.includes("image")) {
-        setDragType("image");
-      } else {
-        // Models often don't have a specific MIME type in drag events, default to generic or model
-        setDragType("model");
-      }
+      const kind = classifyUserFile({
+        name: item.getAsFile()?.name ?? "",
+        type: item.type,
+      } as File);
+      setDragType(kind === "svg" ? "image" : kind);
     }
   }, []);
 
@@ -64,20 +65,13 @@ export const DragDropOverlay: React.FC<DragDropOverlayProps> = ({ onDropJson, on
 
       if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
         const file = e.dataTransfer.files[0];
-        const name = file.name.toLowerCase();
-
-        if (name.endsWith(".json")) {
-          onDropJson(file);
-        } else if (name.endsWith(".obj") || name.endsWith(".gltf") || name.endsWith(".glb")) {
-          // Logic handled by App.tsx, but we identify it here conceptually
-          onDropImage(file);
-        } else {
-          // Assume image for everything else
-          onDropImage(file);
-        }
+        const kind = classifyUserFile(file);
+        if (kind === "json") onDropJson(file);
+        else if (kind === "unknown") onDropUnknown?.(file);
+        else onDropImage(file);
       }
     },
-    [onDropJson, onDropImage],
+    [onDropJson, onDropImage, onDropUnknown],
   );
 
   useEffect(() => {
@@ -108,7 +102,7 @@ export const DragDropOverlay: React.FC<DragDropOverlayProps> = ({ onDropJson, on
   } else if (dragType === "image") {
     icon = <ImageIcon size={64} />;
     text = "Load Texture";
-    subtext = "Use as Base or Mask";
+    subtext = "Load as base texture";
     colorClass = "text-amber-400 border-amber-500";
   } else if (dragType === "model") {
     icon = <Box size={64} />;

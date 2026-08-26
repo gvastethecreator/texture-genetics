@@ -543,7 +543,6 @@ export interface AppState {
   tilingPreview: boolean;
   tileMode: boolean; // For visual testing in renderer
   gridOverlay: boolean;
-  isSidebarOpen: boolean;
   isSettingsOpen: boolean;
   isCodeOpen: boolean;
   isShortcutsOpen: boolean;

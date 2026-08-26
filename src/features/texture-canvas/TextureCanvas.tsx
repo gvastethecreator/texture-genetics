@@ -42,11 +42,6 @@ const SceneEffects = lazy(() =>
   import("./components/SceneEffects").then((module) => ({ default: module.SceneEffects })),
 );
 
-const handleCanvasContextLost = (event: Event) => {
-  event.preventDefault();
-  console.warn("WebGL Context Lost");
-};
-
 // --- SCENE COMPOSITION ---
 interface SceneCompositionProps {
   appState: AppState;
@@ -191,6 +186,7 @@ export const TextureCanvas: React.FC<{
   const contextCleanupRef = useRef<(() => void) | null>(null);
   const stateRef = useRef(appState);
   const [isLoading, setIsLoading] = useState(false);
+  const [contextLost, setContextLost] = useState(false);
   const [assetError, setAssetError] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState(100);
   const [orbitEnabled, setOrbitEnabled] = useState(true);
@@ -228,7 +224,13 @@ export const TextureCanvas: React.FC<{
         updateState({ geometry: GeometryType.CUSTOM, customModel: url });
       }
     }
+    e.target.value = "";
   };
+
+  const handleCanvasContextLost = useCallback((event: Event) => {
+    event.preventDefault();
+    setContextLost(true);
+  }, []);
 
   const onCreated = useCallback(
     (state: any) => {
@@ -239,12 +241,15 @@ export const TextureCanvas: React.FC<{
       if (!(renderer as { isWebGPURenderer?: boolean })?.isWebGPURenderer && renderer.domElement) {
         contextCleanupRef.current?.();
         renderer.domElement.addEventListener("webglcontextlost", handleCanvasContextLost, false);
+        const handleRestored = () => setContextLost(false);
+        renderer.domElement.addEventListener("webglcontextrestored", handleRestored, false);
         contextCleanupRef.current = () => {
           renderer.domElement.removeEventListener(
             "webglcontextlost",
             handleCanvasContextLost,
             false,
           );
+          renderer.domElement.removeEventListener("webglcontextrestored", handleRestored, false);
         };
       }
 
@@ -259,7 +264,7 @@ export const TextureCanvas: React.FC<{
 
       return undefined;
     },
-    [setGlRef],
+    [setGlRef, handleCanvasContextLost],
   );
 
   return (
@@ -267,6 +272,21 @@ export const TextureCanvas: React.FC<{
       ref={containerRef}
       className="w-full h-full absolute inset-0 group bg-[#111216] overflow-hidden"
     >
+      {contextLost && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70">
+          <div className="flex flex-col items-center gap-3 text-white">
+            <span className="text-sm font-bold">GPU context lost</span>
+            <button
+              type="button"
+              className="rounded-lg bg-white px-3 py-2 text-xs font-bold uppercase tracking-wide text-black"
+              onClick={() => window.location.reload()}
+            >
+              Reload
+            </button>
+          </div>
+        </div>
+      )}
+
       {isLoading && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="flex flex-col items-center gap-2">
@@ -278,6 +298,7 @@ export const TextureCanvas: React.FC<{
 
       {isReady ? (
         <Canvas
+          key={`aa-${appState.settings.antialias}`}
           onCreated={onCreated}
           className="w-full h-full block"
           frameloop={requiresContinuousRendering(appState) ? "always" : "demand"}

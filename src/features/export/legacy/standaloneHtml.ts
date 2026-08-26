@@ -212,3 +212,13 @@ export const generateLegacyStandaloneHtml = (state: AppState): string => {
     });
     </script></body></html>`;
 };
+
+export const generateHtml = async (
+  state: AppState,
+  onProgress: (progress: number) => void,
+): Promise<Blob> => {
+  onProgress(10);
+  const htmlContent = generateLegacyStandaloneHtml(state);
+  onProgress(100);
+  return new Blob([htmlContent], { type: "text/html" });
+};

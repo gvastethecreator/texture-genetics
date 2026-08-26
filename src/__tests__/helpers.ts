@@ -17,7 +17,6 @@ export const mockAppState = (overrides?: Partial<AppState>): AppState => ({
   tilingPreview: false,
   tileMode: DEFAULTS.TILE_MODE,
   gridOverlay: false,
-  isSidebarOpen: true,
   isSettingsOpen: false,
   isCodeOpen: false,
   isShortcutsOpen: false,
@@ -59,7 +58,8 @@ export const mockHeaderActions = () => ({
   randomize: vi.fn(),
   loadPreset: vi.fn(),
   selectTexture: vi.fn(),
-  saveUserPreset: vi.fn(),
+  saveUserPreset: vi.fn(async () => "preset-1"),
   deleteUserPreset: vi.fn(),
   resetState: vi.fn(),
+  addToast: vi.fn(),
 });

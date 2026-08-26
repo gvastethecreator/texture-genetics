@@ -3,7 +3,6 @@ import * as Icons from "lucide-react";
 import { AppState, ViewMode } from "../../../core/types/types";
 import { ControlSection, Label, Slider, ActionButton } from "../../../shared/ui/Elements";
 import { copyToClipboard } from "../../../shared/utils/clipboard";
-import { generateLegacyStandaloneHtml } from "../../export/legacy/standaloneHtml";
 
 interface ExportPanelProps {
   state: AppState;
@@ -46,6 +45,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = memo(
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleCopyHtml = async () => {
+      const { generateLegacyStandaloneHtml } = await import("../../export/legacy/standaloneHtml");
       const html = generateLegacyStandaloneHtml(state);
       const success = await copyToClipboard(html);
       if (success) {
@@ -63,6 +63,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = memo(
       if (file && importPresets) {
         importPresets(file);
       }
+      e.target.value = "";
     };
 
     return (
@@ -151,39 +152,49 @@ export const ExportPanel: React.FC<ExportPanelProps> = memo(
           color="#E0E0E0"
           defaultOpen={true}
         >
-          <div className="space-y-3">
+          <div className="space-y-3" aria-busy={Boolean(isGenerating)}>
             <div className="grid grid-cols-2 gap-2">
               <button
+                type="button"
+                disabled={isGenerating}
                 onClick={() => onDownload(ViewMode.ALBEDO)}
-                className="bg-white text-black hover:bg-gray-200 py-2 px-3 rounded font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                className="bg-white text-black hover:bg-gray-200 py-2 px-3 rounded font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1.5 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-35"
               >
                 <Icons.Image size={14} /> Albedo
               </button>
               <button
+                type="button"
+                disabled={isGenerating}
                 onClick={() => onDownload(ViewMode.NORMAL)}
-                className="bg-surface border border-border text-blue-400 hover:bg-blue-900/20 hover:border-blue-800 py-2 px-3 rounded font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                className="bg-surface border border-border text-blue-400 hover:bg-blue-900/20 hover:border-blue-800 py-2 px-3 rounded font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1.5 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-35"
               >
                 <Icons.Activity size={14} /> Normal
               </button>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <button
+                type="button"
+                disabled={isGenerating}
                 onClick={() => onDownload(ViewMode.HEIGHT)}
-                className="bg-surface border border-border text-gray-300 hover:bg-gray-800 py-2 px-3 rounded font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                className="bg-surface border border-border text-gray-300 hover:bg-gray-800 py-2 px-3 rounded font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1.5 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-35"
               >
                 <Icons.AlignVerticalJustifyCenter size={14} /> Height
               </button>
               <button
+                type="button"
+                disabled={isGenerating}
                 onClick={() => onDownload(ViewMode.UV)}
-                className="bg-surface border border-border text-teal-400 hover:bg-teal-900/20 hover:border-teal-800 py-2 px-3 rounded font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                className="bg-surface border border-border text-teal-400 hover:bg-teal-900/20 hover:border-teal-800 py-2 px-3 rounded font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1.5 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-35"
               >
                 <Icons.Grid size={14} /> UV
               </button>
             </div>
             <div className="grid grid-cols-1 gap-2">
               <button
+                type="button"
+                disabled={isGenerating}
                 onClick={() => onDownload(ViewMode.RENDER)}
-                className="bg-surface border border-border text-amber-400 hover:bg-amber-900/20 hover:border-amber-800 py-2 px-3 rounded font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                className="bg-surface border border-border text-amber-400 hover:bg-amber-900/20 hover:border-amber-800 py-2 px-3 rounded font-bold text-[10px] uppercase tracking-wide flex items-center justify-center gap-1.5 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-35"
               >
                 <Icons.Sparkles size={14} /> Render
               </button>

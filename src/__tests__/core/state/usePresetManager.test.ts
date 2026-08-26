@@ -251,8 +251,8 @@ describe("usePresetManager", () => {
     );
     await waitFor(() => expect(idbMocks.get).toHaveBeenCalledTimes(1));
 
-    let firstSave!: Promise<void>;
-    let secondSave!: Promise<void>;
+    let firstSave!: Promise<string | undefined>;
+    let secondSave!: Promise<string | undefined>;
     act(() => {
       firstSave = result.current.actions.saveUserPreset("First concurrent");
       secondSave = result.current.actions.saveUserPreset("Second concurrent");

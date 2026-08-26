@@ -13,7 +13,6 @@ export const createDefaultAppState = (): AppState => ({
   tilingPreview: false,
   tileMode: DEFAULTS.TILE_MODE,
   gridOverlay: false,
-  isSidebarOpen: true,
   isSettingsOpen: false,
   isCodeOpen: DEFAULTS.IS_CODE_OPEN,
   isShortcutsOpen: DEFAULTS.IS_SHORTCUTS_OPEN,

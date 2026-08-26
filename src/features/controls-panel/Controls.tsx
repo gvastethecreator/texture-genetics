@@ -11,6 +11,7 @@ interface LeftControlsProps {
   state: AppState;
   actions: {
     updateState: (s: Partial<AppState>) => void;
+    patchGroup: <K extends keyof AppState>(key: K, values: Partial<AppState[K]>) => void;
     updateParams: (p: Partial<AppState["params"]>) => void;
     updateParamAnimation: (key: string, config: AnimationConfig) => void;
     selectTexture: (t: TextureType) => void;
@@ -24,13 +25,7 @@ interface LeftControlsProps {
 }
 
 export const Controls: React.FC<LeftControlsProps> = memo(({ state, actions, history }) => {
-  // Wrapper for group updates
-  const updateStateGroup = useCallback(
-    <K extends keyof AppState>(key: K, values: Partial<AppState[K]>) => {
-      actions.updateState({ [key]: { ...(state[key] as object), ...values } } as Partial<AppState>);
-    },
-    [actions, state],
-  );
+  const updateStateGroup = actions.patchGroup;
 
   // FIX: Memoize updateBalance to prevent color panel jitter
   const updateBalance = useCallback(

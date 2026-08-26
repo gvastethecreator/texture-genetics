@@ -21,6 +21,7 @@ import { DragDropOverlay } from "./shared/ui/DragDropOverlay";
 import { ToastContainer } from "./shared/ui/Toast";
 import { ErrorBoundary } from "./shared/components/ErrorBoundary";
 import { collectStateObjectUrls, revokeReplacedObjectUrls } from "./shared/utils/objectUrls";
+import { classifyUserFile } from "./shared/utils/fileLoaders";
 
 // Lazy-loaded modals (loaded on demand)
 const SettingsModal = lazy(() =>
@@ -140,29 +141,35 @@ export default function App() {
   // Drag & Drop
   const handleDropJson = (file: File) => actions.importPresets(file);
   const handleDropImage = (file: File) => {
-    const name = file.name.toLowerCase();
-    if (name.endsWith(".obj") || name.endsWith(".gltf") || name.endsWith(".glb")) {
-      const url = URL.createObjectURL(file);
+    const kind = classifyUserFile(file);
+    const url = URL.createObjectURL(file);
+    if (kind === "model") {
       actions.updateState({
         geometry: GeometryType.CUSTOM,
         customModel: url,
       });
-    } else {
-      // Texture
-      const reader = new FileReader();
-      const handleLoad = (e: ProgressEvent<FileReader>) => {
-        actions.updateState({
-          baseTexture: {
-            ...state.baseTexture,
-            enabled: true,
-            texture: e.target?.result as string,
-          },
-        });
-        actions.addToast("success", "Base Texture Loaded");
-      };
-      reader.addEventListener("load", handleLoad, { once: true });
-      reader.readAsDataURL(file);
+      actions.addToast("success", "Custom model loaded");
+      return;
     }
+    if (kind === "svg") {
+      actions.updateState({
+        geometry: GeometryType.SVG,
+        svg: { ...state.svg, url },
+      });
+      actions.addToast("success", "SVG shape loaded");
+      return;
+    }
+    actions.updateState({
+      baseTexture: {
+        ...state.baseTexture,
+        enabled: true,
+        texture: url,
+      },
+    });
+    actions.addToast("success", "Base texture loaded");
+  };
+  const handleDropUnknown = (file: File) => {
+    actions.addToast("error", `Unsupported file type: ${file.name}`);
   };
 
   if (state.isFullscreen) {
@@ -178,6 +185,7 @@ export default function App() {
           >
             Exit Fullscreen (ESC)
           </button>
+          <ToastContainer toasts={toasts} onRemove={actions.removeToast} />
         </div>
       </ErrorBoundary>
     );
@@ -195,7 +203,6 @@ export default function App() {
           userPresets={userPresets}
           actions={actions}
           history={history}
-          onShowCode={() => actions.updateState({ isCodeOpen: true })}
           toggleLeftPanel={toggleLeftPanel}
           toggleRightPanel={toggleRightPanel}
           leftPanelOpen={showLeft}
@@ -262,7 +269,11 @@ export default function App() {
 
             {/* Floating Status Bar inside Canvas area at bottom */}
             <div className="absolute bottom-0 left-0 right-0 z-10">
-              <StatusBar state={state} renderer={gl} />
+              <StatusBar
+                state={state}
+                renderer={gl}
+                onToggleAnimate={() => actions.updateState({ animate: !state.animate })}
+              />
             </div>
           </div>
 
@@ -324,7 +335,11 @@ export default function App() {
           )}
         </Suspense>
 
-        <DragDropOverlay onDropJson={handleDropJson} onDropImage={handleDropImage} />
+        <DragDropOverlay
+          onDropJson={handleDropJson}
+          onDropImage={handleDropImage}
+          onDropUnknown={handleDropUnknown}
+        />
 
         <ToastContainer toasts={toasts} onRemove={actions.removeToast} />
       </div>

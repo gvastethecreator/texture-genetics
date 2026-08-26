@@ -9,6 +9,7 @@ import { PortalTooltip } from "../../shared/ui/Elements";
 interface StatusBarProps {
   state: AppState;
   renderer?: CanvasRenderer | null;
+  onToggleAnimate?: () => void;
 }
 
 const Node: React.FC<{
@@ -51,7 +52,7 @@ const Arrow = () => (
   </div>
 );
 
-export const StatusBar: React.FC<StatusBarProps> = ({ state, renderer }) => {
+export const StatusBar: React.FC<StatusBarProps> = ({ state, renderer, onToggleAnimate }) => {
   const categoryInfo = useMemo(() => {
     const entry = PATTERN_MANIFEST_BY_TYPE[state.textureType];
     return entry
@@ -170,12 +171,18 @@ export const StatusBar: React.FC<StatusBarProps> = ({ state, renderer }) => {
           <Icons.FileImage size={12} className="text-amber-500" />
           <span className="uppercase">{state.settings.exportFormat}</span>
         </div>
-        <div className="hidden md:flex items-center gap-2 bg-[#121212] px-2 py-1 rounded border border-white/5 shadow-inner">
+        <button
+          type="button"
+          onClick={onToggleAnimate}
+          aria-pressed={state.animate}
+          title="Pause/play (Space)"
+          className="flex items-center gap-2 bg-[#121212] px-2 py-1 rounded border border-white/5 shadow-inner hover:border-white/20"
+        >
           <div
             className={`w-2 h-2 rounded-full ${state.animate ? "bg-green-500 animate-pulse shadow-glow-sm" : "bg-red-500"}`}
           />
           <span>{state.animate ? "LIVE" : "STOP"}</span>
-        </div>
+        </button>
       </div>
     </div>
   );

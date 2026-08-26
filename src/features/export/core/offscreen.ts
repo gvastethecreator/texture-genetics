@@ -4,7 +4,6 @@ import { AppState, ViewMode } from "../../../core/types/types";
 import { disposeRoot } from "../../../lib/three/cleanup";
 import { createTslMaterial } from "../../../lib/tsl/tslBuilder";
 import { updateTslUniforms } from "../../../lib/tsl/uniforms";
-import { createLegacyOffscreenScene, getSharedLegacyRenderer } from "../legacy/offscreenLegacy";
 import { loadRequiredExportTextures } from "./exportAssets";
 
 type OffscreenRenderer = THREE.WebGLRenderer | WebGPURenderer;
@@ -55,6 +54,7 @@ export const setupOffscreenScene = async (
   } catch (error) {
     console.warn("WebGPU offscreen unavailable, falling back to legacy WebGL export", error);
     usingTsl = false;
+    const { getSharedLegacyRenderer } = await import("../legacy/offscreenLegacy");
     renderer = getSharedLegacyRenderer(state.settings.antialias);
   }
 
@@ -107,6 +107,7 @@ export const setupOffscreenScene = async (
     };
   }
 
+  const { createLegacyOffscreenScene } = await import("../legacy/offscreenLegacy");
   return createLegacyOffscreenScene({
     state,
     width,

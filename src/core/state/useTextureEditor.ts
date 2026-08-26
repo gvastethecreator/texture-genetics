@@ -20,24 +20,13 @@ export const useTextureEditor = () => {
     [addToast],
   );
 
-  const {
-    state,
-    actions: stateActions,
-    isBusy,
-  } = useAppState({
+  const { state, actions: stateActions } = useAppState({
     onStateChangeForHistory: (s: AppState) => historyCallbackRef.current(s),
     onStorageWarning: handleStorageWarning,
   });
 
-  // History stack tracks the AppState
-  const { history, currentState, pushToHistory, historyControl } = useHistoryStack(state);
+  const { history, pushToHistory, historyControl } = useHistoryStack();
 
-  // During initialization/history synchronization, currentState can be
-  // temporarily undefined. Fall back to the source app state to avoid
-  // runtime crashes in render paths that access state fields directly.
-  const stableState = currentState ?? state;
-
-  // Wire up callback via ref (safe with StrictMode)
   historyCallbackRef.current = pushToHistory;
 
   // --- HISTORY SYNCHRONIZATION ---
@@ -67,13 +56,13 @@ export const useTextureEditor = () => {
       canRedo: history.canRedo,
       undo: handleUndo,
       redo: handleRedo,
-      commit: history.commit,
+      commit: () => pushToHistory(state),
     }),
-    [history.canUndo, history.canRedo, handleUndo, handleRedo, history.commit],
+    [history.canUndo, history.canRedo, handleUndo, handleRedo, pushToHistory, state],
   );
 
   const { userPresets, actions: presetActions } = usePresetManager({
-    initialState: currentState,
+    initialState: state,
     onLoadPreset: (newState) => {
       stateActions.loadPreset(newState);
       addToast("success", "Preset loaded successfully");
@@ -93,11 +82,10 @@ export const useTextureEditor = () => {
   );
 
   return {
-    state: stableState,
+    state,
     history: enhancedHistory,
     actions,
     userPresets,
-    isBusy,
     toasts,
   };
 };

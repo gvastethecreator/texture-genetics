@@ -13,6 +13,7 @@ interface RightControlsProps {
   state: AppState;
   actions: {
     updateState: (s: Partial<AppState>) => void;
+    patchGroup: <K extends keyof AppState>(key: K, values: Partial<AppState[K]>) => void;
     updateParams: (p: Partial<AppState["params"]>) => void;
     updateParamAnimation: (key: string, config: AnimationConfig) => void;
     exportPresets: () => void;
@@ -47,14 +48,7 @@ export const RightControls: React.FC<RightControlsProps> = memo(
   }) => {
     const [activeTab, setActiveTab] = useState<"texture" | "scene">("texture");
 
-    const updateStateGroup = React.useCallback(
-      <K extends keyof AppState>(key: K, values: Partial<AppState[K]>) => {
-        actions.updateState({
-          [key]: { ...(state[key] as object), ...values },
-        } as Partial<AppState>);
-      },
-      [actions, state],
-    );
+    const updateStateGroup = actions.patchGroup;
 
     return (
       <div className="h-full bg-panel flex flex-col border-l border-border">

@@ -24,6 +24,17 @@ const readFile = (file: File, method: "readAsDataURL" | "readAsText"): Promise<s
     reader[method](file);
   });
 
+export type IngestKind = "json" | "image" | "model" | "svg" | "unknown";
+
+export const classifyUserFile = (file: File): IngestKind => {
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".json")) return "json";
+  if (name.endsWith(".svg")) return "svg";
+  if (name.endsWith(".obj") || name.endsWith(".gltf") || name.endsWith(".glb")) return "model";
+  if (file.type.startsWith("image/") || /\.(png|jpe?g|webp|gif|bmp)$/.test(name)) return "image";
+  return "unknown";
+};
+
 export const readFileAsDataUrl = (file: File): Promise<string> => readFile(file, "readAsDataURL");
 
 export const readTextFile = (file: File): Promise<string> => readFile(file, "readAsText");

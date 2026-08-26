@@ -137,7 +137,18 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
         };
         try {
           await persistMutation((current) => [...current, newPreset]);
-          addToast("success", `Preset "${normalizedName}" saved!`);
+          const droppedAssets =
+            Boolean(initialState.baseTexture?.texture) ||
+            Boolean(initialState.sticker?.texture) ||
+            Boolean(initialState.imageAlpha?.maskTexture) ||
+            Boolean(initialState.customModel);
+          addToast(
+            "success",
+            droppedAssets
+              ? `Preset "${normalizedName}" saved. Images and custom models are not stored in presets.`
+              : `Preset "${normalizedName}" saved!`,
+          );
+          return newPreset.id;
         } catch (idbError) {
           console.error("IDB preset save error", idbError);
           addToast("error", "Preset could not be saved; no changes were applied");
@@ -169,12 +180,25 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
   );
 
   const exportPresets = useCallback(() => {
-    if (userPresets.length === 0) {
-      addToast("info", "No presets to export.");
-      return;
-    }
     try {
-      const presetDocument = createPresetDocument(parsePresetDocument(userPresets));
+      const source =
+        userPresets.length > 0
+          ? userPresets
+          : [
+              {
+                id: createPresetId(),
+                name: "Current work",
+                date: Date.now(),
+                state: {
+                  ...initialState,
+                  imageAlpha: { ...initialState.imageAlpha, maskTexture: null },
+                  baseTexture: { ...initialState.baseTexture, texture: null },
+                  sticker: { ...initialState.sticker, texture: null },
+                  customModel: null,
+                },
+              },
+            ];
+      const presetDocument = createPresetDocument(parsePresetDocument(source));
       const dataStr =
         "data:text/json;charset=utf-8," +
         encodeURIComponent(JSON.stringify(presetDocument, null, 2));
@@ -189,7 +213,7 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
       console.error("Failed to export presets", e);
       addToast("error", "Failed to export presets");
     }
-  }, [userPresets, addToast]);
+  }, [userPresets, initialState, addToast]);
 
   const importPresets = useCallback(
     async (file: File) => {

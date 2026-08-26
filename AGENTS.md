@@ -60,3 +60,17 @@ src/
 - Use `@/` path alias for `src/` imports
 - Format with oxfmt before committing
 - Keep GLSL in `.glsl` files, not inline strings
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues and the linked GitHub Project hold live state. `.scratch/` holds synchronized local mirrors. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Categories `bug` and `enhancement`. Triage `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context. Operator notes in `.scratch/architecture/`. Tickets in `.scratch/texture-genetics/issues/`. See `docs/agents/domain.md`.

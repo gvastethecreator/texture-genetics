@@ -7,6 +7,7 @@ import {
   generateSmartRandomState,
   generateHarmoniousPalette,
   generateRandomParams,
+  catalogTextureTypes,
 } from "../logic/randomizer";
 
 const VALID_VIEW_MODES = new Set<number>(
@@ -18,7 +19,6 @@ const isValidViewMode = (value: unknown): value is ViewMode =>
   typeof value === "number" && VALID_VIEW_MODES.has(value);
 const isValidGeometryType = (value: unknown): value is GeometryType =>
   typeof value === "string" && VALID_GEOMETRIES.has(value);
-const CAMERA_ANIMATION_TYPES = ["TURNTABLE", "TUMBLE", "HOVER", "HEARTBEAT", "SHAKE"];
 
 // --- INITIAL STATE DEFINITION ---
 const INITIAL_STATE: AppState = createDefaultAppState();
@@ -102,6 +102,40 @@ export const useAppState = (props: {
     });
   }, []);
 
+  const patchGroup = useCallback(
+    <K extends keyof AppState>(key: K, values: Partial<AppState[K]>) => {
+      const cleanValues = sanitizeValue(values);
+      if (cleanValues == null) return;
+      setState((prev) => {
+        const current = prev[key];
+        if (current === null || typeof current !== "object" || Array.isArray(current)) {
+          return { ...prev, [key]: cleanValues } as AppState;
+        }
+        const merged = { ...(current as object), ...(cleanValues as object) } as AppState[K];
+        if (key === "sticker" && "texture" in (cleanValues as object)) {
+          const texture = (cleanValues as { texture?: unknown }).texture;
+          if (typeof texture !== "string" && texture !== null) {
+            (merged as AppState["sticker"]).texture = null;
+          }
+        }
+        if (key === "baseTexture" && "texture" in (cleanValues as object)) {
+          const texture = (cleanValues as { texture?: unknown }).texture;
+          if (typeof texture !== "string" && texture !== null) {
+            (merged as AppState["baseTexture"]).texture = null;
+          }
+        }
+        if (key === "imageAlpha" && "maskTexture" in (cleanValues as object)) {
+          const maskTexture = (cleanValues as { maskTexture?: unknown }).maskTexture;
+          if (typeof maskTexture !== "string" && maskTexture !== null) {
+            (merged as AppState["imageAlpha"]).maskTexture = null;
+          }
+        }
+        return { ...prev, [key]: merged };
+      });
+    },
+    [],
+  );
+
   const replaceState = useCallback((newState: AppState) => {
     // Used for History/Undo synchronization.
     // We trust the history state is valid, so minimal sanitization.
@@ -155,10 +189,7 @@ export const useAppState = (props: {
   }, []);
 
   const randomizePatternSelection = useCallback(() => {
-    const allTypes = Object.values(TextureType);
-    const validTypes = allTypes.filter(
-      (t) => typeof t === "string" && !CAMERA_ANIMATION_TYPES.includes(t),
-    );
+    const validTypes = catalogTextureTypes();
     const randomType = validTypes[Math.floor(Math.random() * validTypes.length)];
     setState((prev) => ({ ...prev, textureType: randomType }));
   }, []);
@@ -192,7 +223,6 @@ export const useAppState = (props: {
       viewMode: prev.viewMode,
       geometry: prev.geometry,
       customModel: prev.customModel,
-      isSidebarOpen: prev.isSidebarOpen,
       settings: prev.settings,
       camera: prev.camera,
       environment: { ...prev.environment, ...cleanPreset.environment },
@@ -230,7 +260,6 @@ export const useAppState = (props: {
     props.onStateChangeForHistory(stateRef.current);
     setState((prev) => ({
       ...INITIAL_STATE,
-      isSidebarOpen: prev.isSidebarOpen,
       settings: prev.settings,
       camera: prev.camera, // Keep camera
     }));
@@ -238,9 +267,9 @@ export const useAppState = (props: {
 
   return {
     state,
-    isBusy: false,
     actions: {
       updateState,
+      patchGroup,
       replaceState,
       updateParams,
       updateParamAnimation,

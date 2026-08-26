@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { StatusBar } from "../../features/status-bar/StatusBar";
 import { mockAppState } from "../helpers";
 
@@ -19,13 +19,20 @@ describe("StatusBar", () => {
   it("shows LIVE when animating", () => {
     const state = mockAppState({ animate: true });
     render(<StatusBar state={state} />);
-    expect(screen.getByText("LIVE")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "LIVE" })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("shows STOP when not animating", () => {
     const state = mockAppState({ animate: false });
     render(<StatusBar state={state} />);
-    expect(screen.getByText("STOP")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "STOP" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("toggles animation from the LIVE control", () => {
+    const onToggleAnimate = vi.fn();
+    render(<StatusBar state={mockAppState({ animate: true })} onToggleAnimate={onToggleAnimate} />);
+    fireEvent.click(screen.getByRole("button", { name: "LIVE" }));
+    expect(onToggleAnimate).toHaveBeenCalledOnce();
   });
 
   it("displays the current texture type", () => {

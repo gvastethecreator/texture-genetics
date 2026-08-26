@@ -12,9 +12,10 @@ interface HeaderProps {
     randomize: () => void;
     loadPreset: (s: Partial<AppState>) => void;
     selectTexture: (t: TextureType) => void;
-    saveUserPreset: (name: string) => void;
+    saveUserPreset: (name: string) => void | Promise<string | undefined>;
     deleteUserPreset: (id: string) => void;
     resetState: () => void;
+    addToast: (type: "success" | "error" | "info", message: string) => void;
   };
   history: {
     canUndo: boolean;
@@ -22,7 +23,6 @@ interface HeaderProps {
     undo: () => void;
     redo: () => void;
   };
-  onShowCode: () => void;
   toggleLeftPanel: () => void;
   toggleRightPanel: () => void;
   leftPanelOpen: boolean;
@@ -35,7 +35,6 @@ export const Header: React.FC<HeaderProps> = memo(
     userPresets,
     actions,
     history,
-    onShowCode: _onShowCode,
     toggleLeftPanel,
     toggleRightPanel,
     leftPanelOpen,
@@ -160,7 +159,11 @@ export const Header: React.FC<HeaderProps> = memo(
             </button>
             <button
               type="button"
-              onClick={actions.resetState}
+              onClick={() => {
+                if (!window.confirm("Reset all settings to defaults?")) return;
+                actions.resetState();
+                actions.addToast("info", "Reset to defaults — Undo with Ctrl/⌘+Z");
+              }}
               className={`${btnClass} hidden hover:text-red-400 sm:flex`}
               title="Reset All"
               aria-label="Reset all settings"
@@ -254,7 +257,22 @@ export const Header: React.FC<HeaderProps> = memo(
 
           <button
             type="button"
-            onClick={() => actions.saveUserPreset("New Preset")}
+            onClick={() => {
+              const entered = window.prompt("Name this preset", "New Preset");
+              if (entered == null) return;
+              const trimmed = entered.trim();
+              if (!trimmed) return;
+              const used = new Set(userPresets.map((preset) => preset.name));
+              let uniqueName = trimmed;
+              let suffix = 2;
+              while (used.has(uniqueName)) {
+                uniqueName = `${trimmed} ${suffix}`;
+                suffix += 1;
+              }
+              void Promise.resolve(actions.saveUserPreset(uniqueName)).then((id) => {
+                if (id) setSelectedPresetId(id);
+              });
+            }}
             className="hidden h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-[#151515] text-gray-400 shadow-tactile transition-[color,box-shadow,transform] hover:text-green-400 hover:shadow-tactile-hover active:translate-y-px sm:flex"
             title="Save Preset"
             aria-label="Save preset"
@@ -280,7 +298,7 @@ export const Header: React.FC<HeaderProps> = memo(
           <button
             type="button"
             onClick={() => actions.updateState({ isShortcutsOpen: true })}
-            className={`${btnClass} hidden lg:flex`}
+            className={btnClass}
             title="Keyboard Shortcuts"
             aria-label="Keyboard shortcuts"
           >
