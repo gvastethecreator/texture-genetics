@@ -7,7 +7,7 @@ Thank you for helping improve Texture Genetics. Keep changes focused, preserve b
 Requirements:
 
 - Node.js 22 or newer
-- pnpm 11.21
+- pnpm 12.0.0
 
 ```bash
 pnpm install --frozen-lockfile
@@ -17,6 +17,10 @@ pnpm run build
 ```
 
 Run `pnpm run dev` for interactive work. Exercise the affected texture, renderer, storage, or export path in a real browser when a change touches it.
+
+## Tests
+
+The suite uses one Vitest worker because Three.js and jsdom imports are heavy. jsdom does not compile shaders or run WebGL. After React Three Fiber upgrades, run a browser smoke because reconciler changes affect the live scene.
 
 ## Pull requests
 

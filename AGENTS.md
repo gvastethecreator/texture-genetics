@@ -7,7 +7,7 @@ Texture Genetics is a browser-based procedural texture workstation. It uses Reac
 ## Tech Stack
 
 - **Runtime:** Node.js >= 22
-- **Package Manager:** pnpm >= 11.20
+- **Package manager:** pnpm >= 12.0.0
 - **Framework:** React 19 + TypeScript 7.0
 - **Build:** Vite 8 (Rolldown bundler)
 - **Styling:** Tailwind CSS v4 (CSS-first config in `src/index.css`)
@@ -44,13 +44,6 @@ src/
 └── types/       # Additional type declarations
 ```
 
-## Architecture Notes
-
-- **State management:** Custom React hooks (no external library). `useTextureEditor` is the central orchestrator. `useAppState` holds state, `useHistoryStack` provides undo/redo, `usePresetManager` handles presets via IndexedDB.
-- **Shader pipeline:** GLSL shaders are assembled from chunks at runtime via `shaderBuilder.ts`. Patterns are in `data/patterns/glsl/` as `.glsl` files loaded via Vite raw imports.
-- **Export:** Strategy pattern in `features/export/strategies/`. Each export format (GIF, GLB, HTML, Sprite, Video, ZIP) is an independent strategy.
-- **Testing:** Tests mirror source structure in `src/__tests__/`. Uses jsdom environment. No WebGL-dependent tests currently.
-
 ## Coding Conventions
 
 - Use strict TypeScript (strict mode enabled)
@@ -61,16 +54,7 @@ src/
 - Format with oxfmt before committing
 - Keep GLSL in `.glsl` files, not inline strings
 
-## Agent skills
+- Tests live in `src/__tests__/`. jsdom does not compile shaders or run WebGL. Exercise renderer, shader, layout, and export paths in a real browser.
+- Do not hand-edit `docs/codemap/` artifacts. Read `docs/codemap/codemap.md` first. Refresh with maintain-code-map.
 
-### Issue tracker
-
-GitHub Issues and the linked GitHub Project hold live state. `.scratch/` holds synchronized local mirrors. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Categories `bug` and `enhancement`. Triage `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context. Operator notes in `.scratch/architecture/`. Tickets in `.scratch/texture-genetics/issues/`. See `docs/agents/domain.md`.
+GitHub Issues hold live ticket state. Local mirrors live under `.scratch/`.

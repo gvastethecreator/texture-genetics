@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-01 — repository metadata
+
+Trimmed live docs to setup, changelog, contributing, and security pages. Moved operator notes out of the tracked tree.
+
+## 2026-08-28 — tune-up and docs pass
+
+Aligned package manager and CI; reordered tasks; refreshed live docs.
+
 ## 2026-08-15 — public project maintenance
 
 - Updated pnpm to 11.21.0 and pinned `nanoid` 3.3.18 to resolve GHSA-2v37-7h3g-55p8.

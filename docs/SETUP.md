@@ -3,7 +3,7 @@
 ## Requirements
 
 - Node.js 22 or newer
-- pnpm 11.20 or newer
+- pnpm 12.0.0 or newer
 - Git
 - A current browser with WebGL 2 or WebGPU
 

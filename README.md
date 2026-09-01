@@ -8,7 +8,7 @@
 <p align="center">
   <a href="https://github.com/gvastethecreator/texture-genetics/actions/workflows/validate.yml"><img alt="Validation status" src="https://shieldcn.dev/github/ci/gvastethecreator/texture-genetics.svg?workflow=validate&branch=main&variant=secondary&size=xs" /></a>
   <a href="https://gvastethecreator.github.io/texture-genetics/"><img alt="Live workstation" src="https://shieldcn.dev/badge/live-workstation-6c5ce7.svg?logo=githubpages&variant=branded&size=xs" /></a>
-  <a href="https://pnpm.io/"><img alt="pnpm 11.21" src="https://shieldcn.dev/badge/pnpm-11.21-f69220.svg?logo=pnpm&variant=secondary&size=xs" /></a>
+  <a href="https://pnpm.io/"><img alt="pnpm 12.0.0" src="https://shieldcn.dev/badge/pnpm-12.0-f69220.svg?logo=pnpm&variant=secondary&size=xs" /></a>
   <a href="#what-it-does"><img alt="WebGL 2 and WebGPU" src="https://shieldcn.dev/badge/render-WebGL2%20%2B%20WebGPU-1f8f75.svg?variant=secondary&size=xs" /></a>
   <a href="LICENSE"><img alt="MIT license" src="https://shieldcn.dev/github/license/gvastethecreator/texture-genetics.svg?variant=secondary&size=xs" /></a>
 </p>
@@ -42,7 +42,7 @@ These captures come from the production build running its real WebGL texture pip
 
 ## Start
 
-Requirements: Node.js 22 or newer, pnpm 11.21 or newer, and Git.
+Requirements: Node.js 22 or newer, pnpm 12.0.0 or newer, and Git.
 
 ```bash
 git clone https://github.com/gvastethecreator/texture-genetics.git
@@ -70,16 +70,13 @@ VS Code exposes the same commands through short emoji tasks in
 ## Documentation
 
 - [Setup and deployment](docs/SETUP.md)
-- [Development workflow](docs/DEVELOPMENT.md)
-- [Dependency maintenance](docs/DEPENDENCIES.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Technical reference](docs/REFERENCE.md)
-- [Technical debt](docs/TECHNICAL_DEBT.md)
+- [Changelog](docs/CHANGELOG.md)
+- [Contributing](CONTRIBUTING.md)
 - [Security policy](.github/SECURITY.md)
 
 ## Project status
 
-- React 19, Three.js 0.185, Vite 8, Tailwind CSS 4, TypeScript 7, Node.js 22+, and pnpm 11.21
+- React 19, Three.js 0.185, Vite 8, Tailwind CSS 4, TypeScript 7, Node.js 22+, and pnpm 12.0.0
 - Direct dependencies match their latest published versions as of 2026-08-15
 - CI validates formatting, lint, types, coverage thresholds, and production build
 - Browser target: current Chromium, Firefox, and Safari with WebGL 2 or WebGPU
