@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Node.js 22 or newer
+- Node.js 22.12 or newer, or Node.js 24 / 26+
 - pnpm 12.0.0 or newer
 - Git
 - A current browser with WebGL 2 or WebGPU

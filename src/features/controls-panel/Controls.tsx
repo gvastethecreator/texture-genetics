@@ -18,6 +18,7 @@ interface LeftControlsProps {
     randomizeParams: () => void;
     randomizePalette: () => void;
     randomizePatternSelection: () => void;
+    addToast?: (type: "success" | "error" | "info", message: string) => void;
   };
   history: {
     commit: () => void;
@@ -94,10 +95,16 @@ export const Controls: React.FC<LeftControlsProps> = memo(({ state, actions, his
         updateStateGroup={updateStateGroup}
         onCommit={history.commit}
         onUpdateAnim={actions.updateParamAnimation}
+        onToast={actions.addToast}
       />
 
       {/* INPUT: Sticker */}
-      <StickerPanel state={state} updateStateGroup={updateStateGroup} onCommit={history.commit} />
+      <StickerPanel
+        state={state}
+        updateStateGroup={updateStateGroup}
+        onCommit={history.commit}
+        onToast={actions.addToast}
+      />
     </div>
   );
 });

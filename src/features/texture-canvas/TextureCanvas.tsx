@@ -2,29 +2,12 @@ import React, { useRef, useEffect, useState, useCallback, Suspense, lazy } from 
 import { Canvas, useThree } from "@react-three/fiber";
 import { Hud, OrthographicCamera } from "@react-three/drei";
 import * as THREE from "three";
-import { AppState, GeometryType, ViewMode } from "../../core/types/types";
+import { AppState, GeometryType } from "../../core/types/types";
 import { initializeRenderer, type CanvasRenderer } from "../../lib/three/rendererFactory";
 import { supportsAdvancedWebGLRenderTargets } from "../../lib/three/rendererCapabilities";
-import {
-  ZoomIn,
-  ZoomOut,
-  Maximize,
-  Square,
-  Box,
-  Circle,
-  Cylinder,
-  Smartphone,
-  Upload,
-  Palette,
-  Activity,
-  AlignVerticalJustifyCenter,
-  Sparkles,
-  Loader2,
-  Grid,
-  Type,
-  PenTool,
-  Image,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { ViewportChrome } from "./ViewportChrome";
+import { ingestUserFile } from "../../shared/utils/ingest";
 import { useContainerDimensions } from "../../shared/hooks/useContainerDimensions";
 import { hasActiveSceneEffects, requiresContinuousRendering } from "./renderPolicy";
 
@@ -217,11 +200,11 @@ export const TextureCanvas: React.FC<{
     const file = e.target.files?.[0];
     if (file) {
       setAssetError(null);
-      const url = URL.createObjectURL(file);
-      if (file.name.toLowerCase().endsWith(".svg")) {
-        updateState({ geometry: GeometryType.SVG, svg: { ...appState.svg, url } });
-      } else {
-        updateState({ geometry: GeometryType.CUSTOM, customModel: url });
+      const outcome = ingestUserFile(file, appState);
+      if (outcome.ok && outcome.patch && Object.keys(outcome.patch).length > 0) {
+        updateState(outcome.patch);
+      } else if (!outcome.ok) {
+        setAssetError(outcome.toast.message);
       }
     }
     e.target.value = "";
@@ -360,138 +343,14 @@ export const TextureCanvas: React.FC<{
         </div>
       )}
 
-      {/* CONTROLS OVERLAY */}
-      {appState.geometry !== GeometryType.BACKGROUND && (
-        <div className="absolute top-4 right-4 flex flex-col items-end gap-2 opacity-100 transition-opacity duration-300 pointer-events-none">
-          <div className="bg-black/60 backdrop-blur-md border border-white/10 rounded px-2 py-1 mb-1 shadow-lg pointer-events-auto">
-            <span className="text-[10px] font-mono text-accent-primary font-bold">
-              {zoomLevel}%
-            </span>
-          </div>
-          <div className="flex flex-col gap-2 pointer-events-auto">
-            <button
-              onClick={() => controlsHandle.current?.zoomIn()}
-              className="p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm shadow-lg transition-all active:scale-95"
-            >
-              <ZoomIn size={16} />
-            </button>
-            <button
-              onClick={() => controlsHandle.current?.zoomOut()}
-              className="p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm shadow-lg transition-all active:scale-95"
-            >
-              <ZoomOut size={16} />
-            </button>
-            <button
-              onClick={() => controlsHandle.current?.reset()}
-              className="p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm shadow-lg transition-all active:scale-95"
-              title="Reset View"
-            >
-              <Maximize size={16} />
-            </button>
-          </div>
-          <div className="flex flex-col gap-2 mt-2 pointer-events-auto">
-            <button
-              onClick={() => controlsHandle.current?.setView("top")}
-              className="p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm shadow-lg transition-all active:scale-95 text-[10px] font-mono font-bold"
-              title="Top View"
-            >
-              TOP
-            </button>
-            <button
-              onClick={() => controlsHandle.current?.setView("front")}
-              className="p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm shadow-lg transition-all active:scale-95 text-[10px] font-mono font-bold"
-              title="Front View"
-            >
-              FRT
-            </button>
-            <button
-              onClick={() => controlsHandle.current?.setView("left")}
-              className="p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm shadow-lg transition-all active:scale-95 text-[10px] font-mono font-bold"
-              title="Left View"
-            >
-              LFT
-            </button>
-            <button
-              onClick={() => controlsHandle.current?.setView("right")}
-              className="p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm shadow-lg transition-all active:scale-95 text-[10px] font-mono font-bold"
-              title="Right View"
-            >
-              RGT
-            </button>
-            <button
-              onClick={() => controlsHandle.current?.setView("back")}
-              className="p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm shadow-lg transition-all active:scale-95 text-[10px] font-mono font-bold"
-              title="Back View"
-            >
-              BCK
-            </button>
-            <button
-              onClick={() => controlsHandle.current?.setView("isometric")}
-              className="p-2 bg-black/50 hover:bg-black/80 text-white rounded-lg backdrop-blur-sm shadow-lg transition-all active:scale-95 text-[10px] font-mono font-bold"
-              title="Isometric View"
-            >
-              ISO
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* View Mode & Geometry Selectors (Bottom) */}
-      <div className="absolute bottom-14 right-4 z-10 flex gap-1 p-1 bg-black/40 backdrop-blur-md rounded-lg border border-white/5 opacity-100 transition-opacity duration-300">
-        {[
-          { mode: ViewMode.ALBEDO, icon: Palette, label: "Albedo" },
-          { mode: ViewMode.NORMAL, icon: Activity, label: "Normal" },
-          { mode: ViewMode.HEIGHT, icon: AlignVerticalJustifyCenter, label: "Height" },
-          { mode: ViewMode.UV, icon: Grid, label: "UV" },
-          { mode: ViewMode.RENDER, icon: Sparkles, label: "Render" },
-        ].map((item) => (
-          <button
-            key={item.mode}
-            onClick={() => updateState({ viewMode: item.mode })}
-            className={`p-1.5 rounded transition-all ${appState.viewMode === item.mode ? "bg-white text-black shadow-sm" : "text-gray-400 hover:text-white hover:bg-white/10"}`}
-            title={item.label}
-          >
-            <item.icon size={14} />
-          </button>
-        ))}
-      </div>
-
-      <div className="absolute bottom-14 left-4 z-10 flex gap-1 p-1 bg-black/40 backdrop-blur-md rounded-lg border border-white/5 opacity-100 transition-opacity duration-300">
-        {[
-          { type: GeometryType.BACKGROUND, icon: Image },
-          { type: GeometryType.PLANE, icon: Square },
-          { type: GeometryType.CUBE, icon: Box },
-          { type: GeometryType.SPHERE, icon: Circle },
-          { type: GeometryType.CYLINDER, icon: Cylinder },
-          { type: GeometryType.CARD, icon: Smartphone },
-          { type: GeometryType.SVG, icon: PenTool },
-          { type: GeometryType.TEXT, icon: Type },
-        ].map((item) => (
-          <button
-            key={item.type}
-            onClick={() => updateState({ geometry: item.type })}
-            className={`p-1.5 rounded transition-all ${appState.geometry === item.type ? "bg-white text-black shadow-sm" : "text-gray-400 hover:text-white hover:bg-white/10"}`}
-            title={item.type}
-          >
-            <item.icon size={14} />
-          </button>
-        ))}
-        <div className="w-px bg-white/20 mx-1 h-4 self-center" />
-        <input
-          type="file"
-          ref={modelInputRef}
-          onChange={handleModelUpload}
-          accept=".obj,.gltf,.glb,.svg"
-          className="hidden"
-        />
-        <button
-          onClick={() => modelInputRef.current?.click()}
-          className={`p-1.5 rounded transition-all ${appState.geometry === GeometryType.CUSTOM ? "bg-white text-black shadow-sm" : "text-gray-400 hover:text-white hover:bg-white/10"}`}
-          title="Upload Custom Model"
-        >
-          <Upload size={14} />
-        </button>
-      </div>
+      <ViewportChrome
+        appState={appState}
+        updateState={updateState}
+        zoomLevel={zoomLevel}
+        controlsHandle={controlsHandle}
+        modelInputRef={modelInputRef}
+        onModelUpload={handleModelUpload}
+      />
     </div>
   );
 };

@@ -29,4 +29,32 @@ describe("useHistoryStack", () => {
     });
     expect(result.current.historyControl.getNext()?.animate).toBe(true);
   });
+
+  it("keeps committed sticker textures by identity", () => {
+    const { result } = renderHook(() => useHistoryStack());
+    const texture = `data:image/png;base64,${"B".repeat(24)}`;
+    const first = mockAppState({ sticker: { ...mockAppState().sticker, texture } });
+    const second = mockAppState({ sticker: { ...mockAppState().sticker, texture: "other" } });
+
+    act(() => {
+      result.current.pushToHistory(first);
+      result.current.pushToHistory(second);
+    });
+
+    expect(result.current.historyControl.getPrevious()?.sticker.texture).toBe(texture);
+  });
+
+  it("reads the live stack from a getPrevious captured before the first commit", () => {
+    const { result } = renderHook(() => useHistoryStack());
+    const getPrevious = result.current.historyControl.getPrevious;
+    const first = mockAppState({ animate: false });
+    const second = mockAppState({ animate: true });
+
+    act(() => {
+      result.current.pushToHistory(first);
+      result.current.pushToHistory(second);
+    });
+
+    expect(getPrevious()?.animate).toBe(false);
+  });
 });

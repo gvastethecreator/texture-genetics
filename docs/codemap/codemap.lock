@@ -1,21 +1,22 @@
 {
-  "source_commit": "ff719b2fb9f6f89ed3000625ca4112f51082a2e8",
+  "source_commit": "f309ccc4cde8d6eed8be8a82d49abf266a1bbc98",
   "working_tree_dirty": true,
-  "generated_at": "2026-08-15T09:31:48Z",
+  "generated_at": "2026-09-05T06:00:00Z",
   "scanned_scope": [
     "."
   ],
   "excluded_directories": [
+    ".agents",
     ".cache",
     ".git",
     ".hg",
     ".next",
     ".nuxt",
-    ".pytest_cache",
-    ".scratch",
+    ".obsidian",
     ".svn",
     ".turbo",
     ".venv",
+    ".vscode",
     "__pycache__",
     "build",
     "coverage",
@@ -28,61 +29,43 @@
     "vendor",
     "venv"
   ],
-  "fingerprint_algorithm": "sha256-path-content-v1",
+  "fingerprint_algorithm": "sha256-path-content-v2",
   "modules": [
     {
       "id": ".",
       "path": ".",
-      "file_count": 15,
-      "fingerprint": "c8b579e1086b219aba3b1dbb796a45a389d2f6fe12b598dab50c0e2a163304bc"
+      "file_count": 16,
+      "fingerprint": "b051af5eef100d1320633fd242e8e97e21ef2e4811099e10c5977da9ce0d0557"
     },
     {
       "id": ".github",
       "path": ".github",
-      "file_count": 6,
-      "fingerprint": "64274df544b5291feb758ef77c5008d588190cc341583bd841c08ce81abcafac"
-    },
-    {
-      "id": ".vscode",
-      "path": ".vscode",
-      "file_count": 2,
-      "fingerprint": "3af70a68fb1f90d301d8df3b3303b0addb61e4891fcec91577975810e2be1ac8"
+      "file_count": 7,
+      "fingerprint": "b72b72047a5ea40578f792b50dab429bb75a5ec9b7bd5466c32adeb56817912b"
     },
     {
       "id": "docs",
       "path": "docs",
-      "file_count": 7,
-      "fingerprint": "ee1f9f344cd0d595e1dde25f00335803b6ec85dade97d0b9d27efefd756b3446"
-    },
-    {
-      "id": "logs",
-      "path": "logs",
-      "file_count": 1,
-      "fingerprint": "4f1fa48926641c53daea99794f62944fe9d490a821eef5ae40b04451649fa136"
-    },
-    {
-      "id": "plans",
-      "path": "plans",
-      "file_count": 24,
-      "fingerprint": "6e46025da6dc666a07b15fdc3aeeec38b3a728f06158b03b280ce2907c6fa855"
+      "file_count": 6,
+      "fingerprint": "c7d9438f15bf784d069b400e640177a5c97fb919e817ccd28235ff5e1e083685"
     },
     {
       "id": "public",
       "path": "public",
       "file_count": 9,
-      "fingerprint": "71918a9f33f660c4aecfc201ee2eb4a22361c7a21c6c1a65b1b5b97e8b612024"
+      "fingerprint": "565d58952d26c62395c5ffbf493372dc9c04d5175277868f4674f0d14a62ecd7"
     },
     {
       "id": "scripts",
       "path": "scripts",
       "file_count": 3,
-      "fingerprint": "7da7d2503e04f4cdfc47546eee56a38533916a67d8cc3bb334c6b477d8310967"
+      "fingerprint": "85a1bc46f4bd6a54bd6c6d5d6aa99b9557dc8637e3834f594bee214472d08912"
     },
     {
       "id": "src",
       "path": "src",
-      "file_count": 230,
-      "fingerprint": "7c23e53ae25efd946723cc072e17c71e71ff66276f10f6283b35d37ec8cf6082"
+      "file_count": 231,
+      "fingerprint": "93636f15c30f0af681b97c5fac969dbd96cd225bfbfc919d928d283635baf265"
     }
   ]
 }

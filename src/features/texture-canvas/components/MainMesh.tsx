@@ -9,9 +9,7 @@ import React, {
   useState,
 } from "react";
 import * as THREE from "three";
-import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
-import { FontLoader } from "three/examples/jsm/loaders/FontLoader.js";
-import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
+
 import {
   AnimationConfig,
   AppState,
@@ -20,7 +18,8 @@ import {
 } from "../../../core/types/types";
 import { getGeometryForType } from "../../../lib/three/geometryFactory";
 import { loadModelGeometry, ModelLoadError } from "../../../lib/three/modelLoader";
-import { createTslMaterial } from "../../../lib/tsl/tslBuilder";
+import { createTslMaterial, TSL_PATTERN_MAP } from "../../../lib/tsl/tslBuilder";
+import { loadOptionalTslPatterns } from "../../../lib/tsl/registerPatterns";
 import { TslUniforms, type TslUniformDomain, updateTslUniforms } from "../../../lib/tsl/uniforms";
 import { useTextureResource } from "../../../shared/hooks/useTextureResource";
 import { calculateAnimatedValue } from "../../../shared/utils/animationUtils";
@@ -57,6 +56,12 @@ export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
   const stickerTex = useTextureResource(
     appState.sticker?.enabled ? appState.sticker.texture : null,
   );
+  const [optionalPatterns, setOptionalPatterns] = useState(0);
+
+  useEffect(() => {
+    if (TSL_PATTERN_MAP[appState.textureType]) return;
+    void loadOptionalTslPatterns().then(() => setOptionalPatterns((value) => value + 1));
+  }, [appState.textureType]);
 
   const [customGeometry, setCustomGeometry] = useState<THREE.BufferGeometry | null>(null);
   const lastLoadedModelUrl = useRef<string | null>(null);
@@ -149,6 +154,7 @@ export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
             }
           }
 
+          const { SVGLoader } = await import("three/examples/jsm/loaders/SVGLoader.js");
           const loader = new SVGLoader();
           const svgResult = await loader.loadAsync(svgData);
 
@@ -196,6 +202,10 @@ export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
 
       const loadText = async () => {
         try {
+          const [{ FontLoader }, { TextGeometry }] = await Promise.all([
+            import("three/examples/jsm/loaders/FontLoader.js"),
+            import("three/examples/jsm/geometries/TextGeometry.js"),
+          ]);
           const loader = new FontLoader();
           const fontUrl = FONT_URLS[appState.text.font] ?? FONT_URLS.helvetiker;
           const font = await loader.loadAsync(fontUrl);
@@ -276,15 +286,7 @@ export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
     appState.baseTexture.effectStrength,
     appState.sticker.enabled,
     appState.sticker.texture,
-    appState.sticker.opacity,
-    appState.sticker.blendMode,
-    appState.sticker.posX,
-    appState.sticker.posY,
-    appState.sticker.scale,
-    appState.sticker.rotation,
-    appState.sticker.color,
-    appState.sticker.useColor,
-    appState.viewMode,
+    optionalPatterns,
     appState.imageAlpha.enabled,
     appState.imageAlpha.maskEnabled,
     appState.imageAlpha.maskTexture,
@@ -334,7 +336,7 @@ export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
   );
   useEffect(
     () => updateUniformDomain("interaction"),
-    [appState.imageAlpha, appState.mouse, material, updateUniformDomain],
+    [appState.imageAlpha, appState.mouse, appState.sticker, material, updateUniformDomain],
   );
   useEffect(
     () => updateUniformDomain("environment"),
@@ -462,8 +464,8 @@ export const MainMesh: React.FC<MainMeshProps> = memo((props) => {
   }, [isTiling, appState.tiling.mirror, tempObject]);
 
   const meshKey = isTiling
-    ? `instanced-${appState.geometry}-${appState.textureType}-${appState.viewMode}`
-    : `single-${appState.geometry}-${appState.textureType}-${appState.viewMode}`;
+    ? `instanced-${appState.geometry}-${appState.textureType}`
+    : `single-${appState.geometry}-${appState.textureType}`;
 
   if (isTiling) {
     return (

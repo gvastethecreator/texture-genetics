@@ -13,32 +13,31 @@ import { useToastManager } from "./useToastManager";
 export const useTextureEditor = () => {
   const { toasts, addToast, removeToast } = useToastManager();
 
-  // Ref-based callback registration to avoid mutable action objects
   const historyCallbackRef = useRef<(s: AppState) => void>(() => {});
   const handleStorageWarning = useCallback(
     (message: string) => addToast("error", message),
     [addToast],
   );
+  const onStateChangeForHistory = useCallback((s: AppState) => {
+    historyCallbackRef.current(s);
+  }, []);
 
   const { state, actions: stateActions } = useAppState({
-    onStateChangeForHistory: (s: AppState) => historyCallbackRef.current(s),
+    onStateChangeForHistory,
     onStorageWarning: handleStorageWarning,
   });
 
   const { history, pushToHistory, historyControl } = useHistoryStack();
 
   historyCallbackRef.current = pushToHistory;
-
-  // --- HISTORY SYNCHRONIZATION ---
-  // When Undo/Redo happens, the 'currentState' (from history) updates.
-  // We must forcibly sync this back to 'useAppState' so that subsequent edits
-  // branch off the UNDONE state, not the old FUTURE state.
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   const handleUndo = useCallback(() => {
     const prevState = historyControl.getPrevious();
     if (prevState) {
       historyControl.undo();
-      stateActions.replaceState(prevState); // CRITICAL FIX
+      stateActions.replaceState(prevState);
     }
   }, [historyControl, stateActions]);
 
@@ -46,9 +45,13 @@ export const useTextureEditor = () => {
     const nextState = historyControl.getNext();
     if (nextState) {
       historyControl.redo();
-      stateActions.replaceState(nextState); // CRITICAL FIX
+      stateActions.replaceState(nextState);
     }
   }, [historyControl, stateActions]);
+
+  const commit = useCallback(() => {
+    pushToHistory(stateRef.current);
+  }, [pushToHistory]);
 
   const enhancedHistory = useMemo(
     () => ({
@@ -56,17 +59,22 @@ export const useTextureEditor = () => {
       canRedo: history.canRedo,
       undo: handleUndo,
       redo: handleRedo,
-      commit: () => pushToHistory(state),
+      commit,
     }),
-    [history.canUndo, history.canRedo, handleUndo, handleRedo, pushToHistory, state],
+    [history.canUndo, history.canRedo, handleUndo, handleRedo, commit],
+  );
+
+  const onLoadPreset = useCallback(
+    (newState: Partial<AppState>) => {
+      stateActions.loadPreset(newState);
+      addToast("success", "Preset loaded successfully");
+    },
+    [stateActions, addToast],
   );
 
   const { userPresets, actions: presetActions } = usePresetManager({
     initialState: state,
-    onLoadPreset: (newState) => {
-      stateActions.loadPreset(newState);
-      addToast("success", "Preset loaded successfully");
-    },
+    onLoadPreset,
     addToast,
   });
 

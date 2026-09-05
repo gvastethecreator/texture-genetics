@@ -77,3 +77,6 @@ bun.lock
 bun.lockb
 package-lock.json
 yarn.lock
+
+# Code map staging
+docs/codemap/.staging/

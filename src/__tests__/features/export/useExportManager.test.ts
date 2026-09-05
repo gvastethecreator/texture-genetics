@@ -1,22 +1,23 @@
 import { act, renderHook } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import * as browserFiles from "@/features/export/core/browserFiles";
 import { useExportManager } from "@/features/export/useExportManager";
 import { mockAppState } from "@/__tests__/helpers";
 
 const mocks = vi.hoisted(() => ({
   generateGif: vi.fn(),
-  downloadBlob: vi.fn(),
 }));
 
 vi.mock("@/features/export/strategies/gifStrategy", () => ({ generateGif: mocks.generateGif }));
-vi.mock("@/features/export/core/browserFiles", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/features/export/core/browserFiles")>();
-  return { ...actual, downloadBlob: mocks.downloadBlob };
-});
 
 describe("useExportManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(browserFiles, "downloadBlob").mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    vi.mocked(browserFiles.downloadBlob).mockRestore();
   });
 
   it("serializes immediate repeated export requests before React state updates", async () => {
@@ -42,7 +43,7 @@ describe("useExportManager", () => {
 
     finish(new Blob(["gif"], { type: "image/gif" }));
     await act(async () => first);
-    expect(mocks.downloadBlob).toHaveBeenCalledOnce();
+    expect(browserFiles.downloadBlob).toHaveBeenCalledOnce();
   });
 
   it("does not report success or download an empty export", async () => {
@@ -53,8 +54,29 @@ describe("useExportManager", () => {
 
     await act(async () => result.current.generateGif());
 
-    expect(mocks.downloadBlob).not.toHaveBeenCalled();
+    expect(browserFiles.downloadBlob).not.toHaveBeenCalled();
     expect(onSuccess).not.toHaveBeenCalled();
     expect(onError).toHaveBeenCalledWith("GIF Failed: GIF generated an empty file");
+  });
+
+  it("exports the document from the click, not a later rerender", async () => {
+    let seenState: { animate?: boolean } | undefined;
+    mocks.generateGif.mockImplementation(async (exportState: { animate: boolean }) => {
+      seenState = exportState;
+      return new Blob(["gif"], { type: "image/gif" });
+    });
+    const first = mockAppState({ animate: false });
+    const { result, rerender } = renderHook(({ state }) => useExportManager(state, {}), {
+      initialProps: { state: first },
+    });
+
+    let pending!: Promise<void>;
+    act(() => {
+      pending = result.current.generateGif();
+    });
+    rerender({ state: mockAppState({ animate: true }) });
+    await act(async () => pending);
+
+    expect(seenState?.animate).toBe(false);
   });
 });

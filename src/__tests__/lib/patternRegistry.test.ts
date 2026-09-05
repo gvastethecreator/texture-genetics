@@ -3,6 +3,7 @@ import { TextureType } from "../../core/types/types";
 import { TEXTURE_CATEGORIES, SHADER_LABELS } from "../../data/textureData";
 import { PATTERN_MAP } from "../../lib/glsl/patternMap";
 import "../../lib/tsl/registerPatterns";
+import "../../lib/tsl/registerOptionalTsl";
 import { TSL_PATTERN_MAP } from "../../lib/tsl/tslBuilder";
 
 const textureTypes = Object.values(TextureType);

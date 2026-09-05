@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { del, get, set } from "idb-keyval";
 import { AppState, UserPreset } from "../types/types";
 import { readTextFile } from "../../shared/utils/fileLoaders";
@@ -39,6 +39,12 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
   const [userPresets, setUserPresets] = useState<UserPreset[]>([]);
   const userPresetsRef = useRef<UserPreset[]>([]);
   const mutationQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const stateRef = useRef(initialState);
+  const onLoadPresetRef = useRef(onLoadPreset);
+  const addToastRef = useRef(addToast);
+  stateRef.current = initialState;
+  onLoadPresetRef.current = onLoadPreset;
+  addToastRef.current = addToast;
 
   useEffect(() => {
     const load = async () => {
@@ -64,7 +70,7 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
           if (recovered.rejectedCount > 0) {
             const loadedLabel = `${recovered.presets.length} saved preset${recovered.presets.length === 1 ? "" : "s"}`;
             const skippedLabel = `${recovered.rejectedCount} invalid preset${recovered.rejectedCount === 1 ? "" : "s"}`;
-            addToast(
+            addToastRef.current(
               "error",
               `Loaded ${loadedLabel}; skipped ${skippedLabel}. Original storage was left unchanged.`,
             );
@@ -75,13 +81,19 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
               await del(legacyStorageKey);
             } catch (migrationError) {
               console.warn("Preset storage migration deferred", migrationError);
-              addToast("info", "Saved presets loaded; storage migration will retry later");
+              addToastRef.current(
+                "info",
+                "Saved presets loaded; storage migration will retry later",
+              );
             }
           }
         }
       } catch (e) {
         console.error("Failed to load presets", e);
-        addToast("error", "Saved presets could not be loaded because their data is invalid");
+        addToastRef.current(
+          "error",
+          "Saved presets could not be loaded because their data is invalid",
+        );
       }
     };
     const operation = mutationQueueRef.current.then(load);
@@ -116,6 +128,7 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
 
   const saveUserPreset = useCallback(
     async (name: string) => {
+      const document = stateRef.current;
       try {
         const normalizedName = name.trim();
         if (normalizedName.length === 0 || normalizedName.length > MAX_PRESET_NAME_LENGTH) {
@@ -128,20 +141,20 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
           name: normalizedName,
           date: Date.now(),
           state: {
-            ...initialState,
-            imageAlpha: { ...initialState.imageAlpha, maskTexture: null },
-            baseTexture: { ...initialState.baseTexture, texture: null },
-            sticker: { ...initialState.sticker, texture: null },
+            ...document,
+            imageAlpha: { ...document.imageAlpha, maskTexture: null },
+            baseTexture: { ...document.baseTexture, texture: null },
+            sticker: { ...document.sticker, texture: null },
             customModel: null,
           },
         };
         try {
           await persistMutation((current) => [...current, newPreset]);
           const droppedAssets =
-            Boolean(initialState.baseTexture?.texture) ||
-            Boolean(initialState.sticker?.texture) ||
-            Boolean(initialState.imageAlpha?.maskTexture) ||
-            Boolean(initialState.customModel);
+            Boolean(document.baseTexture?.texture) ||
+            Boolean(document.sticker?.texture) ||
+            Boolean(document.imageAlpha?.maskTexture) ||
+            Boolean(document.customModel);
           addToast(
             "success",
             droppedAssets
@@ -158,7 +171,7 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
         addToast("error", "Failed to save preset (Storage/JSON Error)");
       }
     },
-    [initialState, persistMutation, addToast],
+    [persistMutation, addToast],
   );
 
   const deleteUserPreset = useCallback(
@@ -181,19 +194,21 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
 
   const exportPresets = useCallback(() => {
     try {
+      const documentState = stateRef.current;
+      const stored = userPresetsRef.current;
       const source =
-        userPresets.length > 0
-          ? userPresets
+        stored.length > 0
+          ? stored
           : [
               {
                 id: createPresetId(),
                 name: "Current work",
                 date: Date.now(),
                 state: {
-                  ...initialState,
-                  imageAlpha: { ...initialState.imageAlpha, maskTexture: null },
-                  baseTexture: { ...initialState.baseTexture, texture: null },
-                  sticker: { ...initialState.sticker, texture: null },
+                  ...documentState,
+                  imageAlpha: { ...documentState.imageAlpha, maskTexture: null },
+                  baseTexture: { ...documentState.baseTexture, texture: null },
+                  sticker: { ...documentState.sticker, texture: null },
                   customModel: null,
                 },
               },
@@ -213,7 +228,7 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
       console.error("Failed to export presets", e);
       addToast("error", "Failed to export presets");
     }
-  }, [userPresets, initialState, addToast]);
+  }, [addToast]);
 
   const importPresets = useCallback(
     async (file: File) => {
@@ -269,13 +284,20 @@ export const usePresetManager = ({ initialState, onLoadPreset, addToast }: Prese
     [persistMutation, addToast],
   );
 
-  const actions = {
-    loadPreset: onLoadPreset,
-    saveUserPreset,
-    deleteUserPreset,
-    exportPresets,
-    importPresets,
-  };
+  const loadPreset = useCallback((presetState: Partial<AppState>) => {
+    onLoadPresetRef.current(presetState);
+  }, []);
+
+  const actions = useMemo(
+    () => ({
+      loadPreset,
+      saveUserPreset,
+      deleteUserPreset,
+      exportPresets,
+      importPresets,
+    }),
+    [loadPreset, saveUserPreset, deleteUserPreset, exportPresets, importPresets],
+  );
 
   return { userPresets, actions };
 };

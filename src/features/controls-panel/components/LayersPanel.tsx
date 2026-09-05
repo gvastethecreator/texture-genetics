@@ -9,13 +9,14 @@ import {
 } from "../../../core/types/types";
 import { PATTERN_MANIFEST } from "../../../data/patternManifest";
 import { ControlSection, Label, Slider, Toggle, ActionButton } from "../../../shared/ui/Elements";
-import { loadImageFromSource, readFileAsDataUrl } from "../../../shared/utils/fileLoaders";
+import { ingestUserFile } from "../../../shared/utils/ingest";
 
 interface LayersPanelProps {
   state: AppState;
   updateStateGroup: <K extends keyof AppState>(key: K, values: Partial<AppState[K]>) => void;
   onCommit: () => void;
   onUpdateAnim?: (key: string, config: AnimationConfig) => void;
+  onToast?: (type: "success" | "error" | "info", message: string) => void;
 }
 
 const BLEND_MODES = [
@@ -37,66 +38,27 @@ const BASE_EFFECTS = [
   { label: "Chromatic", value: BaseEffectType.CHROMATIC },
 ];
 
-// ELITE FIX: Image Compression Pipeline
-// Prevents App Crash due to LocalStorage Quota Exceeded while maintaining PRO quality.
-const processImageUpload = async (file: File): Promise<string> => {
-  const img = await loadImageFromSource(await readFileAsDataUrl(file));
-  const canvas = document.createElement("canvas");
-  // 1024px keeps source images usable for texture work while staying friendly to local persistence.
-  const MAX_SIZE = 1024;
-  let width = img.width;
-  let height = img.height;
-
-  if (width > height) {
-    if (width > MAX_SIZE) {
-      height *= MAX_SIZE / width;
-      width = MAX_SIZE;
-    }
-  } else {
-    if (height > MAX_SIZE) {
-      width *= MAX_SIZE / height;
-      height = MAX_SIZE;
-    }
-  }
-
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-
-  if (!ctx) {
-    throw new Error("Canvas 2D context is not available for image upload.");
-  }
-
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(img, 0, 0, width, height);
-
-  return canvas.toDataURL("image/jpeg", 0.85);
-};
-
 export const LayersPanel: React.FC<LayersPanelProps> = memo(
-  ({ state, updateStateGroup, onCommit, onUpdateAnim }) => {
+  ({ state, updateStateGroup, onCommit, onUpdateAnim, onToast }) => {
     const allTextures = PATTERN_MANIFEST.map((pattern) => pattern.type).toSorted();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const updateAnimation = onUpdateAnim ?? (() => {});
 
-    const handleBaseTextureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleBaseTextureUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
-        try {
-          const resizedDataUrl = await processImageUpload(file);
-          // Initialize with enabled: true and safe blended defaults
+        const outcome = ingestUserFile(file, state, { target: "base" });
+        if (outcome.ok && outcome.patch?.baseTexture) {
           updateStateGroup("baseTexture", {
-            texture: resizedDataUrl,
-            enabled: true,
+            ...outcome.patch.baseTexture,
             opacity: 0.8,
             blendMode: BlendMode.MULTIPLY,
           });
           onCommit();
-        } catch (error) {
-          console.error("Failed to load base texture", error);
         }
+        onToast?.(outcome.toast.type, outcome.toast.message);
       }
+      e.target.value = "";
     };
 
     return (

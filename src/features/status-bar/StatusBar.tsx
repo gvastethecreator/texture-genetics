@@ -1,5 +1,15 @@
 import React, { useMemo } from "react";
-import * as Icons from "lucide-react";
+import {
+  ChevronRight,
+  Box,
+  Image,
+  Layers,
+  Grid,
+  Cpu,
+  Monitor,
+  FileImage,
+  type LucideIcon,
+} from "lucide-react";
 import { AppState } from "../../core/types/types";
 import { PATTERN_MANIFEST_BY_TYPE } from "../../data/patternManifest";
 import type { CanvasRenderer } from "../../lib/three/rendererFactory";
@@ -13,7 +23,7 @@ interface StatusBarProps {
 }
 
 const Node: React.FC<{
-  icon: Icons.LucideIcon;
+  icon: LucideIcon;
   label: string;
   color?: string;
   subLabel?: string;
@@ -48,7 +58,7 @@ const Node: React.FC<{
 
 const Arrow = () => (
   <div className="text-gray-700 px-1 opacity-50">
-    <Icons.ChevronRight size={14} strokeWidth={3} />
+    <ChevronRight size={14} strokeWidth={3} />
   </div>
 );
 
@@ -57,7 +67,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({ state, renderer, onToggleA
     const entry = PATTERN_MANIFEST_BY_TYPE[state.textureType];
     return entry
       ? { color: entry.categoryColor, icon: entry.categoryIcon }
-      : { color: "#E0E0E0", icon: Icons.Box };
+      : { color: "#E0E0E0", icon: Box };
   }, [state.textureType]);
 
   const recipeNodes = useMemo(() => {
@@ -79,7 +89,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({ state, renderer, onToggleA
       nodes.push(
         <Node
           key="base"
-          icon={Icons.Image}
+          icon={Image}
           label="Image Base"
           subLabel={`OP: ${state.baseTexture.opacity.toFixed(1)}`}
           color="#F59E0B"
@@ -93,7 +103,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({ state, renderer, onToggleA
       nodes.push(
         <Node
           key="blend"
-          icon={Icons.Layers}
+          icon={Layers}
           label={state.blending.type}
           subLabel="LAYER 2"
           color="#F59E0B"
@@ -107,7 +117,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({ state, renderer, onToggleA
       nodes.push(
         <Node
           key="tile"
-          icon={Icons.Grid}
+          icon={Grid}
           label={`Tiled ${state.tiling.repeatX}x${state.tiling.repeatY}`}
           color="#10B981"
           tooltip="Seamless Tiling Active"
@@ -144,7 +154,10 @@ export const StatusBar: React.FC<StatusBarProps> = ({ state, renderer, onToggleA
   const rendererLabel = useMemo(() => getRendererBackendLabel(renderer), [renderer]);
 
   return (
-    <div className="h-12 border-t border-white/5 bg-[#080808] flex items-center justify-between px-6 select-none relative z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+    <div className="relative z-20 flex h-12 select-none items-center justify-between border-t border-white/5 bg-[#080808] px-6 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+      <div aria-live="polite" className="sr-only">
+        {state.textureType}
+      </div>
       <div
         className="flex items-center gap-1 overflow-x-auto no-scrollbar max-w-[75%]"
         style={{
@@ -160,15 +173,15 @@ export const StatusBar: React.FC<StatusBarProps> = ({ state, renderer, onToggleA
 
       <div className="flex items-center gap-6 text-[10px] font-mono font-bold text-gray-500">
         <div className="hidden md:flex items-center gap-2 bg-[#121212] px-2 py-1 rounded border border-white/5 shadow-inner">
-          <Icons.Cpu size={12} className="text-violet-400" />
+          <Cpu size={12} className="text-violet-400" />
           <span>{rendererLabel}</span>
         </div>
         <div className="flex items-center gap-2 bg-[#121212] px-2 py-1 rounded border border-white/5 shadow-inner">
-          <Icons.Monitor size={12} className="text-blue-500" />
+          <Monitor size={12} className="text-blue-500" />
           <span>{state.resolution}px</span>
         </div>
         <div className="hidden md:flex items-center gap-2 bg-[#121212] px-2 py-1 rounded border border-white/5 shadow-inner">
-          <Icons.FileImage size={12} className="text-amber-500" />
+          <FileImage size={12} className="text-amber-500" />
           <span className="uppercase">{state.settings.exportFormat}</span>
         </div>
         <button

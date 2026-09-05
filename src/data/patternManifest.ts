@@ -2,7 +2,6 @@ import type { LucideIcon } from "lucide-react";
 import { TextureType } from "../core/types/types";
 import type { PatternDefinition, ShaderDefinition } from "../core/types/types";
 import "../lib/tsl/registerPatterns";
-import { TSL_PATTERN_MAP } from "../lib/tsl/tslBuilder";
 import type { TslPatternFn } from "../lib/tsl/tslBuilder";
 import { SHADER_LABELS, TEXTURE_CATEGORIES } from "./textureData";
 
@@ -18,7 +17,7 @@ export interface PatternCatalogSources {
   readonly labels: Partial<Record<TextureType, ShaderDefinition>>;
   /** Supplied by build/test validation without pulling all GLSL strings into the initial UI chunk. */
   readonly glsl?: Partial<Record<TextureType, PatternDefinition>>;
-  readonly tsl: Partial<Record<TextureType, TslPatternFn>>;
+  readonly tsl?: Partial<Record<TextureType, TslPatternFn>>;
 }
 
 export interface PatternManifestEntry {
@@ -79,13 +78,15 @@ export function buildPatternManifest(
     if (sources.glsl && !sources.glsl[type]) {
       errors.push(`Missing GLSL implementation for pattern: ${type}`);
     }
-    if (!sources.tsl[type]) errors.push(`Missing TSL implementation for pattern: ${type}`);
+    if (sources.tsl && !sources.tsl[type]) {
+      errors.push(`Missing TSL implementation for pattern: ${type}`);
+    }
 
     if (
       categories.length !== 1 ||
       !definition ||
       (sources.glsl && !sources.glsl[type]) ||
-      !sources.tsl[type]
+      (sources.tsl && !sources.tsl[type])
     ) {
       return [];
     }
@@ -113,7 +114,6 @@ const catalogSources: PatternCatalogSources = {
   types: Object.values(TextureType),
   categories: TEXTURE_CATEGORIES,
   labels: SHADER_LABELS,
-  tsl: TSL_PATTERN_MAP,
 };
 
 export const PATTERN_MANIFEST = buildPatternManifest(catalogSources);

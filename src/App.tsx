@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, lazy, Suspense, useCallback } from "react"
 
 // Validate and register the complete cross-renderer pattern catalog at startup.
 import "./data/patternManifest";
-import { GeometryType } from "./core/types/types";
 import { createShortcutKeyMap } from "./core/commands";
 import { useTextureEditor } from "./core/state/useTextureEditor";
 import { useExportManager } from "./features/export/useExportManager";
@@ -10,18 +9,14 @@ import { useHotkeys } from "./shared/hooks/useHotkeys";
 import { matchesMediaQuery, useMediaQuery } from "./shared/hooks/useMediaQuery";
 import { useModalFocus } from "./shared/hooks/useModalFocus";
 
-// Eager components (always visible)
-import { Header } from "./features/ui/Header";
-import { Controls } from "./features/controls-panel/Controls";
-import { RightControls } from "./features/controls-panel/RightControls";
 import { TextureCanvas } from "./features/texture-canvas/TextureCanvas";
 import type { CanvasRenderer } from "./lib/three/rendererFactory";
-import { StatusBar } from "./features/status-bar/StatusBar";
 import { DragDropOverlay } from "./shared/ui/DragDropOverlay";
 import { ToastContainer } from "./shared/ui/Toast";
 import { ErrorBoundary } from "./shared/components/ErrorBoundary";
-import { collectStateObjectUrls, revokeReplacedObjectUrls } from "./shared/utils/objectUrls";
-import { classifyUserFile } from "./shared/utils/fileLoaders";
+import { collectStateObjectUrls, syncLiveObjectUrls } from "./shared/utils/objectUrls";
+import { ingestUserFile } from "./shared/utils/ingest";
+import { WorkbenchLayout } from "./features/workbench/WorkbenchLayout";
 
 // Lazy-loaded modals (loaded on demand)
 const SettingsModal = lazy(() =>
@@ -41,6 +36,7 @@ export default function App() {
   const {
     isGenerating,
     progress,
+    activeTaskName,
     generateSpriteSheet,
     generateGif,
     generateHighResImage,
@@ -63,7 +59,7 @@ export default function App() {
 
   useEffect(() => {
     const currentUrls = collectStateObjectUrls(state);
-    revokeReplacedObjectUrls(ownedObjectUrlsRef.current, currentUrls);
+    syncLiveObjectUrls(ownedObjectUrlsRef.current, currentUrls);
     ownedObjectUrlsRef.current = currentUrls;
   }, [
     state.baseTexture.texture,
@@ -138,53 +134,65 @@ export default function App() {
     }),
   );
 
-  // Drag & Drop
   const handleDropJson = (file: File) => actions.importPresets(file);
   const handleDropImage = (file: File) => {
-    const kind = classifyUserFile(file);
-    const url = URL.createObjectURL(file);
-    if (kind === "model") {
-      actions.updateState({
-        geometry: GeometryType.CUSTOM,
-        customModel: url,
-      });
-      actions.addToast("success", "Custom model loaded");
-      return;
+    const outcome = ingestUserFile(file, state);
+    if (outcome.ok && outcome.patch && Object.keys(outcome.patch).length > 0) {
+      actions.updateState(outcome.patch);
     }
-    if (kind === "svg") {
-      actions.updateState({
-        geometry: GeometryType.SVG,
-        svg: { ...state.svg, url },
-      });
-      actions.addToast("success", "SVG shape loaded");
-      return;
-    }
-    actions.updateState({
-      baseTexture: {
-        ...state.baseTexture,
-        enabled: true,
-        texture: url,
-      },
-    });
-    actions.addToast("success", "Base texture loaded");
+    actions.addToast(outcome.toast.type, outcome.toast.message);
   };
   const handleDropUnknown = (file: File) => {
-    actions.addToast("error", `Unsupported file type: ${file.name}`);
+    const outcome = ingestUserFile(file, state);
+    actions.addToast(outcome.toast.type, outcome.toast.message);
   };
+
+  const canvas = (
+    <ErrorBoundary>
+      <TextureCanvas appState={state} setGlRef={setGl} updateState={actions.updateState} />
+    </ErrorBoundary>
+  );
 
   if (state.isFullscreen) {
     return (
       <ErrorBoundary>
-        <div className="fixed inset-0 z-50 bg-black w-full h-full">
-          <TextureCanvas appState={state} setGlRef={setGl} updateState={actions.updateState} />
-          <button
-            type="button"
-            aria-label="Exit fullscreen"
-            onClick={() => actions.updateState({ isFullscreen: false })}
-            className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded hover:bg-white/20 pointer-events-auto backdrop-blur-md border border-white/10"
-          >
-            Exit Fullscreen (ESC)
-          </button>
+        <div className="fixed inset-0 z-50 h-full w-full bg-black">
+          {canvas}
+          <div className="pointer-events-auto absolute top-4 right-4 z-50 flex items-center gap-2">
+            <button
+              type="button"
+              aria-label={state.animate ? "Pause animation" : "Play animation"}
+              onClick={() => actions.updateState({ animate: !state.animate })}
+              className="rounded border border-white/10 bg-black/50 p-2 text-xs font-bold text-white backdrop-blur-md hover:bg-white/20"
+            >
+              {state.animate ? "Pause" : "Play"}
+            </button>
+            <button
+              type="button"
+              aria-label="Undo"
+              onClick={history.undo}
+              disabled={!history.canUndo}
+              className="rounded border border-white/10 bg-black/50 p-2 text-xs font-bold text-white backdrop-blur-md hover:bg-white/20 disabled:opacity-35"
+            >
+              Undo
+            </button>
+            <button
+              type="button"
+              aria-label="Keyboard shortcuts"
+              onClick={() => actions.updateState({ isShortcutsOpen: true, isFullscreen: false })}
+              className="rounded border border-white/10 bg-black/50 p-2 text-xs font-bold text-white backdrop-blur-md hover:bg-white/20"
+            >
+              Shortcuts
+            </button>
+            <button
+              type="button"
+              aria-label="Exit fullscreen"
+              onClick={() => actions.updateState({ isFullscreen: false })}
+              className="rounded border border-white/10 bg-black/50 p-2 text-white backdrop-blur-md hover:bg-white/20"
+            >
+              Exit Fullscreen (ESC)
+            </button>
+          </div>
           <ToastContainer toasts={toasts} onRemove={actions.removeToast} />
         </div>
       </ErrorBoundary>
@@ -193,119 +201,35 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div
-        ref={appContainerRef}
-        className="flex flex-col h-screen w-screen bg-bg text-gray-200 overflow-hidden font-sans"
-      >
-        {/* HEADER */}
-        <Header
+      <div ref={appContainerRef}>
+        <WorkbenchLayout
           state={state}
           userPresets={userPresets}
           actions={actions}
           history={history}
+          isCompactWorkbench={isCompactWorkbench}
+          showLeft={showLeft}
+          showRight={showRight}
+          leftPanelRef={leftPanelRef}
+          rightPanelRef={rightPanelRef}
+          onCloseInspectors={closeCompactPanels}
           toggleLeftPanel={toggleLeftPanel}
           toggleRightPanel={toggleRightPanel}
-          leftPanelOpen={showLeft}
-          rightPanelOpen={showRight}
+          canvas={canvas}
+          isGenerating={isGenerating}
+          progress={progress}
+          activeTaskName={activeTaskName ?? undefined}
+          renderer={gl}
+          exportActions={{
+            onDownload: generateHighResImage,
+            onSpriteSheet: generateSpriteSheet,
+            onGifExport: generateGif,
+            onVideoRecord: recordVideo,
+            onHtmlExport: generateHtml,
+            onGlbExport: generateGlb,
+            onDownloadZip: downloadAllMaps,
+          }}
         />
-
-        {/* MAIN CONTENT */}
-        <div className="flex-1 flex overflow-hidden relative w-full h-full">
-          {isCompactWorkbench && (showLeft || showRight) && (
-            <button
-              type="button"
-              aria-label="Close inspector"
-              onClick={closeCompactPanels}
-              className="absolute inset-0 z-30 bg-black/55 backdrop-blur-[2px] motion-reduce:backdrop-blur-none"
-            />
-          )}
-          {/* LEFT PANEL (Controls) */}
-          <div
-            ref={leftPanelRef}
-            id="texture-tools-panel"
-            role={isCompactWorkbench ? "dialog" : undefined}
-            aria-modal={isCompactWorkbench ? true : undefined}
-            aria-label="Texture tools"
-            tabIndex={isCompactWorkbench ? -1 : undefined}
-            aria-hidden={!showLeft}
-            inert={!showLeft}
-            className={`${isCompactWorkbench ? "absolute inset-y-0 left-0 z-40 w-[min(20rem,calc(100vw-3rem))] shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none" : `relative z-20 shrink-0 ${showLeft ? "w-80" : "w-0"}`} ${showLeft ? "translate-x-0" : "-translate-x-full"} overflow-hidden border-r border-border bg-panel`}
-          >
-            <div className="h-full w-full min-w-80 overflow-hidden">
-              <Controls state={state} actions={actions} history={history} />
-            </div>
-          </div>
-
-          {/* CENTER (Canvas) - ABSOLUTE POSITIONING STRATEGY */}
-          <div className="flex-1 relative min-w-0 min-h-0 bg-[#111216]">
-            {/* Fallback diagnostic background - If you see Blue/Gray, Canvas is transparent/missing. If Black, Canvas is working but scene is dark. */}
-            <div className="absolute inset-0 bg-[#111216]" />
-
-            {/* Canvas Container forced to fill */}
-            <div className="absolute inset-0 w-full h-full overflow-hidden">
-              <ErrorBoundary>
-                <TextureCanvas
-                  appState={state}
-                  setGlRef={setGl}
-                  updateState={actions.updateState}
-                />
-              </ErrorBoundary>
-            </div>
-
-            {/* Progress Bar for Exporting */}
-            {isGenerating && (
-              <div
-                role="status"
-                aria-live="polite"
-                aria-label={`Exporting, ${progress}% complete`}
-                className="absolute bottom-16 left-1/2 -translate-x-1/2 z-50 bg-black/80 backdrop-blur border border-accent-primary/30 rounded-full px-6 py-2 flex items-center gap-3 shadow-2xl"
-              >
-                <div className="w-4 h-4 border-2 border-t-accent-primary border-r-accent-primary border-b-transparent border-l-transparent rounded-full animate-spin" />
-                <span className="text-xs font-mono font-bold text-white">
-                  EXPORTING... {progress}%
-                </span>
-              </div>
-            )}
-
-            {/* Floating Status Bar inside Canvas area at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 z-10">
-              <StatusBar
-                state={state}
-                renderer={gl}
-                onToggleAnimate={() => actions.updateState({ animate: !state.animate })}
-              />
-            </div>
-          </div>
-
-          {/* RIGHT PANEL (Export/Env) */}
-          <div
-            ref={rightPanelRef}
-            id="output-inspector-panel"
-            role={isCompactWorkbench ? "dialog" : undefined}
-            aria-modal={isCompactWorkbench ? true : undefined}
-            aria-label="Output and scene inspector"
-            tabIndex={isCompactWorkbench ? -1 : undefined}
-            aria-hidden={!showRight}
-            inert={!showRight}
-            className={`${isCompactWorkbench ? "absolute inset-y-0 right-0 z-40 w-[min(22rem,calc(100vw-3rem))] shadow-2xl transition-transform duration-200 ease-out motion-reduce:transition-none" : `relative z-20 shrink-0 ${showRight ? "w-72" : "w-0"}`} ${showRight ? "translate-x-0" : "translate-x-full"} overflow-hidden border-l border-border bg-panel`}
-          >
-            <div className="h-full w-full min-w-72 overflow-hidden">
-              <RightControls
-                state={state}
-                actions={actions}
-                history={history}
-                onDownload={generateHighResImage}
-                onSpriteSheet={generateSpriteSheet}
-                onGifExport={generateGif}
-                onVideoRecord={recordVideo}
-                onHtmlExport={generateHtml}
-                onGlbExport={generateGlb}
-                isGenerating={isGenerating}
-                onDownloadZip={downloadAllMaps}
-              />
-            </div>
-          </div>
-        </div>
 
         {/* MODALS & OVERLAYS (lazy-loaded) */}
         <Suspense fallback={null}>

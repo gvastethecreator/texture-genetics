@@ -1,8 +1,10 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { AppState, TextureType, AnimationConfig, ViewMode, GeometryType } from "../types/types";
 import { DEFAULTS } from "../constants";
 import { useStorage, sanitizeValue } from "./useStorage";
 import { createDefaultAppState } from "./defaultState";
+import { mergeEditorDocument } from "./mergeEditorDocument";
+import { sanitizeNestedAssets, sanitizeStateAssets } from "./sanitizeAssets";
 import {
   generateSmartRandomState,
   generateHarmoniousPalette,
@@ -29,11 +31,15 @@ export const useAppState = (props: {
 }) => {
   const [state, setState] = useState<AppState>(INITIAL_STATE);
   const stateRef = useRef(state);
+  const onHistoryRef = useRef(props.onStateChangeForHistory);
+  const onStorageWarningRef = useRef(props.onStorageWarning);
+  stateRef.current = state;
+  onHistoryRef.current = props.onStateChangeForHistory;
+  onStorageWarningRef.current = props.onStorageWarning;
 
-  // Keep ref in sync
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
+  const handleStorageWarning = useCallback((message: string) => {
+    onStorageWarningRef.current?.(message);
+  }, []);
 
   // Use separated storage logic
   const { isInitialized, saveState } = useStorage(
@@ -57,9 +63,9 @@ export const useAppState = (props: {
       }
 
       setState(loadedState);
-      props.onStateChangeForHistory(loadedState);
+      onHistoryRef.current(loadedState);
     },
-    props.onStorageWarning,
+    handleStorageWarning,
   );
 
   // Auto-Save
@@ -74,72 +80,34 @@ export const useAppState = (props: {
     const cleanPartial = sanitizeValue(partial);
     if (cleanPartial == null) return;
 
-    setState((prev) => {
-      const next = { ...prev, ...cleanPartial };
-      // Texture prop safety checks
-      if (
-        cleanPartial.sticker &&
-        typeof cleanPartial.sticker.texture !== "string" &&
-        cleanPartial.sticker.texture !== null
-      ) {
-        next.sticker = { ...prev.sticker, texture: null };
-      }
-      if (
-        cleanPartial.baseTexture &&
-        typeof cleanPartial.baseTexture.texture !== "string" &&
-        cleanPartial.baseTexture.texture !== null
-      ) {
-        next.baseTexture = { ...prev.baseTexture, texture: null };
-      }
-      if (
-        cleanPartial.imageAlpha &&
-        typeof cleanPartial.imageAlpha.maskTexture !== "string" &&
-        cleanPartial.imageAlpha.maskTexture !== null
-      ) {
-        next.imageAlpha = { ...prev.imageAlpha, maskTexture: null };
-      }
-      return next;
-    });
+    setState((prev) => sanitizeStateAssets(prev, cleanPartial));
   }, []);
 
   const patchGroup = useCallback(
     <K extends keyof AppState>(key: K, values: Partial<AppState[K]>) => {
       const cleanValues = sanitizeValue(values);
       if (cleanValues == null) return;
-      setState((prev) => {
-        const current = prev[key];
-        if (current === null || typeof current !== "object" || Array.isArray(current)) {
-          return { ...prev, [key]: cleanValues } as AppState;
-        }
-        const merged = { ...(current as object), ...(cleanValues as object) } as AppState[K];
-        if (key === "sticker" && "texture" in (cleanValues as object)) {
-          const texture = (cleanValues as { texture?: unknown }).texture;
-          if (typeof texture !== "string" && texture !== null) {
-            (merged as AppState["sticker"]).texture = null;
-          }
-        }
-        if (key === "baseTexture" && "texture" in (cleanValues as object)) {
-          const texture = (cleanValues as { texture?: unknown }).texture;
-          if (typeof texture !== "string" && texture !== null) {
-            (merged as AppState["baseTexture"]).texture = null;
-          }
-        }
-        if (key === "imageAlpha" && "maskTexture" in (cleanValues as object)) {
-          const maskTexture = (cleanValues as { maskTexture?: unknown }).maskTexture;
-          if (typeof maskTexture !== "string" && maskTexture !== null) {
-            (merged as AppState["imageAlpha"]).maskTexture = null;
-          }
-        }
-        return { ...prev, [key]: merged };
-      });
+      setState((prev) => ({
+        ...prev,
+        [key]: sanitizeNestedAssets(key, prev[key], cleanValues),
+      }));
     },
     [],
   );
 
   const replaceState = useCallback((newState: AppState) => {
-    // Used for History/Undo synchronization.
-    // We trust the history state is valid, so minimal sanitization.
-    setState(newState);
+    setState((prev) =>
+      mergeEditorDocument(
+        newState,
+        {
+          isSettingsOpen: prev.isSettingsOpen,
+          isCodeOpen: prev.isCodeOpen,
+          isShortcutsOpen: prev.isShortcutsOpen,
+          isFullscreen: prev.isFullscreen,
+        },
+        { preserveSessionUi: false },
+      ),
+    );
   }, []);
 
   const updateParams = useCallback((partial: Partial<AppState["params"]>) => {
@@ -164,12 +132,16 @@ export const useAppState = (props: {
   }, []);
 
   const randomize = useCallback(() => {
-    // Preserve camera when randomizing
     setState((prev) => {
+      onHistoryRef.current(prev);
       const randomState = generateSmartRandomState(prev);
       return {
         ...randomState,
         camera: prev.camera,
+        isSettingsOpen: prev.isSettingsOpen,
+        isCodeOpen: prev.isCodeOpen,
+        isShortcutsOpen: prev.isShortcutsOpen,
+        isFullscreen: prev.isFullscreen,
       };
     });
   }, []);
@@ -198,7 +170,6 @@ export const useAppState = (props: {
     const cleanPreset = sanitizeValue(presetState);
     if (cleanPreset == null) return;
 
-    // Legacy Color Migration
     if (cleanPreset.params) {
       if (!cleanPreset.params.palette || cleanPreset.params.palette.length === 0) {
         const c1 = cleanPreset.params.color1 || "#ffffff";
@@ -216,58 +187,37 @@ export const useAppState = (props: {
       }
     }
 
-    // We explicitly do NOT load camera state from presets by default to keep user context
-    setState((prev) => ({
-      ...INITIAL_STATE,
-      ...cleanPreset,
-      viewMode: prev.viewMode,
-      geometry: prev.geometry,
-      customModel: prev.customModel,
-      settings: prev.settings,
-      camera: prev.camera,
-      environment: { ...prev.environment, ...cleanPreset.environment },
-      sticker: { ...prev.sticker, ...cleanPreset.sticker },
-      geometryConfig: { ...INITIAL_STATE.geometryConfig, ...cleanPreset.geometryConfig },
-      params: { ...INITIAL_STATE.params, ...cleanPreset.params },
-      normalMap: { ...INITIAL_STATE.normalMap, ...cleanPreset.normalMap },
-      displacement: { ...INITIAL_STATE.displacement, ...cleanPreset.displacement },
-      ao: { ...INITIAL_STATE.ao, ...cleanPreset.ao },
-      tiling: { ...INITIAL_STATE.tiling, ...cleanPreset.tiling },
-      symmetry: { ...INITIAL_STATE.symmetry, ...cleanPreset.symmetry },
-      transform: { ...INITIAL_STATE.transform, ...cleanPreset.transform },
-      colorBalance: {
-        ...INITIAL_STATE.colorBalance,
-        ...cleanPreset.colorBalance,
-        shadows: { ...INITIAL_STATE.colorBalance.shadows, ...cleanPreset.colorBalance?.shadows },
-        midtones: { ...INITIAL_STATE.colorBalance.midtones, ...cleanPreset.colorBalance?.midtones },
-        highlights: {
-          ...INITIAL_STATE.colorBalance.highlights,
-          ...cleanPreset.colorBalance?.highlights,
-        },
-      },
-      blending: { ...INITIAL_STATE.blending, ...cleanPreset.blending },
-      postProcess: { ...INITIAL_STATE.postProcess, ...cleanPreset.postProcess },
-      baseTexture: { ...INITIAL_STATE.baseTexture, ...cleanPreset.baseTexture },
-      imageAlpha: { ...INITIAL_STATE.imageAlpha, ...cleanPreset.imageAlpha },
-      spriteSheet: { ...INITIAL_STATE.spriteSheet, ...cleanPreset.spriteSheet },
-      mouse: { ...INITIAL_STATE.mouse, ...cleanPreset.mouse },
-      svg: { ...INITIAL_STATE.svg, ...cleanPreset.svg },
-      text: { ...INITIAL_STATE.text, ...cleanPreset.text },
-    }));
+    setState((prev) => {
+      onHistoryRef.current(prev);
+      const merged = mergeEditorDocument(INITIAL_STATE, cleanPreset, {
+        preserveSessionUi: false,
+      });
+      return {
+        ...merged,
+        viewMode: prev.viewMode,
+        geometry: prev.geometry,
+        customModel: prev.customModel,
+        settings: prev.settings,
+        camera: prev.camera,
+        isSettingsOpen: prev.isSettingsOpen,
+        isCodeOpen: prev.isCodeOpen,
+        isShortcutsOpen: prev.isShortcutsOpen,
+        isFullscreen: prev.isFullscreen,
+      };
+    });
   }, []);
 
   const resetState = useCallback(() => {
-    props.onStateChangeForHistory(stateRef.current);
+    onHistoryRef.current(stateRef.current);
     setState((prev) => ({
       ...INITIAL_STATE,
       settings: prev.settings,
       camera: prev.camera, // Keep camera
     }));
-  }, [props.onStateChangeForHistory]);
+  }, []);
 
-  return {
-    state,
-    actions: {
+  const actions = useMemo(
+    () => ({
       updateState,
       patchGroup,
       replaceState,
@@ -280,6 +230,25 @@ export const useAppState = (props: {
       randomizePatternSelection,
       loadPreset,
       resetState,
-    },
+    }),
+    [
+      updateState,
+      patchGroup,
+      replaceState,
+      updateParams,
+      updateParamAnimation,
+      selectTexture,
+      randomize,
+      randomizeParams,
+      randomizePalette,
+      randomizePatternSelection,
+      loadPreset,
+      resetState,
+    ],
+  );
+
+  return {
+    state,
+    actions,
   };
 };

@@ -1,5 +1,22 @@
 import React, { memo } from "react";
-import * as Icons from "lucide-react";
+import {
+  Menu,
+  Layers,
+  Undo2,
+  Redo2,
+  RotateCcw,
+  ChevronLeft,
+  ChevronDown,
+  Trash2,
+  ChevronRight,
+  Shuffle,
+  Save,
+  Grid3X3,
+  Keyboard,
+  FileCode2,
+  Settings2,
+  PanelRight,
+} from "lucide-react";
 import { AppState, UserPreset, TextureType } from "../../core/types/types";
 import { APP_NAME } from "../../core/constants";
 import { PRESETS, Preset } from "../../presets";
@@ -114,7 +131,7 @@ export const Header: React.FC<HeaderProps> = memo(
             aria-expanded={leftPanelOpen}
             className="flex h-9 items-center gap-1.5 rounded-lg px-2 text-gray-300 hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 xl:hidden"
           >
-            <Icons.Menu size={20} />
+            <Menu size={20} />
             <span className="hidden text-[10px] font-bold uppercase tracking-wider md:inline">
               Tools
             </span>
@@ -122,7 +139,7 @@ export const Header: React.FC<HeaderProps> = memo(
 
           <div className="mr-1 hidden items-center gap-3 sm:flex sm:mr-2 group cursor-default">
             <div className="w-8 h-8 bg-linear-to-br from-white to-gray-400 rounded-lg flex items-center justify-center shadow-glow-sm group-hover:shadow-glow-md transition-shadow">
-              <Icons.Layers size={18} className="text-black" />
+              <Layers size={18} className="text-black" />
             </div>
             <div className="flex flex-col">
               <span className="hidden md:block text-sm font-black text-transparent bg-clip-text bg-linear-to-r from-white to-gray-400 tracking-widest uppercase">
@@ -145,7 +162,7 @@ export const Header: React.FC<HeaderProps> = memo(
               title="Undo (Ctrl+Z)"
               aria-label="Undo"
             >
-              <Icons.Undo2 size={16} />
+              <Undo2 size={16} />
             </button>
             <button
               type="button"
@@ -155,7 +172,7 @@ export const Header: React.FC<HeaderProps> = memo(
               title="Redo (Ctrl+Y)"
               aria-label="Redo"
             >
-              <Icons.Redo2 size={16} />
+              <Redo2 size={16} />
             </button>
             <button
               type="button"
@@ -168,7 +185,7 @@ export const Header: React.FC<HeaderProps> = memo(
               title="Reset All"
               aria-label="Reset all settings"
             >
-              <Icons.RotateCcw size={16} />
+              <RotateCcw size={16} />
             </button>
           </div>
         </div>
@@ -181,7 +198,7 @@ export const Header: React.FC<HeaderProps> = memo(
             className="hidden rounded-md p-1.5 text-gray-500 transition-colors hover:bg-white/5 hover:text-white sm:block"
             aria-label="Previous preset"
           >
-            <Icons.ChevronLeft size={16} />
+            <ChevronLeft size={16} />
           </button>
 
           <div className="relative flex-1 group">
@@ -213,7 +230,7 @@ export const Header: React.FC<HeaderProps> = memo(
                 </optgroup>
               ))}
             </select>
-            <Icons.ChevronDown
+            <ChevronDown
               size={14}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
             />
@@ -226,7 +243,7 @@ export const Header: React.FC<HeaderProps> = memo(
               className="h-8 w-8 flex items-center justify-center text-red-500 hover:bg-red-900/20 rounded-lg transition-colors"
               aria-label="Delete selected preset"
             >
-              <Icons.Trash2 size={14} />
+              <Trash2 size={14} />
             </button>
           )}
 
@@ -236,7 +253,7 @@ export const Header: React.FC<HeaderProps> = memo(
             className="hidden rounded-md p-1.5 text-gray-500 transition-colors hover:bg-white/5 hover:text-white sm:block"
             aria-label="Next preset"
           >
-            <Icons.ChevronRight size={16} />
+            <ChevronRight size={16} />
           </button>
 
           <div className="mx-1 hidden h-6 w-px bg-white/10 sm:block" />
@@ -244,11 +261,11 @@ export const Header: React.FC<HeaderProps> = memo(
           <button
             type="button"
             onClick={actions.randomize}
-            className="group hidden h-8 items-center gap-2 rounded-lg border border-black/60 bg-metal-gradient px-2 text-gray-200 shadow-tactile transition-[color,box-shadow,transform] hover:text-white hover:shadow-tactile-hover active:translate-y-px active:shadow-tactile-active sm:flex lg:px-4"
+            className="group flex h-8 items-center gap-2 rounded-lg border border-black/60 bg-metal-gradient px-2 text-gray-200 shadow-tactile transition-[color,box-shadow,transform] hover:text-white hover:shadow-tactile-hover active:translate-y-px active:shadow-tactile-active lg:px-4"
             title="Smart Randomize (R)"
             aria-label="Randomize texture"
           >
-            <Icons.Shuffle
+            <Shuffle
               size={14}
               className="group-hover:rotate-180 transition-transform duration-500 text-purple-400"
             />
@@ -261,7 +278,10 @@ export const Header: React.FC<HeaderProps> = memo(
               const entered = window.prompt("Name this preset", "New Preset");
               if (entered == null) return;
               const trimmed = entered.trim();
-              if (!trimmed) return;
+              if (!trimmed) {
+                actions.addToast("error", "Preset name cannot be blank");
+                return;
+              }
               const used = new Set(userPresets.map((preset) => preset.name));
               let uniqueName = trimmed;
               let suffix = 2;
@@ -269,15 +289,18 @@ export const Header: React.FC<HeaderProps> = memo(
                 uniqueName = `${trimmed} ${suffix}`;
                 suffix += 1;
               }
+              if (uniqueName !== trimmed) {
+                actions.addToast("info", `Saved as ${uniqueName}`);
+              }
               void Promise.resolve(actions.saveUserPreset(uniqueName)).then((id) => {
                 if (id) setSelectedPresetId(id);
               });
             }}
-            className="hidden h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-[#151515] text-gray-400 shadow-tactile transition-[color,box-shadow,transform] hover:text-green-400 hover:shadow-tactile-hover active:translate-y-px sm:flex"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/5 bg-[#151515] text-gray-400 shadow-tactile transition-[color,box-shadow,transform] hover:text-green-400 hover:shadow-tactile-hover active:translate-y-px"
             title="Save Preset"
             aria-label="Save preset"
           >
-            <Icons.Save size={14} />
+            <Save size={14} />
           </button>
         </div>
 
@@ -289,7 +312,7 @@ export const Header: React.FC<HeaderProps> = memo(
             className={`hidden h-9 items-center gap-2 rounded-lg border px-3 transition-[color,background-color,box-shadow,transform] active:translate-y-px xl:flex ${state.gridOverlay ? "bg-linear-to-b from-gray-200 to-gray-400 text-black border-white shadow-glow-sm" : "bg-[#151515] border-white/5 text-gray-500 hover:text-gray-200 shadow-tactile"}`}
             aria-pressed={state.gridOverlay}
           >
-            <Icons.Grid3X3 size={14} />
+            <Grid3X3 size={14} />
             <span className="text-[10px] font-bold">GRID</span>
           </button>
 
@@ -302,7 +325,7 @@ export const Header: React.FC<HeaderProps> = memo(
             title="Keyboard Shortcuts"
             aria-label="Keyboard shortcuts"
           >
-            <Icons.Keyboard size={16} />
+            <Keyboard size={16} />
           </button>
 
           <button
@@ -312,7 +335,7 @@ export const Header: React.FC<HeaderProps> = memo(
             title="Legacy HTML Export Preview"
             aria-label="Legacy HTML export preview"
           >
-            <Icons.FileCode2 size={16} />
+            <FileCode2 size={16} />
           </button>
 
           <button
@@ -322,7 +345,7 @@ export const Header: React.FC<HeaderProps> = memo(
             title="Global Settings"
             aria-label="Global settings"
           >
-            <Icons.Settings2 size={16} />
+            <Settings2 size={16} />
           </button>
 
           <button
@@ -333,7 +356,7 @@ export const Header: React.FC<HeaderProps> = memo(
             aria-expanded={rightPanelOpen}
             className="ml-1 flex h-9 items-center gap-1.5 rounded-lg px-2 text-gray-300 hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80 xl:hidden"
           >
-            <Icons.PanelRight size={20} />
+            <PanelRight size={20} />
             <span className="hidden text-[10px] font-bold uppercase tracking-wider md:inline">
               Output
             </span>
@@ -342,4 +365,15 @@ export const Header: React.FC<HeaderProps> = memo(
       </header>
     );
   },
+  (prev, next) =>
+    prev.userPresets === next.userPresets &&
+    prev.history.canUndo === next.history.canUndo &&
+    prev.history.canRedo === next.history.canRedo &&
+    prev.leftPanelOpen === next.leftPanelOpen &&
+    prev.rightPanelOpen === next.rightPanelOpen &&
+    prev.state.gridOverlay === next.state.gridOverlay &&
+    prev.state.textureType === next.state.textureType &&
+    prev.actions === next.actions &&
+    prev.toggleLeftPanel === next.toggleLeftPanel &&
+    prev.toggleRightPanel === next.toggleRightPanel,
 );

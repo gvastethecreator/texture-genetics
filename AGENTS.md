@@ -6,14 +6,14 @@ Texture Genetics is a browser-based procedural texture workstation. It uses Reac
 
 ## Tech Stack
 
-- **Runtime:** Node.js >= 22
+- **Runtime:** Node.js ^22.12.0 || ^24.0.0 || >=26.0.0
 - **Package manager:** pnpm >= 12.0.0
 - **Framework:** React 19 + TypeScript 7.0
 - **Build:** Vite 8 (Rolldown bundler)
 - **Styling:** Tailwind CSS v4 (CSS-first config in `src/index.css`)
 - **3D:** Three.js 0.185 + React Three Fiber + React Three Drei + Postprocessing
 - **Lint/Format:** oxlint + oxfmt (OXC toolchain)
-- **Testing:** Vitest 4.1 + Testing Library + jsdom
+- **Testing:** Vitest 5.0 + Testing Library + jsdom
 
 ## Commands
 

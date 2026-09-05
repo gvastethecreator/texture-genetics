@@ -252,196 +252,6 @@ export const createUniformsFromState = (
   };
 };
 
-// --- UPDATE HELPERS (COMPOSABLE) ---
-
-const updateCoreUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
-  // Only update resolution if strictly necessary (usually overridden by useFrame for window resizing)
-  // We keep this to ensure the state value is reflected if window matches state
-  if (uniforms.u_resolution.value.x !== state.resolution) {
-    uniforms.u_resolution.value.set(state.resolution, state.resolution);
-  }
-  uniforms.u_viewMode.value = state.viewMode;
-  uniforms.u_isUVDebug.value = state.textureType === TextureType.UV_DEBUG;
-};
-
-const updatePatternUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
-  // Palette Update Logic
-  const palette = state.params.palette || [
-    { color: state.params.color1 || "#fff", enabled: true },
-    { color: state.params.color2 || "#000", enabled: true },
-  ];
-
-  const activeColors = palette.filter((p) => p.enabled);
-  if (activeColors.length === 0) {
-    activeColors.push({ color: "#ffffff", enabled: true });
-    activeColors.push({ color: "#000000", enabled: true });
-  }
-
-  // Update Packed Array
-  const glColors = uniforms.u_palette.value as THREE.Color[];
-  for (let i = 0; i < 8; i++) {
-    if (i < activeColors.length) {
-      // OPTIMIZATION: Only parse color string if it changed.
-      // setStyle involves regex parsing and is expensive in a loop.
-      const hex = activeColors[i].color;
-      // Check against internal cache or just primitive check if possible
-      // Since we can't easily read back 'hex' string from THREE.Color efficiently without .getHexString(),
-      // and .getHexString() allocates new strings, we will rely on the fact that this function
-      // is now called inside useEffect (only on change) rather than useFrame.
-      // However, a simple dirty check prevents re-parsing if only one color changed.
-      if (glColors[i].getHexString() !== hex.replace("#", "").toLowerCase()) {
-        glColors[i].setStyle(hex);
-      }
-    }
-  }
-  uniforms.u_paletteCount.value = activeColors.length;
-
-  uniforms.u_scale.value = Math.max(0.001, state.params.scale);
-  uniforms.u_intensity.value = state.params.intensity;
-  uniforms.u_speed.value = state.params.speed;
-  uniforms.u_factor.value = state.params.factor;
-  uniforms.u_distortion.value = state.params.distortion;
-  uniforms.u_detail.value = state.params.detail;
-  uniforms.u_seed.value = state.params.seed;
-  uniforms.u_p1.value = state.params.p1;
-  uniforms.u_p2.value = state.params.p2;
-  uniforms.u_p3.value = state.params.p3;
-  uniforms.u_p4.value = state.params.p4;
-  uniforms.u_p5.value = state.params.p5;
-  uniforms.u_p6.value = state.params.p6;
-  uniforms.u_p7.value = state.params.p7;
-  uniforms.u_p8.value = state.params.p8;
-  uniforms.u_p9.value = state.params.p9;
-  uniforms.u_p10.value = state.params.p10;
-  uniforms.u_p11.value = state.params.p11;
-  uniforms.u_p12.value = state.params.p12;
-  uniforms.u_p13.value = state.params.p13;
-  uniforms.u_p14.value = state.params.p14;
-  uniforms.u_p15.value = state.params.p15;
-};
-
-const updateBlendingUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
-  uniforms.u_blendEnabled.value = state.blending.enabled;
-  uniforms.u_blendMode.value = state.blending.mode;
-  uniforms.u_blendOpacity.value = state.blending.opacity;
-  uniforms.u_blendScale.value = Math.max(0.001, state.blending.scale);
-  uniforms.u_blendFactor.value = state.blending.factor;
-  uniforms.u_blendIntensity.value = state.blending.intensity;
-  uniforms.u_blendDetail.value = state.blending.factor;
-  uniforms.u_blendSeed.value = state.params.seed + 100.0;
-};
-
-const updateTransformUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
-  uniforms.u_angle.value = state.transform.angle * (Math.PI / 180);
-  uniforms.u_offset.value.set(state.transform.offsetX, state.transform.offsetY);
-  uniforms.u_symEnabled.value = state.symmetry.enabled;
-  uniforms.u_symSegments.value = state.symmetry.segments;
-  uniforms.u_symRotation.value = state.symmetry.rotation * (Math.PI / 180);
-  uniforms.u_symZoom.value = Math.max(0.01, state.symmetry.zoom);
-
-  uniforms.u_tilingEnabled.value = state.tiling.enabled;
-  uniforms.u_tilingMirror.value = state.tiling.mirror;
-  uniforms.u_tilingRepeat.value.set(state.tiling.repeatX, state.tiling.repeatY);
-  uniforms.u_tilingOffset.value.set(state.tiling.offsetX, state.tiling.offsetY);
-  uniforms.u_tilingRotation.value = state.tiling.rotation * (Math.PI / 180);
-  uniforms.u_tilingScale.value = Math.max(0.01, state.tiling.scale);
-};
-
-const updatePostProcessUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
-  uniforms.u_applyToMap.value = state.postProcess.applyToMap;
-  uniforms.u_polar.value = state.postProcess.polar;
-  uniforms.u_toon.value = state.postProcess.toon;
-  uniforms.u_toonLevels.value = state.postProcess.toonLevels;
-  uniforms.u_posterize.value = state.postProcess.posterize;
-  uniforms.u_posterizeLevels.value = state.postProcess.posterizeLevels;
-  uniforms.u_chromaticAberration.value = state.postProcess.chromaticAberration;
-  uniforms.u_radialMask.value = state.postProcess.radialMask;
-  uniforms.u_vignette.value = state.postProcess.vignette;
-  uniforms.u_bloomEnabled.value = state.postProcess.bloom;
-  uniforms.u_bloomThreshold.value = state.postProcess.bloomThreshold;
-  uniforms.u_bloomStrength.value = state.postProcess.bloomStrength;
-  uniforms.u_blurEnabled.value = state.postProcess.blur;
-  uniforms.u_blurStrength.value = state.postProcess.blurStrength;
-  uniforms.u_normalize.value = state.postProcess.normalize;
-  uniforms.u_glitch.value = state.postProcess.glitch;
-  uniforms.u_glitchStrength.value = state.postProcess.glitchStrength;
-  uniforms.u_glitchSpeed.value = state.postProcess.glitchSpeed;
-
-  uniforms.u_pixelate.value = state.postProcess.pixelate;
-  uniforms.u_pixelDensity.value = state.postProcess.pixelDensity;
-  uniforms.u_scanlines.value = state.postProcess.scanlines;
-  uniforms.u_scanlineIntensity.value = state.postProcess.scanlineIntensity;
-  uniforms.u_crtDistortion.value = state.postProcess.crtDistortion;
-
-  // New FX
-  uniforms.u_halftone.value = state.postProcess.halftone;
-  uniforms.u_halftoneScale.value = state.postProcess.halftoneScale;
-  uniforms.u_edgeDetect.value = state.postProcess.edgeDetect;
-  if (
-    uniforms.u_edgeColor.value.getHexString() !==
-    state.postProcess.edgeColor.replace("#", "").toLowerCase()
-  ) {
-    uniforms.u_edgeColor.value.setStyle(state.postProcess.edgeColor);
-  }
-};
-
-const updateMaterialUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
-  uniforms.u_normalEnabled.value = state.normalMap.enabled;
-  uniforms.u_normalStrength.value = state.normalMap.strength;
-  uniforms.u_normalInvert.value = state.normalMap.invert;
-  uniforms.u_normalSmoothness.value = state.normalMap.smoothness;
-  uniforms.u_dispStrength.value = state.displacement.strength;
-  uniforms.u_dispBias.value = state.displacement.bias;
-  uniforms.u_aoEnabled.value = state.ao.enabled;
-  uniforms.u_aoStrength.value = state.ao.strength;
-  uniforms.u_aoRadius.value = state.ao.radius;
-};
-
-const updateColorBalanceUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
-  if (state.colorBalance) {
-    if (state.colorBalance.shadows) {
-      uniforms.u_shadows.value.set(
-        state.colorBalance.shadows.r,
-        state.colorBalance.shadows.g,
-        state.colorBalance.shadows.b,
-      );
-    }
-    if (state.colorBalance.midtones) {
-      uniforms.u_midtones.value.set(
-        state.colorBalance.midtones.r,
-        state.colorBalance.midtones.g,
-        state.colorBalance.midtones.b,
-      );
-    }
-    if (state.colorBalance.highlights) {
-      uniforms.u_highlights.value.set(
-        state.colorBalance.highlights.r,
-        state.colorBalance.highlights.g,
-        state.colorBalance.highlights.b,
-      );
-    }
-    uniforms.u_brightness.value = state.colorBalance.brightness ?? 0;
-    uniforms.u_contrast.value = state.colorBalance.contrast ?? 0;
-    uniforms.u_saturation.value = state.colorBalance.saturation ?? 0;
-    uniforms.u_hue.value = state.colorBalance.hue ?? 0;
-    uniforms.u_cycleSpeed.value = state.colorBalance.cycleSpeed ?? 0;
-  }
-};
-
-const updateEnvironmentUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
-  uniforms.u_lightDir.value.set(state.environment.lightX, state.environment.lightY, 1.0);
-  uniforms.u_lightIntensity.value = state.environment.lightIntensity;
-  uniforms.u_roughness.value = state.environment.roughness;
-  uniforms.u_metalness.value = state.environment.metalness;
-  uniforms.u_envType.value = state.environment.envType;
-  uniforms.u_holographic.value = state.environment.holographic;
-  uniforms.u_holoStrength.value = state.environment.holoStrength;
-  uniforms.u_fogEnabled.value = state.environment.fogEnabled;
-  uniforms.u_fogDensity.value = state.environment.fogDensity;
-  // PERFORMANCE FIX: Use copy() on existing cache instead of new THREE.Color()
-  uniforms.u_fogColor.value.copy(getFogColor(state));
-};
-
 const updateTextureUniforms = (
   uniforms: Record<string, THREE.IUniform>,
   state: AppState,
@@ -493,13 +303,6 @@ const updateTextureUniforms = (
   uniforms.u_stickerUseColor.value = state.sticker.useColor;
 };
 
-const updateMouseUniforms = (uniforms: Record<string, THREE.IUniform>, state: AppState) => {
-  uniforms.u_mouseEnabled.value = state.mouse.enabled;
-  uniforms.u_mouseType.value = state.mouse.type;
-  uniforms.u_mouseStrength.value = state.mouse.strength;
-  uniforms.u_mouseRadius.value = state.mouse.radius;
-};
-
 // --- MAIN ORCHESTRATOR ---
 // Now acts as a composed pipeline
 export const updateUniformsFromState = (
@@ -509,15 +312,9 @@ export const updateUniformsFromState = (
   baseTexture: THREE.Texture | null = null,
   stickerTexture: THREE.Texture | null = null,
 ) => {
-  updateCoreUniforms(uniforms, state);
-  updatePatternUniforms(uniforms, state);
-  updateBlendingUniforms(uniforms, state);
-  updateTransformUniforms(uniforms, state);
-  updatePostProcessUniforms(uniforms, state);
-  updateMaterialUniforms(uniforms, state);
-  updateColorBalanceUniforms(uniforms, state);
-  updateEnvironmentUniforms(uniforms, state);
+  if (uniforms.u_resolution.value.x !== state.resolution) {
+    uniforms.u_resolution.value.set(state.resolution, state.resolution);
+  }
   applyRendererUniformProjection(uniforms, projectRendererUniforms(state));
   updateTextureUniforms(uniforms, state, maskTexture, baseTexture, stickerTexture);
-  updateMouseUniforms(uniforms, state);
 };

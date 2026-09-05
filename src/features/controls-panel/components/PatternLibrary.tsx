@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import * as Icons from "lucide-react";
+import { Shuffle } from "lucide-react";
 import { TextureType } from "../../../core/types/types";
 import { PATTERN_CATEGORIES } from "../../../data/patternManifest";
 
@@ -11,6 +11,13 @@ interface PatternLibraryProps {
 
 export const PatternLibrary: React.FC<PatternLibraryProps> = memo(
   ({ currentType, onSelect, onRandom }) => {
+    const [filter, setFilter] = React.useState("");
+    const query = filter.trim().toLowerCase();
+    const visibleCategories = PATTERN_CATEGORIES.map((data) => ({
+      ...data,
+      types: query ? data.types.filter((type) => type.toLowerCase().includes(query)) : data.types,
+    })).filter((data) => data.types.length > 0);
+
     return (
       <div className="mb-4 space-y-1 border border-border/50 rounded-lg overflow-hidden">
         <div className="bg-surface px-3 py-2 border-b border-border/50 flex justify-between items-center">
@@ -23,10 +30,20 @@ export const PatternLibrary: React.FC<PatternLibraryProps> = memo(
             title="Random Pattern Type"
             aria-label="Random pattern type"
           >
-            <Icons.Shuffle size={12} />
+            <Shuffle size={12} />
           </button>
         </div>
-        {PATTERN_CATEGORIES.map((data) => {
+        <label className="block px-3 py-2">
+          <span className="sr-only">Filter patterns</span>
+          <input
+            type="search"
+            value={filter}
+            onChange={(event) => setFilter(event.target.value)}
+            placeholder="Filter patterns"
+            className="w-full rounded border border-white/10 bg-black/40 px-2 py-1 text-[11px] text-gray-200"
+          />
+        </label>
+        {visibleCategories.map((data) => {
           const catName = data.name;
           const Icon = data.icon;
           const isActiveCategory = data.types.includes(currentType);

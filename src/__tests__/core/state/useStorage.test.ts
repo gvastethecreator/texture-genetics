@@ -180,6 +180,32 @@ describe("useStorage", () => {
     expect(persisted.svg.url).toBeNull();
     expect(persisted["_version"]).toBe(4);
     expect(bundleKey).toBe(`texture_genetics_v4_assets_${persisted["_assetRevision"]}`);
+    expect(persisted).not.toHaveProperty("isSettingsOpen");
+    expect(persisted).not.toHaveProperty("isFullscreen");
+  });
+
+  it("skips IndexedDB asset rewrite on param-only saves", async () => {
+    const { result } = renderHook(() => useStorage(mockAppState(), vi.fn()));
+    await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+    await act(async () => {
+      await result.current.saveState(
+        mockAppState({
+          baseTexture: { ...mockAppState().baseTexture, texture: "data:image/png;base64,keep" },
+        }),
+      );
+    });
+    expect(idbMocks.set).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await result.current.saveState(
+        mockAppState({
+          baseTexture: { ...mockAppState().baseTexture, texture: "data:image/png;base64,keep" },
+          params: { ...mockAppState().params, scale: 4 },
+        }),
+      );
+    });
+    expect(idbMocks.set).toHaveBeenCalledTimes(1);
   });
 
   it("does not commit lightweight state when an asset transaction fails", async () => {

@@ -1,6 +1,4 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 
 export type ModelFormat = "obj" | "gltf" | "glb";
 
@@ -111,8 +109,10 @@ export const parseModelGeometryData = async (
 ): Promise<THREE.BufferGeometry> => {
   let root: THREE.Object3D;
   if (format === "obj") {
+    const { OBJLoader } = await import("three/examples/jsm/loaders/OBJLoader.js");
     root = new OBJLoader().parse(decodeText(data));
   } else {
+    const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
     const payload = format === "gltf" ? decodeText(data) : data;
     const gltf = await new GLTFLoader().parseAsync(payload, resourcePath);
     root = gltf.scene;

@@ -19,6 +19,7 @@ interface ExportPanelProps {
   exportPresets?: () => void;
   importPresets?: (file: File) => void;
   onDownloadZip?: () => void;
+  getDocument?: () => AppState;
 }
 
 export const ExportPanel: React.FC<ExportPanelProps> = memo(
@@ -37,6 +38,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = memo(
     exportPresets,
     importPresets,
     onDownloadZip,
+    getDocument,
   }) => {
     const handleVideoRecord = () => {
       if (onVideoRecord) onVideoRecord();
@@ -44,14 +46,20 @@ export const ExportPanel: React.FC<ExportPanelProps> = memo(
     const [copySuccess, setCopySuccess] = React.useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [copyFailed, setCopyFailed] = React.useState(false);
     const handleCopyHtml = async () => {
       const { generateLegacyStandaloneHtml } = await import("../../export/legacy/standaloneHtml");
-      const html = generateLegacyStandaloneHtml(state);
+      const html = generateLegacyStandaloneHtml(getDocument ? getDocument() : state);
       const success = await copyToClipboard(html);
       if (success) {
+        setCopyFailed(false);
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2500);
+        return;
       }
+      setCopySuccess(false);
+      setCopyFailed(true);
+      setTimeout(() => setCopyFailed(false), 2500);
     };
 
     const handleImportClick = () => {
@@ -264,7 +272,7 @@ export const ExportPanel: React.FC<ExportPanelProps> = memo(
                 className={`w-full py-2 px-4 rounded font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 transition-all duration-200 ease-out select-none border shadow-depth-sm ${copySuccess ? "bg-green-900/50 border-green-500 text-green-400" : "bg-surface border-border text-gray-300 hover:bg-gray-800 hover:text-white"}`}
               >
                 {copySuccess ? <Icons.Check size={14} /> : <Icons.Code size={14} />}
-                {copySuccess ? "Copied!" : "Copy Legacy HTML"}
+                {copyFailed ? "Copy failed" : copySuccess ? "Copied!" : "Copy Legacy HTML"}
               </button>
             </div>
           </div>
@@ -272,4 +280,18 @@ export const ExportPanel: React.FC<ExportPanelProps> = memo(
       </>
     );
   },
+  (prev, next) =>
+    prev.isGenerating === next.isGenerating &&
+    prev.state.spriteSheet === next.state.spriteSheet &&
+    prev.state.settings.exportFormat === next.state.settings.exportFormat &&
+    prev.state.textureType === next.state.textureType &&
+    prev.onSpriteSheet === next.onSpriteSheet &&
+    prev.onGifExport === next.onGifExport &&
+    prev.onVideoRecord === next.onVideoRecord &&
+    prev.onHtmlExport === next.onHtmlExport &&
+    prev.onGlbExport === next.onGlbExport &&
+    prev.onDownload === next.onDownload &&
+    prev.onDownloadZip === next.onDownloadZip &&
+    prev.exportPresets === next.exportPresets &&
+    prev.importPresets === next.importPresets,
 );

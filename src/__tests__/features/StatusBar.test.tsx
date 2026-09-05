@@ -35,10 +35,16 @@ describe("StatusBar", () => {
     expect(onToggleAnimate).toHaveBeenCalledOnce();
   });
 
+  it("announces the current texture type in a live region", () => {
+    const state = mockAppState();
+    render(<StatusBar state={state} />);
+    expect(document.querySelector("[aria-live='polite']")).toHaveTextContent(state.textureType);
+  });
+
   it("displays the current texture type", () => {
     const state = mockAppState();
     render(<StatusBar state={state} />);
-    expect(screen.getByText(state.textureType)).toBeInTheDocument();
+    expect(screen.getAllByText(state.textureType).length).toBeGreaterThan(0);
   });
 
   it("renders renderer status even without renderer instance", () => {

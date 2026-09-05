@@ -7,15 +7,10 @@
       "command": "pnpm run dev",
       "isBackground": true,
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "dedicated" }
-    },
-    {
-      "label": "🏗️ Build",
-      "type": "shell",
-      "command": "pnpm run build",
-      "group": { "kind": "build", "isDefault": true },
-      "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     },
     {
       "label": "✅ Check",
@@ -23,55 +18,24 @@
       "command": "pnpm run check",
       "group": "test",
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
-    },
-    {
-      "label": "🧠 Types",
-      "type": "shell",
-      "command": "pnpm run typecheck",
-      "group": "test",
-      "problemMatcher": ["$tsc"],
-      "presentation": { "reveal": "always", "panel": "shared" }
-    },
-    {
-      "label": "🔍 Lint",
-      "type": "shell",
-      "command": "pnpm run lint",
-      "group": "test",
-      "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
-    },
-    {
-      "label": "🛠️ Lint fix",
-      "type": "shell",
-      "command": "pnpm run lint:fix",
-      "group": "test",
-      "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
-    },
-    {
-      "label": "✨ Format",
-      "type": "shell",
-      "command": "pnpm run fmt",
-      "group": "test",
-      "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
-    },
-    {
-      "label": "🎯 Format check",
-      "type": "shell",
-      "command": "pnpm run fmt:check",
-      "group": "test",
-      "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     },
     {
       "label": "🧪 Test",
       "type": "shell",
       "command": "pnpm run test",
-      "group": { "kind": "test", "isDefault": true },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     },
     {
       "label": "👀 Watch",
@@ -79,15 +43,81 @@
       "command": "pnpm run test:watch",
       "isBackground": true,
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "dedicated" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     },
     {
-      "label": "📊 Coverage",
+      "label": "🔍 Lint",
       "type": "shell",
-      "command": "pnpm run test:coverage",
+      "command": "pnpm run lint",
       "group": "test",
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "🛠️ Lint fix",
+      "type": "shell",
+      "command": "pnpm run lint:fix",
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "✨ Format",
+      "type": "shell",
+      "command": "pnpm run fmt",
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "🎯 Format check",
+      "type": "shell",
+      "command": "pnpm run fmt:check",
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "🧠 Types",
+      "type": "shell",
+      "command": "pnpm run typecheck",
+      "group": "test",
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "🏗️ Build",
+      "type": "shell",
+      "command": "pnpm run build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     },
     {
       "label": "🔎 Preview",
@@ -95,35 +125,61 @@
       "command": "pnpm run preview",
       "isBackground": true,
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "dedicated" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "📊 Coverage",
+      "type": "shell",
+      "command": "pnpm run test:coverage",
+      "group": "test",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     },
     {
       "label": "📥 Install",
       "type": "shell",
       "command": "pnpm install --frozen-lockfile",
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     },
     {
       "label": "⬆️ Outdated",
       "type": "shell",
       "command": "pnpm outdated",
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     },
     {
       "label": "🔒 Audit",
       "type": "shell",
       "command": "pnpm audit",
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     },
     {
       "label": "🧹 Clean",
       "type": "shell",
       "command": "pnpm run clean",
       "problemMatcher": [],
-      "presentation": { "reveal": "always", "panel": "shared" }
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     }
   ]
 }

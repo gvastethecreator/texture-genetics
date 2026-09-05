@@ -159,6 +159,16 @@ export interface TslUniforms {
   u_mouseRadius: UFloat;
   u_mouseEnabled: UFloat;
 
+  // Sticker
+  u_stickerEnabled: UFloat;
+  u_stickerOpacity: UFloat;
+  u_stickerBlendMode: UFloat;
+  u_stickerPos: UVec2;
+  u_stickerScale: UFloat;
+  u_stickerRot: UFloat;
+  u_stickerColor: UColor;
+  u_stickerUseColor: UFloat;
+
   // Environment
   u_lightDir: UVec3;
   u_lightIntensity: UFloat;
@@ -370,6 +380,15 @@ export function createTslUniforms(state: AppState): TslUniforms {
     u_mouseRadius: uniform(state.mouse?.radius ?? 0.2),
     u_mouseEnabled: uniform(state.mouse?.enabled ? 1 : 0),
 
+    u_stickerEnabled: uniform(state.sticker.enabled ? 1 : 0),
+    u_stickerOpacity: uniform(state.sticker.opacity),
+    u_stickerBlendMode: uniform(state.sticker.blendMode),
+    u_stickerPos: uniform(new THREE.Vector2(state.sticker.posX, state.sticker.posY)),
+    u_stickerScale: uniform(Math.max(0.01, state.sticker.scale)),
+    u_stickerRot: uniform(state.sticker.rotation * (Math.PI / 180)),
+    u_stickerColor: uniform(new THREE.Color(state.sticker.color || "#ffffff")),
+    u_stickerUseColor: uniform(state.sticker.useColor ? 1 : 0),
+
     // Environment
     u_lightDir: uniform(
       new THREE.Vector3(state.environment?.lightX ?? 0.5, state.environment?.lightY ?? 1, 1.0),
@@ -406,182 +425,6 @@ export function updateTslUniforms(
   state: AppState,
   domains: readonly TslUniformDomain[] = ALL_UNIFORM_DOMAINS,
 ): void {
-  const shouldUpdate = (domain: TslUniformDomain) => domains.includes(domain);
-
-  if (shouldUpdate("pattern")) {
-    u.u_scale.value = Math.max(0.001, state.params.scale);
-    u.u_intensity.value = state.params.intensity;
-    u.u_speed.value = state.params.speed;
-    u.u_factor.value = state.params.factor;
-    u.u_distortion.value = state.params.distortion;
-    u.u_detail.value = state.params.detail;
-    u.u_seed.value = state.params.seed;
-
-    u.u_p1.value = state.params.p1;
-    u.u_p2.value = state.params.p2;
-    u.u_p3.value = state.params.p3;
-    u.u_p4.value = state.params.p4;
-    u.u_p5.value = state.params.p5;
-    u.u_p6.value = state.params.p6;
-    u.u_p7.value = state.params.p7;
-    u.u_p8.value = state.params.p8;
-    u.u_p9.value = state.params.p9;
-    u.u_p10.value = state.params.p10;
-    u.u_p11.value = state.params.p11;
-    u.u_p12.value = state.params.p12;
-    u.u_p13.value = state.params.p13;
-    u.u_p14.value = state.params.p14;
-    u.u_p15.value = state.params.p15;
-
-    // Palette
-    const paletteColors = buildPaletteArray(state);
-    u.u_palette.array = paletteColors;
-    u.u_paletteCount.value = getActivePalette(state).length;
-
-    (u.u_color1.value as THREE.Color).set(state.params.color1);
-    (u.u_color2.value as THREE.Color).set(state.params.color2);
-
-    // Blending
-    u.u_blendEnabled.value = state.blending.enabled ? 1 : 0;
-    u.u_blendMode.value = state.blending.mode;
-    u.u_blendOpacity.value = state.blending.opacity;
-    u.u_blendScale.value = Math.max(0.001, state.blending.scale);
-    u.u_blendFactor.value = state.blending.factor;
-    u.u_blendIntensity.value = state.blending.intensity;
-    u.u_blendDetail.value = state.blending.factor;
-    u.u_blendSeed.value = state.params.seed + 100.0;
-  }
-
-  // Transforms
-  if (shouldUpdate("transform")) {
-    u.u_angle.value = (state.transform?.angle ?? 0) * (Math.PI / 180);
-    (u.u_offset.value as THREE.Vector2).set(
-      state.transform?.offsetX ?? 0,
-      state.transform?.offsetY ?? 0,
-    );
-    u.u_symEnabled.value = state.symmetry?.enabled ? 1 : 0;
-    u.u_symSegments.value = state.symmetry?.segments ?? 6;
-    u.u_symRotation.value = (state.symmetry?.rotation ?? 0) * (Math.PI / 180);
-    u.u_symZoom.value = Math.max(0.01, state.symmetry?.zoom ?? 1);
-    u.u_tilingEnabled.value = state.tiling?.enabled ? 1 : 0;
-    u.u_tilingMirror.value = state.tiling?.mirror ? 1 : 0;
-    (u.u_tilingRepeat.value as THREE.Vector2).set(
-      state.tiling?.repeatX ?? 1,
-      state.tiling?.repeatY ?? 1,
-    );
-    (u.u_tilingOffset.value as THREE.Vector2).set(
-      state.tiling?.offsetX ?? 0,
-      state.tiling?.offsetY ?? 0,
-    );
-    u.u_tilingRotation.value = (state.tiling?.rotation ?? 0) * (Math.PI / 180);
-    u.u_tilingScale.value = Math.max(0.01, state.tiling?.scale ?? 1);
-  }
-
-  // Post-process
-  if (shouldUpdate("post-process")) {
-    u.u_applyToMap.value = state.postProcess?.applyToMap ? 1 : 0;
-    u.u_polar.value = state.postProcess?.polar ? 1 : 0;
-    u.u_toon.value = state.postProcess?.toon ? 1 : 0;
-    u.u_toonLevels.value = state.postProcess?.toonLevels ?? 4;
-    u.u_posterize.value = state.postProcess?.posterize ? 1 : 0;
-    u.u_posterizeLevels.value = state.postProcess?.posterizeLevels ?? 4;
-    u.u_chromaticAberration.value = state.postProcess?.chromaticAberration ?? 0;
-    u.u_radialMask.value = state.postProcess?.radialMask ?? 0;
-    u.u_vignette.value = state.postProcess?.vignette ?? 0;
-    u.u_bloomEnabled.value = state.postProcess?.bloom ? 1 : 0;
-    u.u_bloomThreshold.value = state.postProcess?.bloomThreshold ?? 0.8;
-    u.u_bloomStrength.value = state.postProcess?.bloomStrength ?? 0.5;
-    u.u_blurEnabled.value = state.postProcess?.blur ? 1 : 0;
-    u.u_blurStrength.value = state.postProcess?.blurStrength ?? 0.5;
-    u.u_normalize.value = state.postProcess?.normalize ? 1 : 0;
-    u.u_glitch.value = state.postProcess?.glitch ? 1 : 0;
-    u.u_glitchStrength.value = state.postProcess?.glitchStrength ?? 0;
-    u.u_glitchSpeed.value = state.postProcess?.glitchSpeed ?? 1;
-    u.u_pixelate.value = state.postProcess?.pixelate ? 1 : 0;
-    u.u_pixelDensity.value = state.postProcess?.pixelDensity ?? 100;
-    u.u_scanlines.value = state.postProcess?.scanlines ? 1 : 0;
-    u.u_scanlineIntensity.value = state.postProcess?.scanlineIntensity ?? 0.5;
-    u.u_crtDistortion.value = state.postProcess?.crtDistortion ?? 0;
-    u.u_halftone.value = state.postProcess?.halftone ? 1 : 0;
-    u.u_halftoneScale.value = state.postProcess?.halftoneScale ?? 1;
-    u.u_edgeDetect.value = state.postProcess?.edgeDetect ? 1 : 0;
-    (u.u_edgeColor.value as THREE.Color).set(state.postProcess?.edgeColor ?? "#ffffff");
-  }
-
-  // Material
-  if (shouldUpdate("material")) {
-    u.u_normalEnabled.value = state.normalMap?.enabled ? 1 : 0;
-    u.u_normalStrength.value = state.normalMap?.strength ?? 1;
-    u.u_normalInvert.value = state.normalMap?.invert ? 1 : 0;
-    u.u_normalSmoothness.value = state.normalMap?.smoothness ?? 0.5;
-    u.u_dispStrength.value = state.displacement?.strength ?? 0;
-    u.u_dispBias.value = state.displacement?.bias ?? 0;
-    u.u_aoEnabled.value = state.ao?.enabled ? 1 : 0;
-    u.u_aoStrength.value = state.ao?.strength ?? 0.5;
-    u.u_aoRadius.value = state.ao?.radius ?? 0.5;
-  }
-
-  // Color balance
-  if (shouldUpdate("color")) {
-    (u.u_shadows.value as THREE.Color).setRGB(
-      state.colorBalance?.shadows?.r ?? 0.5,
-      state.colorBalance?.shadows?.g ?? 0.5,
-      state.colorBalance?.shadows?.b ?? 0.5,
-    );
-    (u.u_midtones.value as THREE.Color).setRGB(
-      state.colorBalance?.midtones?.r ?? 0.5,
-      state.colorBalance?.midtones?.g ?? 0.5,
-      state.colorBalance?.midtones?.b ?? 0.5,
-    );
-    (u.u_highlights.value as THREE.Color).setRGB(
-      state.colorBalance?.highlights?.r ?? 0.5,
-      state.colorBalance?.highlights?.g ?? 0.5,
-      state.colorBalance?.highlights?.b ?? 0.5,
-    );
-    u.u_brightness.value = state.colorBalance?.brightness ?? 0;
-    u.u_contrast.value = state.colorBalance?.contrast ?? 0;
-    u.u_saturation.value = state.colorBalance?.saturation ?? 0;
-    u.u_hue.value = state.colorBalance?.hue ?? 0;
-    u.u_cycleSpeed.value = state.colorBalance?.cycleSpeed ?? 0;
-  }
-
-  // Alpha and mouse
-  if (shouldUpdate("interaction")) {
-    u.u_alphaEnabled.value = state.imageAlpha?.enabled ? 1 : 0;
-    u.u_alphaThreshold.value = state.imageAlpha?.threshold ?? 0.5;
-    u.u_alphaTolerance.value = state.imageAlpha?.tolerance ?? 0.1;
-    u.u_alphaBlur.value = state.imageAlpha?.blur ?? 0;
-    u.u_maskEnabled.value = state.imageAlpha?.maskEnabled ? 1 : 0;
-    u.u_mouseEnabled.value = state.mouse?.enabled ? 1 : 0;
-    u.u_mouseType.value = state.mouse?.type ?? 0;
-    u.u_mouseStrength.value = state.mouse?.strength ?? 0.5;
-    u.u_mouseRadius.value = state.mouse?.radius ?? 0.2;
-  }
-
-  // Environment
-  if (shouldUpdate("environment")) {
-    (u.u_lightDir.value as THREE.Vector3).set(
-      state.environment?.lightX ?? 0.5,
-      state.environment?.lightY ?? 1,
-      1.0,
-    );
-    u.u_lightIntensity.value = state.environment?.lightIntensity ?? 1;
-    u.u_roughness.value = state.environment?.roughness ?? 0.5;
-    u.u_metalness.value = state.environment?.metalness ?? 0;
-    u.u_envType.value = state.environment?.envType ?? 0;
-    u.u_holographic.value = state.environment?.holographic ? 1 : 0;
-    u.u_holoStrength.value = state.environment?.holoStrength ?? 0.5;
-    u.u_fogEnabled.value = state.environment?.fogEnabled ? 1 : 0;
-    u.u_fogDensity.value = state.environment?.fogDensity ?? 0;
-    (u.u_fogColor.value as THREE.Color).copy(getFogColor(state));
-  }
-
-  // View
-  if (shouldUpdate("core")) {
-    u.u_viewMode.value = state.viewMode ?? 0;
-    u.u_isUVDebug.value = state.textureType === TextureType.UV_DEBUG ? 1 : 0;
-  }
-
   applyRendererUniformProjection(
     u as unknown as Record<string, { value?: unknown; array?: unknown }>,
     projectRendererUniforms(state),

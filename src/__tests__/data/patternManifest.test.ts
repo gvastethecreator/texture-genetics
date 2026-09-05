@@ -8,6 +8,8 @@ import {
 } from "../../data/patternManifest";
 import { SHADER_LABELS, TEXTURE_CATEGORIES } from "../../data/textureData";
 import { PATTERN_MAP } from "../../lib/glsl/patternMap";
+import "../../lib/tsl/registerPatterns";
+import "../../lib/tsl/registerOptionalTsl";
 import { TSL_PATTERN_MAP } from "../../lib/tsl/tslBuilder";
 
 const validSources = {

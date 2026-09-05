@@ -1,7 +1,6 @@
 import React, { useState, useEffect, memo, useId, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import * as Icons from "lucide-react";
-import { LucideIcon } from "lucide-react";
+import { Activity, Triangle, TrendingUp, Zap, ChevronDown, type LucideIcon } from "lucide-react";
 import { AnimationConfig, WaveType } from "../../core/types/types";
 import { calculateAnimatedValue } from "../../shared/utils/animationUtils";
 
@@ -294,7 +293,7 @@ export const Slider: React.FC<SliderProps> = memo(
               aria-label={`Animate ${accessibleLabel}`}
               aria-expanded={showAnimPanel}
             >
-              <Icons.Activity size={10} />
+              <Activity size={10} />
               {isAnimated && (
                 <span className="absolute top-0 right-0 w-2 h-2 bg-white rounded-full animate-pulse shadow-[0_0_4px_rgba(255,255,255,0.8)] border border-purple-600" />
               )}
@@ -354,13 +353,13 @@ export const Slider: React.FC<SliderProps> = memo(
                             aria-label={`${t} waveform`}
                             aria-pressed={animConfig.type === t}
                           >
-                            {t === WaveType.SINE && <Icons.Activity size={10} />}
+                            {t === WaveType.SINE && <Activity size={10} />}
                             {t === WaveType.COSINE && (
-                              <Icons.Activity size={10} className="scale-x-[-1]" />
+                              <Activity size={10} className="scale-x-[-1]" />
                             )}
-                            {t === WaveType.TRIANGLE && <Icons.Triangle size={10} />}
-                            {t === WaveType.SAWTOOTH && <Icons.TrendingUp size={10} />}
-                            {t === WaveType.NOISE && <Icons.Zap size={10} />}
+                            {t === WaveType.TRIANGLE && <Triangle size={10} />}
+                            {t === WaveType.SAWTOOTH && <TrendingUp size={10} />}
+                            {t === WaveType.NOISE && <Zap size={10} />}
                           </button>
                         ))}
                       </div>
@@ -565,7 +564,7 @@ export const ControlSection: React.FC<{
         <div
           className={`text-gray-600 transition-transform duration-300 ${isOpen ? "rotate-180 text-gray-400" : "rotate-0"}`}
         >
-          <Icons.ChevronDown size={14} />
+          <ChevronDown size={14} />
         </div>
       </button>
       {isOpen && (

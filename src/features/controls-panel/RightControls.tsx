@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { memo, useCallback, useRef, useState } from "react";
 import * as Icons from "lucide-react";
 import { AppState, ViewMode, AnimationConfig } from "../../core/types/types";
 import { TransformPanel } from "./components/TransformPanel";
@@ -47,6 +47,9 @@ export const RightControls: React.FC<RightControlsProps> = memo(
     onDownloadZip,
   }) => {
     const [activeTab, setActiveTab] = useState<"texture" | "scene">("texture");
+    const stateRef = useRef(state);
+    stateRef.current = state;
+    const getDocument = useCallback(() => stateRef.current, []);
 
     const updateStateGroup = actions.patchGroup;
 
@@ -129,6 +132,7 @@ export const RightControls: React.FC<RightControlsProps> = memo(
                 exportPresets={actions.exportPresets}
                 importPresets={actions.importPresets}
                 onDownloadZip={onDownloadZip}
+                getDocument={getDocument}
               />
             </div>
           )}

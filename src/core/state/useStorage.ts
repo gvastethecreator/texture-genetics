@@ -1,109 +1,22 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { AppState } from "../types/types";
 import { get, set, del } from "idb-keyval";
-
-const STORAGE_KEY = "texture_genetics_v4_release";
-// Version for future state migrations. Increment when state format changes
-// and add migration logic in the load path to handle older saves
-const STATE_VERSION = 4;
-const ASSET_BUNDLE_VERSION = 1;
-const ASSET_BUNDLE_PREFIX = "texture_genetics_v4_assets_";
-const LEGACY_STORAGE_SOURCES = [
-  { stateKey: "effect_gen_v4_release", assetPrefix: "effect_gen_v4_assets_" },
-  { stateKey: "effect_gen_v3_release", assetPrefix: "effect_gen_v3_assets_" },
-] as const;
-
-type StoredStateSource = {
-  savedState: string;
-  stateKey: string;
-  assetPrefix: string;
-};
-
-const getStoredStateSource = (): StoredStateSource | null => {
-  const currentSavedState = localStorage.getItem(STORAGE_KEY);
-  if (currentSavedState) {
-    return {
-      savedState: currentSavedState,
-      stateKey: STORAGE_KEY,
-      assetPrefix: ASSET_BUNDLE_PREFIX,
-    };
-  }
-
-  for (const source of LEGACY_STORAGE_SOURCES) {
-    const savedState = localStorage.getItem(source.stateKey);
-    if (savedState) return { savedState, ...source };
-  }
-
-  return null;
-};
-
-// Keys of properties that contain heavy base64 strings
-type HeavyAssetDescriptor = {
-  key: string;
-  path:
-    | ["baseTexture", "texture"]
-    | ["sticker", "texture"]
-    | ["imageAlpha", "maskTexture"]
-    | ["customModel"]
-    | ["svg", "url"];
-};
-
-const HEAVY_ASSETS: readonly HeavyAssetDescriptor[] = [
-  { path: ["baseTexture", "texture"], key: "asset_base_texture" },
-  { path: ["sticker", "texture"], key: "asset_sticker_texture" },
-  { path: ["imageAlpha", "maskTexture"], key: "asset_mask_texture" },
-  { path: ["customModel"], key: "asset_custom_model" },
-  { path: ["svg", "url"], key: "asset_svg" },
-] as const;
-
-type StoredAsset = string | Blob;
-
-interface AssetBundle {
-  version: typeof ASSET_BUNDLE_VERSION;
-  assets: Record<string, StoredAsset>;
-}
-
-interface PersistedStateMetadata {
-  _version?: number;
-  _assetRevision?: string;
-}
-
-const applyHeavyAsset = (state: AppState, asset: HeavyAssetDescriptor, value: string) => {
-  switch (asset.key) {
-    case "asset_base_texture":
-      state.baseTexture = { ...state.baseTexture, texture: value };
-      return;
-    case "asset_sticker_texture":
-      state.sticker = { ...state.sticker, texture: value };
-      return;
-    case "asset_mask_texture":
-      state.imageAlpha = { ...state.imageAlpha, maskTexture: value };
-      return;
-    case "asset_custom_model":
-      state.customModel = value;
-      return;
-    case "asset_svg":
-      state.svg = { ...state.svg, url: value };
-      return;
-  }
-};
-
-const getHeavyAssetValue = (state: AppState, asset: HeavyAssetDescriptor): string | null => {
-  switch (asset.key) {
-    case "asset_base_texture":
-      return state.baseTexture.texture;
-    case "asset_sticker_texture":
-      return state.sticker.texture;
-    case "asset_mask_texture":
-      return state.imageAlpha.maskTexture;
-    case "asset_custom_model":
-      return state.customModel;
-    case "asset_svg":
-      return state.svg.url;
-  }
-
-  return null;
-};
+import {
+  ASSET_BUNDLE_PREFIX,
+  ASSET_BUNDLE_VERSION,
+  HEAVY_ASSETS,
+  LEGACY_STORAGE_SOURCES,
+  STORAGE_KEY,
+  applyHeavyAsset,
+  assetFingerprint,
+  getHeavyAssetValue,
+  getStoredStateSource,
+  parseStoredDocument,
+  serializePersistedDocument,
+  type AssetBundle,
+  type PersistedStateMetadata,
+  type StoredAsset,
+} from "./documentPersistence";
 
 const isStoredAsset = (value: unknown): value is StoredAsset =>
   typeof value === "string" || (typeof Blob !== "undefined" && value instanceof Blob);
@@ -132,11 +45,8 @@ const createRevision = (): string => {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 };
 
-// --- SAFETY UTILS ---
-
-const isUnsafeObject = (value: any): boolean => {
+const isUnsafeObject = (value: object): boolean => {
   try {
-    if (!value || typeof value !== "object") return false;
     if ("nodeType" in value) return true;
     if ("_reactInternals" in value) return true;
     if ("_reactFiber" in value) return true;
@@ -148,13 +58,13 @@ const isUnsafeObject = (value: any): boolean => {
 
 export const sanitizeValue = <T>(value: T): T | undefined => {
   if (value === undefined) return undefined;
-  if (isUnsafeObject(value)) return undefined;
+  if (value !== null && typeof value === "object" && isUnsafeObject(value)) return undefined;
   return value;
 };
 
 export const safeReplacer = () => {
   const seen = new WeakSet();
-  return (key: string, value: any) => {
+  return (key: string, value: unknown) => {
     if (typeof value !== "object" || value === null) return value;
     if (key.startsWith("_") || key === "ref" || key === "updater") return undefined;
     if (isUnsafeObject(value)) return undefined;
@@ -171,6 +81,8 @@ export const useStorage = (
 ) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const assetFingerprintRef = useRef<string>("");
+  const assetRevisionRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     const load = async () => {
@@ -182,25 +94,9 @@ export const useStorage = (
 
       if (savedState) {
         try {
-          const parsed = JSON.parse(savedState) as Partial<AppState> & PersistedStateMetadata;
-          metadata = parsed;
-          mergedState = { ...initialState, ...parsed };
-          mergedState.postProcess = { ...initialState.postProcess, ...parsed.postProcess };
-          mergedState.environment = { ...initialState.environment, ...parsed.environment };
-          mergedState.settings = { ...initialState.settings, ...parsed.settings };
-          mergedState.blending = { ...initialState.blending, ...parsed.blending };
-          mergedState.sticker = { ...initialState.sticker, ...parsed.sticker };
-          mergedState.svg = { ...initialState.svg, ...parsed.svg };
-          mergedState.colorBalance = {
-            ...initialState.colorBalance,
-            ...parsed.colorBalance,
-            shadows: { ...initialState.colorBalance.shadows, ...parsed.colorBalance?.shadows },
-            midtones: { ...initialState.colorBalance.midtones, ...parsed.colorBalance?.midtones },
-            highlights: {
-              ...initialState.colorBalance.highlights,
-              ...parsed.colorBalance?.highlights,
-            },
-          };
+          const parsed = parseStoredDocument(initialState, savedState);
+          mergedState = parsed.document;
+          metadata = parsed.metadata;
         } catch (error) {
           console.error("Stored editor state is invalid", error);
           onWarning?.(
@@ -247,6 +143,8 @@ export const useStorage = (
       if (mergedState.svg.url?.startsWith("blob:") && !metadata._assetRevision) {
         mergedState.svg = { ...mergedState.svg, url: null };
       }
+      assetFingerprintRef.current = assetFingerprint(mergedState);
+      assetRevisionRef.current = metadata._assetRevision;
       onLoaded(mergedState);
       setIsInitialized(true);
     };
@@ -259,49 +157,52 @@ export const useStorage = (
       if (!isInitialized) return Promise.resolve(false);
 
       const operation = saveQueueRef.current.then(async () => {
-        const revision = createRevision();
-        const bundleKey = `${ASSET_BUNDLE_PREFIX}${revision}`;
-        const assets: Record<string, StoredAsset> = {};
-
-        for (const asset of HEAVY_ASSETS) {
-          const value = getHeavyAssetValue(state, asset);
-          if (value) assets[asset.key] = await serializeAsset(value);
-        }
-
+        const nextFingerprint = assetFingerprint(state);
         const previousSource = getStoredStateSource();
         const previousState = previousSource?.savedState;
         const previousAssetPrefix = previousSource?.assetPrefix ?? ASSET_BUNDLE_PREFIX;
-        let previousRevision: string | undefined;
-        if (previousState) {
+        let previousRevision: string | undefined = assetRevisionRef.current;
+        if (previousState && !previousRevision) {
           try {
             previousRevision = (JSON.parse(previousState) as PersistedStateMetadata)._assetRevision;
           } catch {
-            // Preserve invalid source data; the new revision becomes authoritative after commit.
+            previousRevision = undefined;
           }
         }
 
-        await set(bundleKey, { version: ASSET_BUNDLE_VERSION, assets } satisfies AssetBundle);
+        const migratingSource = Boolean(
+          previousSource && previousSource.assetPrefix !== ASSET_BUNDLE_PREFIX,
+        );
+        const assetsUnchanged =
+          nextFingerprint === assetFingerprintRef.current &&
+          Boolean(previousRevision) &&
+          !migratingSource;
+        const revision = assetsUnchanged ? previousRevision! : createRevision();
+        const bundleKey = `${ASSET_BUNDLE_PREFIX}${revision}`;
 
-        const stateToSave = {
-          ...state,
-          _version: STATE_VERSION,
-          _assetRevision: revision,
-          imageAlpha: { ...state.imageAlpha, maskTexture: null },
-          baseTexture: { ...state.baseTexture, texture: null },
-          sticker: { ...state.sticker, texture: null },
-          customModel: null,
-          svg: { ...state.svg, url: null },
-        };
+        if (!assetsUnchanged) {
+          const assets: Record<string, StoredAsset> = {};
+          for (const asset of HEAVY_ASSETS) {
+            const value = getHeavyAssetValue(state, asset);
+            if (value) assets[asset.key] = await serializeAsset(value);
+          }
+          await set(bundleKey, { version: ASSET_BUNDLE_VERSION, assets } satisfies AssetBundle);
+        }
+
+        const stateToSave = serializePersistedDocument(state, revision);
 
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave, safeReplacer()));
           LEGACY_STORAGE_SOURCES.forEach(({ stateKey }) => localStorage.removeItem(stateKey));
         } catch (error) {
-          await del(bundleKey).catch(() => undefined);
+          if (!assetsUnchanged) await del(bundleKey).catch(() => undefined);
           throw error;
         }
 
-        if (previousRevision && previousRevision !== revision) {
+        assetFingerprintRef.current = nextFingerprint;
+        assetRevisionRef.current = revision;
+
+        if (!assetsUnchanged && previousRevision && previousRevision !== revision) {
           await del(`${previousAssetPrefix}${previousRevision}`).catch((error) => {
             console.warn("Failed to remove superseded asset bundle", error);
           });

@@ -24,9 +24,16 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
     }
   }, [isOpen, state]);
 
+  const [copyError, setCopyError] = useState(false);
   const handleCopy = async () => {
     const success = await copyToClipboard(code);
-    if (!success) return;
+    if (!success) {
+      setCopyError(true);
+      setCopied(false);
+      setTimeout(() => setCopyError(false), 2000);
+      return;
+    }
+    setCopyError(false);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -187,13 +194,15 @@ export const CodeViewerModal: React.FC<CodeViewerModalProps> = ({ isOpen, onClos
               type="button"
               onClick={handleCopy}
               className={`flex items-center gap-2 rounded px-3 py-1.5 text-xs font-bold transition-all ${
-                copied
-                  ? "border border-green-500/50 bg-green-900/50 text-green-400"
-                  : "border border-white/10 bg-surface text-gray-300 hover:bg-white/10"
+                copyError
+                  ? "border border-red-500/50 bg-red-900/50 text-red-300"
+                  : copied
+                    ? "border border-green-500/50 bg-green-900/50 text-green-400"
+                    : "border border-white/10 bg-surface text-gray-300 hover:bg-white/10"
               }`}
             >
               {copied ? <Icons.Check size={14} /> : <Icons.Copy size={14} />}
-              {copied ? "COPIED" : "COPY LEGACY HTML"}
+              {copyError ? "COPY FAILED" : copied ? "COPIED" : "COPY LEGACY HTML"}
             </button>
             <button
               type="button"
